@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_url_path='/static/')
@@ -101,6 +101,10 @@ def home():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signin_form'))
+
+@app.route('/data/<path:filename>')
+def serve_data(filename):
+    return send_from_directory('data', filename)
 
 if __name__ == '__main__':
     # Initialize database before running the app
