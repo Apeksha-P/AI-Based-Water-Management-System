@@ -91,6 +91,42 @@
             </nav>
             <!-- Navbar End -->
             <!-- Add Your items Here -->
+            <div class="container-fluid pt-4 px-4">
+                <div class="row g-4">
+                    <div class="col-md-12 col-lg-12">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">Water Usage</h6>
+                            <div class="chart-container">
+                                <canvas id="bar-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-12">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">Tempereture</h6>
+                            <div class="chart-container">
+                                <canvas id="line-chart-1"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-12">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">pH Value</h6>
+                            <div class="chart-container">
+                                <canvas id="line-chart-2"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-12">
+                        <div class="bg-secondary rounded h-100 p-4">
+                            <h6 class="mb-4">TDS</h6>
+                            <div class="chart-container">
+                                <canvas id="line-chart-3"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Footer Start -->
             <footer class="container-fluid pt-4 px-4">
@@ -139,12 +175,13 @@
         <!-- Content End -->
 
         <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <a href="#bar-chart" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-scrollbar"></script>
     <script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
