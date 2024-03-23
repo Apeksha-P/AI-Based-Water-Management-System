@@ -154,7 +154,7 @@
     
         // Fetch and process data for each chart
         chartOptions.forEach(function(options) {
-            fetchDataAndProcess("dataset.csv", options.columnIndex, options);
+            fetchDataAndProcess("data/dataset.csv", options.columnIndex, options);
         });
     });
 
