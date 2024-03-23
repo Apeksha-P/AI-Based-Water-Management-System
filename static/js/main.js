@@ -63,148 +63,99 @@
     Chart.defaults.color = "#6C7293";
     Chart.defaults.borderColor = "#000000";
 
-
-    // Worldwide Sales Chart
-    var ctx1 = $("#worldwide-sales").get(0).getContext("2d");
-    var myChart1 = new Chart(ctx1, {
-        type: "bar",
-        data: {
-            labels: ["2016", "2017", "2018", "2019", "2020", "2021", "2022"],
-            datasets: [{
-                    label: "USA",
-                    data: [15, 30, 55, 65, 60, 80, 95],
-                    backgroundColor: "rgba(235, 22, 22, .7)"
-                },
-                {
-                    label: "UK",
-                    data: [8, 35, 40, 60, 70, 55, 75],
-                    backgroundColor: "rgba(235, 22, 22, .5)"
-                },
-                {
-                    label: "AU",
-                    data: [12, 25, 45, 55, 65, 70, 60],
-                    backgroundColor: "rgba(235, 22, 22, .3)"
+    //charts    
+    $(document).ready(function() {
+        // Function to fetch and process data from CSV
+        function fetchDataAndProcess(url, columnIndex, chartOptions) {
+            $.get(url, function(data) {
+                var lines = data.split("\n");
+                var dates = [];
+                var values = [];
+                for (var i = 1; i < lines.length; i++) {
+                    var parts = lines[i].split(",");
+                    if (parts.length >= columnIndex + 1) {
+                        dates.push(parts[0]);
+                        values.push(parseFloat(parts[columnIndex]));
+                    }
                 }
-            ]
-            },
-        options: {
-            responsive: true
+                var last30Dates = dates.slice(-30);
+                var last30Values = values.slice(-30);
+                createChart(last30Dates, last30Values, chartOptions);
+            });
         }
-    });
-
-
-    // Salse & Revenue Chart
-    var ctx2 = $("#salse-revenue").get(0).getContext("2d");
-    var myChart2 = new Chart(ctx2, {
-        type: "line",
-        data: {
-            labels: ["2016", "2017", "2018", "2019", "2020", "2021", "2022"],
-            datasets: [{
-                    label: "Salse",
-                    data: [15, 30, 55, 45, 70, 65, 85],
-                    backgroundColor: "rgba(235, 22, 22, .7)",
-                    fill: true
-                },
-                {
-                    label: "Revenue",
-                    data: [99, 135, 170, 130, 190, 180, 270],
-                    backgroundColor: "rgba(235, 22, 22, .5)",
-                    fill: true
-                }
-            ]
-            },
-        options: {
-            responsive: true
-        }
-    });
     
-
-
-    // Single Line Chart
-    var ctx3 = $("#line-chart").get(0).getContext("2d");
-    var myChart3 = new Chart(ctx3, {
-        type: "line",
-        data: {
-            labels: [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150],
-            datasets: [{
-                label: "Salse",
-                fill: false,
-                backgroundColor: "rgba(235, 22, 22, .7)",
-                data: [7, 8, 8, 9, 9, 9, 10, 11, 14, 14, 15]
-            }]
-        },
-        options: {
-            responsive: true
+        // Function to create Chart.js chart
+        function createChart(labels, data, options) {
+            var ctx = options.ctx;
+            var chartType = options.chartType;
+            var chartData = {
+                labels: labels,
+                datasets: [{
+                    label: options.label,
+                    backgroundColor: options.backgroundColor,
+                    borderColor: options.borderColor,
+                    borderWidth: 1,
+                    data: data
+                }]
+            };
+            var chartOptions = {
+                scales: {
+                    y: {
+                        beginAtZero: options.beginAtZero || false,
+                        suggestedMin: options.suggestedMin || null,
+                        suggestedMax: options.suggestedMax || null
+                    }
+                }
+            };
+            var myChart = new Chart(ctx, {
+                type: chartType,
+                data: chartData,
+                options: chartOptions
+            });
         }
-    });
-
-
-    // Single Bar Chart
-    var ctx4 = $("#bar-chart").get(0).getContext("2d");
-    var myChart4 = new Chart(ctx4, {
-        type: "bar",
-        data: {
-            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
-            datasets: [{
-                backgroundColor: [
-                    "rgba(235, 22, 22, .7)",
-                    "rgba(235, 22, 22, .6)",
-                    "rgba(235, 22, 22, .5)",
-                    "rgba(235, 22, 22, .4)",
-                    "rgba(235, 22, 22, .3)"
-                ],
-                data: [55, 49, 44, 24, 15]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
-
-
-    // Pie Chart
-    var ctx5 = $("#pie-chart").get(0).getContext("2d");
-    var myChart5 = new Chart(ctx5, {
-        type: "pie",
-        data: {
-            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
-            datasets: [{
-                backgroundColor: [
-                    "rgba(235, 22, 22, .7)",
-                    "rgba(235, 22, 22, .6)",
-                    "rgba(235, 22, 22, .5)",
-                    "rgba(235, 22, 22, .4)",
-                    "rgba(235, 22, 22, .3)"
-                ],
-                data: [55, 49, 44, 24, 15]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
-
-
-    // Doughnut Chart
-    var ctx6 = $("#doughnut-chart").get(0).getContext("2d");
-    var myChart6 = new Chart(ctx6, {
-        type: "doughnut",
-        data: {
-            labels: ["Italy", "France", "Spain", "USA", "Argentina"],
-            datasets: [{
-                backgroundColor: [
-                    "rgba(235, 22, 22, .7)",
-                    "rgba(235, 22, 22, .6)",
-                    "rgba(235, 22, 22, .5)",
-                    "rgba(235, 22, 22, .4)",
-                    "rgba(235, 22, 22, .3)"
-                ],
-                data: [55, 49, 44, 24, 15]
-            }]
-        },
-        options: {
-            responsive: true
-        }
+    
+        // Define chart options
+        var chartOptions = [{
+                ctx: document.getElementById('bar-chart').getContext('2d'),
+                chartType: 'bar',
+                label: 'Water Usage',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                columnIndex: 1
+            },
+            {
+                ctx: document.getElementById('line-chart-1').getContext('2d'),
+                chartType: 'line',
+                label: 'Temperature',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                columnIndex: 2,
+                beginAtZero: false,
+                suggestedMin: 23.5,
+                suggestedMax: 27
+            },
+            {
+                ctx: document.getElementById('line-chart-2').getContext('2d'),
+                chartType: 'line',
+                label: 'pH Value',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                columnIndex: 3
+            },
+            {
+                ctx: document.getElementById('line-chart-3').getContext('2d'),
+                chartType: 'line',
+                label: 'TDS',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                columnIndex: 4
+            }
+        ];
+    
+        // Fetch and process data for each chart
+        chartOptions.forEach(function(options) {
+            fetchDataAndProcess("data/dataset.csv", options.columnIndex, options);
+        });
     });
 
     
