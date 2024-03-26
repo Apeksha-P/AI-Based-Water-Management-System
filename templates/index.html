@@ -52,9 +52,9 @@
                 
                 <div class="navbar-nav w-100">
                     <a href="{{ url_for('index_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
-                    <a href="{{ url_for('signin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                    <a href="{{ url_for('signin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
-                    <a href="{{ url_for('signin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                    <a href="{{ url_for('approval_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                    <a href="{{ url_for('approval_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                    <a href="{{ url_for('approval_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
                 </div>
             </nav>
         </div>
@@ -76,8 +76,8 @@
                             <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/profile.png') }}" alt="" style="width: 40px; height: 40px;">
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
-                            <a href="{{ url_for('signin_form') }}" class="dropdown-item">Sign in</a>
-                            <a href="{{ url_for('signup_form') }}" class="dropdown-item">Sign up</a>
+                            <a href="{{ url_for('approval_form') }}" class="dropdown-item">Sign in</a>
+                            <a href="{{ url_for('approval_form') }}" class="dropdown-item">Sign up</a>
                         </div>
                     </div>
                 </div>
@@ -116,10 +116,10 @@
                         </div>
                         <div class="col-12 col-md-3 text-left">
                             <h5 style="color: #826AF9;">Useful Links</h5>
-                            <a href="{{ url_for('static', filename='index.html') }}" target="_blank">Home</a><br>
-                            <a href="{{ url_for('static', filename='signin.html') }}" target="_blank">Dashboard</a><br>
-                            <a href="{{ url_for('static', filename='signin.html') }}" target="_blank">Analysis</a><br>
-                            <a href="{{ url_for('static', filename='signin.html') }}" target="_blank">Predictions</a><br>
+                            <a href="{{ url_for('index_form')}}" target="_blank">Home</a><br>
+                            <a href="{{ url_for('approval_form') }}" target="_blank">Dashboard</a><br>
+                            <a href="{{ url_for('approval_form') }}" target="_blank">Analysis</a><br>
+                            <a href="{{ url_for('approval_form') }}" target="_blank">Predictions</a><br>
                         </div>
                         <div class="col-12 col-md-3 text-left">
                             <h5 style="color: #826AF9;">Contact</h5>
