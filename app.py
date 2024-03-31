@@ -5,7 +5,7 @@ app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 
 # Database configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
