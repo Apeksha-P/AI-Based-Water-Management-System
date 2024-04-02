@@ -45,6 +45,16 @@ class Staff(db.Model):
     cnumber = db.Column(db.String(50))
 
 
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fname = db.Column(db.String(50))
+    lname = db.Column(db.String(50))
+    email = db.Column(db.String(50))
+    password = db.Column(db.String(50))
+    cnumber = db.Column(db.String(50))
+
+
+
 
 @app.route('/')
 def index_form():
@@ -175,6 +185,29 @@ def signinStaff_form():
             return render_template('signinStaff.html', error_message="Invalid email or password.")
 
     return render_template('signinStaff.html')
+
+
+@app.route('/signinAdmin', methods=["GET", "POST"])
+def signinAdmin_form():
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Query the database for the users with the given email and password
+        admin = Admin.query.filter_by(email=email, password=password).first()
+
+        if admin:
+            # Store users information in session
+            session['admin_id'] = admin.id
+            session['admin_email'] = admin.email
+            session['admin_fname'] = admin.fname
+            # Redirect to the home page after successful login
+            return redirect(url_for('homeAdmin'))  # Redirect to the home page
+        else:
+            # Users not found or incorrect credentials, redirect back to sign-in page with a message
+            return render_template('signinAdmin.html', error_message="Invalid email or password.")
+
+    return render_template('signinAdmin.html')
 
 
 
