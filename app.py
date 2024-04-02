@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session,se
 from flask_sqlalchemy import SQLAlchemy
 import random
 from flask_mail import *
-from flask import jsonify
+from flask import flash
 
 
 
@@ -89,20 +89,31 @@ def signupStudent():
 
     return redirect(url_for('verifyStudent', email=email))
 
-@app.route('/verifyStudent/<email>', methods=["GET", "POST"])
-def verifyStudent(email):
-    student = Student.query.filter_by(email=email).first()
-    if student:
-        if request.method == "POST":
-            entered_otp = request.form.get('otp')
+@app.route('/verifyStudent', methods=["GET", "POST"])
+def verifyStudent():
+    if request.method == "POST":
+        email = request.form.get('email')
+        entered_otp = request.form.get('otp')
+        student = Student.query.filter_by(email=email).first()
+        if student:
             if student.otp == entered_otp:
+                flash('Email verified successfully! Please sign in.')
                 return redirect(url_for('signinStudent_form'))
             else:
-                return render_template('verifyStudent.html', student=student, error_message="Invalid OTP. Please try again.")
+                flash('Invalid OTP. Please try again.')
+                return redirect(url_for('verifyStudent', email=email))  # Redirect to verification page
         else:
-            return render_template('verifyStudent.html', student=student)
+            flash('Student not found.')
+            return redirect(url_for('index_form'))  # Redirect to homepage or appropriate page
     else:
-        return "Student not found", 404
+        email = request.args.get('email')  # Fetch email from query parameters
+        student = Student.query.filter_by(email=email).first()
+        if student:
+            return render_template('verifyStudent.html', student=student)
+        else:
+            flash('Student not found.')
+            return redirect(url_for('index_form'))
+
 
 @app.route('/signupStaff', methods=["POST"])
 def signupStaff():
