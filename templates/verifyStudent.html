@@ -8,10 +8,10 @@
 <body>
 <h2>Verify OTP</h2>
 <p>An OTP has been sent to {{ student.email }}. Please enter the OTP below:</p>
-<form action="{{ url_for('verifyStudent', email=email) }}" method="post">
-    <label for="otp">Enter OTP:</label><br>
-    <input type="text" id="otp" name="otp" required><br>
-    <button type="submit">Verify OTP</button>
+<form method="POST" action="{{ url_for('verifyStudent') }}">
+    <input type="hidden" name="email" value="{{ student.email }}">
+    <input type="text" name="otp" placeholder="Enter OTP" required>
+    <button type="submit">Submit OTP</button>
 </form>
 </body>
 </html>
