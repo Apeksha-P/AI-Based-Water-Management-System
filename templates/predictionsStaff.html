@@ -9,6 +9,7 @@
     <meta content="" name="description">
 
     <!-- Favicon -->
+    <!-- <link href="img/favicon.ico" rel="icon"> -->
     <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
 
     <!-- Google Web Fonts -->
@@ -45,13 +46,15 @@
     <!-- Sidebar Start -->
     <div class="sidebar pe-4 pb-3">
         <nav class="navbar bg-secondary navbar-dark">
-            <a href="{{ url_for('homeStudent')}}" class="navbar-brand mx-4 mb-3">
+            <a href="{{ url_for('homeStaff')}}" class="navbar-brand mx-4 mb-3">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
 
             <div class="navbar-nav w-100">
-                <a href="{{ url_for('homeStudent')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
-                <a href="{{ url_for('dashboardStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                <a href="{{ url_for('homeStaff')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('dashboardStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                <a href="{{ url_for('analysingStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                <a href="{{ url_for('predictionStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
             </div>
         </nav>
     </div>
@@ -61,7 +64,7 @@
     <div class="content">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeStudent')}}" class="navbar-brand d-flex d-lg-none me-4">
+            <a href="{{ url_for('homeStaff')}}" class="navbar-brand d-flex d-lg-none me-4">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
             <a href="#" class="sidebar-toggler flex-shrink-0">
@@ -79,58 +82,16 @@
                         <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
-                        <a href="{{ url_for('profileStudent_form')}}" class="dropdown-item">My Profile</a>
+                        <a href="{{ url_for('profileStaff_form')}}" class="dropdown-item">My Profile</a>
                         <a href="#" class="dropdown-item">Reports</a>
-                        <a href="{{ url_for('signinStudent_form')}}" class="dropdown-item">Log Out</a>
+                        <a href="{{ url_for('index_form') }}" class="dropdown-item">Log Out</a>
                     </div>
                 </div>
             </div>
         </nav>
         <!-- Navbar End -->
-        <!-- Add body items Here -->
-        <div class="container-fluid pt-4 px-4">
-            <div class="row g-4">
-                <div class="col-sm-12 col-xl-6">
-                    <div class="bg-secondary rounded h-100 p-4 pt-4">
-                        <div class="text-center">
-                            <img src="{{ url_for('static', filename='img/profile.png') }}" alt="" class="rounded-circle pt-2 pb-2" width="150">
-                            <img src="{{ url_for('static', filename='img/pencil.png') }}" alt="Edit" width="30px" style="padding-top: 40px; position: relative; top:60px; left: -70px; transform: rotate(-70deg)">
-                            <h2 class="pt-5">{{ student.fname }}  {{ student.lname }}</h2>
-                            <h4 class="pt-2">Student</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-12 col-xl-6">
-                    <div class="bg-secondary rounded h-100 p-4">
-                        <table class="table">
-                            <tbody>
-                            <tr>
-                                <td>First Name</td>
-                                <td>:</td>
-                                <td>{{ student.fname }}</td>
-                            </tr>
-                            <tr>
-                                <td>Last Name</td>
-                                <td>:</td>
-                                <td>{{ student.lname }}</td>
-                            </tr>
-                            <tr>
-                                <td>Email</td>
-                                <td>:</td>
-                                <td>{{ student.email }}</td>
-                            </tr>
-                            <tr>
-                                <td>Contact Number</td>
-                                <td>:</td>
-                                <td>{{ student.cnumber}}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- End items Here -->
+        <!-- Add Your items Here -->
+
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
             <div class="bg-secondary rounded-top p-3">
@@ -148,8 +109,10 @@
                     </div>
                     <div class="col-12 col-md-3 text-left">
                         <h5 style="color: #826AF9;">Useful Links</h5>
-                        <a href="{{ url_for('homeStudent')}}" target="_blank">Home</a><br>
-                        <a href="{{ url_for('dashboardStudent_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('homeStaff')}}" target="_blank">Home</a><br>
+                        <a href="{{ url_for('dashboardStaff_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('analysingStaff_form')}}" target="_blank">Analysis</a><br>
+                        <a href="{{ url_for('predictionStaff_form')}}" target="_blank">Predictions</a><br>
                     </div>
                     <div class="col-12 col-md-3 text-left">
                         <h5 style="color: #826AF9;">Contact</h5>
