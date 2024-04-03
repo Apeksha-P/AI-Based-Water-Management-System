@@ -55,7 +55,6 @@ class Admin(db.Model):
 
 
 
-
 @app.route('/')
 def index_form():
     return render_template('index.html')
@@ -228,6 +227,16 @@ def homeStaff():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
+
+
+@app.route('/homeAdmin')
+def homeAdmin():
+    # Check if user is logged in
+    if 'admin_id' in session:
+        return render_template('homeAdmin.html', admin_email=session['admin_email'], admin_fname=session['admin_fname'])
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
 
 @app.route('/dashboardStudent')
 def dashboardStudent_form():
