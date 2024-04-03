@@ -246,6 +246,10 @@ def dashboardStudent_form():
 def dashboardStaff_form():
     return render_template('dashboardStaff.html')
 
+@app.route('/dashboardAdmin')
+def dashboardAdmin_form():
+    return render_template('dashboardAdmin.html')
+
 @app.route('/profileStudent')
 def profileStudent_form():
     if 'student_id' in session:
@@ -275,6 +279,21 @@ def profileStaff_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
 
+
+@app.route('/profileAdmin')
+def profileAdmin_form():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin = Admin.query.get(admin_id)
+        if admin:
+            return render_template('profileAdmin.html', admin=admin)
+        else:
+            # Handle the case where the user does not exist
+            return "User not found"
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
+
 @app.route('/predictionsStaff')
 def predictionStaff_form():
     return render_template('predictionsStaff.html')
@@ -282,6 +301,10 @@ def predictionStaff_form():
 @app.route('/analysingStaff')
 def analysingStaff_form():
     return render_template('analysingStaff.html')
+
+@app.route('/analysingAdmin')
+def analysingAdmin_form():
+    return render_template('analysingAdmin.html')
 
 
 
