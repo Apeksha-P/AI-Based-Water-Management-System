@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+</head>
+<body>
+<h2>Verify OTP</h2>
+<p>An OTP has been sent to {{ student.email }}. Please enter the OTP below:</p>
+<form method="POST" action="{{ url_for('verifyStudent') }}">
+    <input type="hidden" name="email" value="{{ student.email }}">
+    <input type="text" name="otp" placeholder="Enter OTP" required>
+    <button type="submit">Submit OTP</button>
+</form>
+</body>
+</html>

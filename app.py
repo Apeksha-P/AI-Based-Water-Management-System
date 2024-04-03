@@ -1,8 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+import random
+from flask_mail import *
+from flask import flash
+
+
 
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
+
+app.config["MAIL_SERVER"]='smtp.office365.com'
+app.config["MAIL_PORT"]=587
+app.config["MAIL_USERNAME"]="apeksha-cs20070@stu.kln.ac.lk"
+app.config["MAIL_PASSWORD"]='CpDa@6080Ap'
+app.config["MAIL_USE_TLS"]=True
+app.config["MAIL_USE_SSL"]=False
+app.config['MAIL_DEBUG'] = True
+mail = Mail(app)
+
 
 # Database configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
@@ -10,17 +25,19 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Define Users model with the correct column definitions
+
 class Student(db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Define the primary key column
+    id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
+    otp = db.Column(db.String(6))
+
 
 class Staff(db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Define the primary key column
+    id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
     email = db.Column(db.String(50))
@@ -54,13 +71,48 @@ def signupStudent():
     password = request.form.get('password')
     cnumber = request.form.get('cnumber')
 
-    # Create a new Users instance and add it to the database
-    student = Student(fname=fname, lname=lname, email=email, password=password, cnumber=cnumber)
+    otp = str(random.randint(100000, 999999))
+
+    msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+    msg.body = f"Hi {fname},\nYour email OTP is: {otp}"
+
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print("An error occurred while sending the email:", e)
+        return "An error occurred while sending the email. Please try again later."
+
+
+    student = Student(fname=fname, lname=lname, email=email, password=password, cnumber=cnumber, otp=otp)
     db.session.add(student)
     db.session.commit()
 
-    # Redirect to the sign-in page after successful signup
-    return redirect(url_for('signinStudent_form'))
+    return redirect(url_for('verifyStudent', email=email))
+
+@app.route('/verifyStudent', methods=["GET", "POST"])
+def verifyStudent():
+    if request.method == "POST":
+        email = request.form.get('email')
+        entered_otp = request.form.get('otp')
+        student = Student.query.filter_by(email=email).first()
+        if student:
+            if student.otp == entered_otp:
+                flash('Email verified successfully! Please sign in.')
+                return redirect(url_for('signinStudent_form'))
+            else:
+                flash('Invalid OTP. Please try again.')
+                return redirect(url_for('verifyStudent', email=email))  # Redirect to verification page
+        else:
+            flash('Student not found.')
+            return redirect(url_for('index_form'))  # Redirect to homepage or appropriate page
+    else:
+        email = request.args.get('email')  # Fetch email from query parameters
+        student = Student.query.filter_by(email=email).first()
+        if student:
+            return render_template('verifyStudent.html', student=student)
+        else:
+            flash('Student not found.')
+            return redirect(url_for('index_form'))
 
 
 @app.route('/signupStaff', methods=["POST"])
