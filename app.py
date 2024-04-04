@@ -298,6 +298,10 @@ def profileAdmin_form():
 def predictionStaff_form():
     return render_template('predictionsStaff.html')
 
+@app.route('/predictionsAdmin')
+def predictionAdmin_form():
+    return render_template('predictionsAdmin.html')
+
 @app.route('/analysingStaff')
 def analysingStaff_form():
     return render_template('analysingStaff.html')
