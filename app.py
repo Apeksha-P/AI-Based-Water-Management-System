@@ -33,8 +33,6 @@ class Student(db.Model):
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
-    otp = db.Column(db.String(6))
-
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -74,54 +72,76 @@ def signupStaff_form():
 
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
-    fname = request.form.get('fname')
-    lname = request.form.get('lname')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    cnumber = request.form.get('cnumber')
+    if request.method == "POST":
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        cnumber = request.form.get('cnumber')
 
-    otp = str(random.randint(100000, 999999))
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
 
+        # Send OTP via email
+        send_otp_email(email, otp)
+
+        # Store signup data in session
+        session['signup_data'] = {
+            'fname': fname,
+            'lname': lname,
+            'email': email,
+            'password': password,
+            'cnumber': cnumber,
+            'otp': otp
+        }
+
+        # Redirect to verifyStudent page
+        return redirect(url_for('verifyStudent'))
+
+    return render_template('signupStudent.html')
+
+
+def send_otp_email(email, otp):
     msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi {fname},\nYour email OTP is: {otp}"
-
+    msg.body = f"Hi,\nYour email OTP is: {otp}"
     try:
         mail.send(msg)
     except Exception as e:
         print("An error occurred while sending the email:", e)
-        return "An error occurred while sending the email. Please try again later."
+        # Handle error
 
-
-    student = Student(fname=fname, lname=lname, email=email, password=password, cnumber=cnumber, otp=otp)
-    db.session.add(student)
-    db.session.commit()
-
-    return redirect(url_for('verifyStudent', email=email))
 
 @app.route('/verifyStudent', methods=["GET", "POST"])
 def verifyStudent():
     if request.method == "POST":
         email = request.form.get('email')
         entered_otp = request.form.get('otp')
-        student = Student.query.filter_by(email=email).first()
-        if student:
-            if student.otp == entered_otp:
+
+        signup_data = session.get('signup_data')
+        if signup_data['otp'] == entered_otp:
+            # Create Student object and add to database
+            student = Student(
+                fname=signup_data['fname'],
+                lname=signup_data['lname'],
+                email=signup_data['email'],
+                password=signup_data['password'],
+                cnumber=signup_data['cnumber'],
+            )
+            try:
+                db.session.add(student)
+                db.session.commit()
                 flash('Email verified successfully! Please sign in.')
                 return redirect(url_for('signinStudent_form'))
-            else:
-                flash('Invalid OTP. Please try again.')
-                return redirect(url_for('verifyStudent', email=email))  # Redirect to verification page
+            except Exception as e:
+                flash('An error occurred while saving data. Please try again later.')
+                print("Error:", e)
+                return redirect(url_for('verifyStudent'))
         else:
-            flash('Student not found.')
-            return redirect(url_for('index_form'))  # Redirect to homepage or appropriate page
-    else:
-        email = request.args.get('email')  # Fetch email from query parameters
-        student = Student.query.filter_by(email=email).first()
-        if student:
-            return render_template('verifyStudent.html', student=student)
-        else:
-            flash('Student not found.')
-            return redirect(url_for('index_form'))
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyStudent'))  # Redirect back to verifyStudent page
+
+    # If GET request, render the verifyStudent.html template
+    return render_template('verifyStudent.html')
 
 
 @app.route('/signupStaff', methods=["POST"])
