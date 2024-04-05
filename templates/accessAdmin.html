@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>UOK FCT AI Based Water Management System</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <!-- <link href="img/favicon.ico" rel="icon"> -->
+    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+<div class="container-fluid position-relative d-flex p-0">
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Sidebar Start -->
+    <div class="sidebar pe-4 pb-3">
+        <nav class="navbar bg-secondary navbar-dark">
+            <a href="{{ url_for('index_form')}}" class="navbar-brand mx-4 mb-3">
+                <h3 class="text-primary">AIBWMS</h3>
+            </a>
+
+            <div class="navbar-nav w-100">
+                <a href="{{ url_for('homeAdmin')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                <a href="{{ url_for('accessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa-solid fa-universal-access"></i>   Access</a>
+                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
+            </div>
+        </nav>
+    </div>
+    <!-- Sidebar End -->
+
+    <!-- Content Start -->
+    <div class="content">
+        <!-- Navbar Start -->
+        <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
+            <a href="{{ url_for('homeAdmin')}}"     class="navbar-brand d-flex d-lg-none me-4">
+                <h3 class="text-primary">AIBWMS</h3>
+            </a>
+            <a href="#" class="sidebar-toggler flex-shrink-0">
+                <i class="fa fa-bars"></i>
+            </a>
+            <h3 style="margin: 2%">ACCESS</h3>
+            <div class="navbar-nav align-items-center ms-auto">
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa fa-bell me-lg-2"></i>
+                        <span class="d-none d-lg-inline-flex">Notificatin</span>
+                    </a>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
+                        <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
+                        <a href="#" class="dropdown-item">Reports</a>
+                        <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- Navbar End -->
+        <!-- Add Your items Here -->
+
+        <!-- Table Start -->
+        <div class="container-fluid pt-4 px-4 ">
+            <div class="row g-4">
+
+                <!--Start Student Table -->
+                <div class="col-12">
+                    <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
+                        <h6 class="mb-4">Student Table</h6>
+                        <div class="table-responsive">
+                            <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
+                                <!--                                <thead>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="col">#</th>-->
+                                <!--                                    <th scope="col">First Name</th>-->
+                                <!--                                    <th scope="col">Last Name</th>-->
+                                <!--                                    <th scope="col">Email</th>-->
+                                <!--                                    <th scope="col">Password</th>-->
+                                <!--                                    <th scope="col">Contact Number</th>-->
+                                <!--                                </tr>-->
+                                <!--                                </thead>-->
+                                <!--                                <tbody>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">1</th>-->
+                                <!--                                    <td>Pavithri</td>-->
+                                <!--                                    <td>Apeksha</td>-->
+                                <!--                                    <td>apeksha@gmail.com</td>-->
+                                <!--                                    <td>1234</td>-->
+                                <!--                                    <td>0712353981</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">2</th>-->
+                                <!--                                    <td>Kokila</td>-->
+                                <!--                                    <td>Abhayasundara</td>-->
+                                <!--                                    <td>kvabhahaya@gmail.com</td>-->
+                                <!--                                    <td>4231</td>-->
+                                <!--                                    <td>0714824677</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">3</th>-->
+                                <!--                                    <td>Piyumi</td>-->
+                                <!--                                    <td>Nadeesha</td>-->
+                                <!--                                    <td>piyumi@gmail.com</td>-->
+                                <!--                                    <td>2098</td>-->
+                                <!--                                    <td>0773920012</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">3</th>-->
+                                <!--                                    <td>Tharushi</td>-->
+                                <!--                                    <td>Shashikala</td>-->
+                                <!--                                    <td>tharu@gmail.com</td>-->
+                                <!--                                    <td>2758</td>-->
+                                <!--                                    <td>0773284012</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">3</th>-->
+                                <!--                                    <td>Dilshan</td>-->
+                                <!--                                    <td>Sandaruwan</td>-->
+                                <!--                                    <td>dilshan@gmail.com</td>-->
+                                <!--                                    <td>2081</td>-->
+                                <!--                                    <td>0703819235</td>-->
+                                <!--                                </tr>-->
+                                <!--                                </tbody>-->
+
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Email</th>
+                                    <th>Password</th>
+                                    <th>Contact Number</th>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.id }}</td>
+                                    <td>{{ student.fname }}</td>
+                                    <td>{{ student.lname }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.password }}</td>
+                                    <td>{{ student.cnumber }}</td>
+                                    <td>{{ student.otp }}</td>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!--End Student Table -->
+
+                <!-- Start Lecturer Table -->
+
+                <div class="col-12">
+                    <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
+                        <h6 class="mb-4">Lecturer Table</h6>
+                        <div class="table-responsive">
+                            <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
+                                <!--                                <thead>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="col">#</th>-->
+                                <!--                                    <th scope="col">First Name</th>-->
+                                <!--                                    <th scope="col">Last Name</th>-->
+                                <!--                                    <th scope="col">Email</th>-->
+                                <!--                                    <th scope="col">Password</th>-->
+                                <!--                                    <th scope="col">Contact Number</th>-->
+                                <!--                                </tr>-->
+                                <!--                                </thead>-->
+                                <!--                                <tbody>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">1</th>-->
+                                <!--                                    <td>Kasun</td>-->
+                                <!--                                    <td>Fernando</td>-->
+                                <!--                                    <td>kasun@gmail.com</td>-->
+                                <!--                                    <td>2144</td>-->
+                                <!--                                    <td>0714454242</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">2</th>-->
+                                <!--                                    <td>Nishmi</td>-->
+                                <!--                                    <td>Nadeesha</td>-->
+                                <!--                                    <td>nisha@gmail.com</td>-->
+                                <!--                                    <td>2154</td>-->
+                                <!--                                    <td>0762392031</td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">3</th>-->
+                                <!--                                    <td>Piyumi</td>-->
+                                <!--                                    <td>Dilshana</td>-->
+                                <!--                                    <td>dil@gmail.com</td>-->
+                                <!--                                    <td>2212</td>-->
+                                <!--                                    <td>0777858435</td>-->
+                                <!--                                </tr>-->
+                                <!--                                </tbody>-->
+
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Email</th>
+                                    <th>Password</th>
+                                    <th>Contact Number</th>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for staff in staffs %}
+                                <tr>
+                                    <td>{{ staff.id }}</td>
+                                    <td>{{ staff.fname }}</td>
+                                    <td>{{ staff.lname }}</td>
+                                    <td>{{ staff.email }}</td>
+                                    <td>{{ staff.password }}</td>
+                                    <td>{{ staff.cnumber }}</td>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!--End Lecturer Table -->
+
+                <!-- Start Admin Table -->
+
+                <div class="col-12">
+                    <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
+                        <h6 class="mb-4">Admin Table</h6>
+                        <div class="table-responsive">
+                            <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
+                                <!--                                <thead>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="col">#</th>-->
+                                <!--                                    <th scope="col">First Name</th>-->
+                                <!--                                    <th scope="col">Last Name</th>-->
+                                <!--                                    <th scope="col">Email</th>-->
+                                <!--                                    <th scope="col">Password</th>-->
+                                <!--                                    <th scope="col">Contact Number</th>-->
+                                <!--                                </tr>-->
+                                <!--                                </thead>-->
+                                <!--                                <tbody>-->
+                                <!--                                <tr>-->
+                                <!--                                    <th scope="row">1</th>-->
+                                <!--                                    <td>Yasinsa</td>-->
+                                <!--                                    <td>Mahanama</td>-->
+                                <!--                                    <td>yasi@gmail.com</td>-->
+                                <!--                                    <td>1215</td>-->
+                                <!--                                    <td>0706638182</td>-->
+                                <!--                                </tr>-->
+                                <!--                                </tbody>-->
+
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Email</th>
+                                    <th>Password</th>
+                                    <th>Contact Number</th>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for admin in admins %}
+                                <tr>
+                                    <td>{{ admin.id }}</td>
+                                    <td>{{ admin.fname }}</td>
+                                    <td>{{ admin.lname }}</td>
+                                    <td>{{ admin.email }}</td>
+                                    <td>{{ admin.password }}</td>
+                                    <td>{{ admin.cnumber }}</td>
+                                    <!-- Add more columns as needed -->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- End Admin Table -->
+
+            </div>
+        </div>
+        <!-- Table End -->
+
+        <!-- Footer Start -->
+        <footer class="container-fluid pt-4 px-4">
+            <div class="bg-secondary rounded-top p-3">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-3 text-left">
+                        <h3 style="color: #826AF9;">AIBWMS</h3>
+                        <p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring tools, lacks predictive analytics, leading to pollution and dwindling water quality. </p>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Faculty</h5>
+                        <a href="https://fct.kln.ac.lk/" target="_blank">Home</a><br>
+                        <a href="#" target="_blank">Academic</a><br>
+                        <a href="#" target="_blank">Departments</a><br>
+                        <a href="https://fct.kln.ac.lk/index.php/contact" target="_blank">Contact</a><br>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Useful Links</h5>
+                        <a href="{{ url_for('homeAdmin')}}" target="_blank">Home</a><br>
+                        <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
+                        <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
+                        <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
+                        <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Contact</h5>
+                        <div style="display: flex;" class="contact-inner">
+                            <div class="contact-icon">
+                                <i class="fa fa-phone me-2"></i><br>
+                                <i class="fa fa-envelope me-2"></i><br>
+                                <i class="fa fa-map me-2"></i><br>
+                            </div>
+                            <div class="contact-detail">
+                                <a style="color: #fff;">+94 113 442623</a><br>
+                                <a style="color: #fff;">officefct@kln.ac.lk</a><br>
+                                <a style="color:#fff;">Faculty of Computing and Technology,<br>University Drive,<br>Bulugaha Junction, <br>Kelaniya,<br>Colombo,<br>Sri Lanka.<br></a><br>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Footer End -->
+
+    </div>
+    <!-- Content End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="https://kit.fontawesome.com/92c64e3f46.js" crossorigin="anonymous"></script>
+
+<!-- Template Javascript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
+

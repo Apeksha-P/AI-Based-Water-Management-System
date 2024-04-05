@@ -311,6 +311,11 @@ def analysingAdmin_form():
     return render_template('analysingAdmin.html')
 
 
+@app.route('/accessAdmin')
+def accessAdmin_form():
+    return render_template('accessAdmin.html')
+
+
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
