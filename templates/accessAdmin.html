@@ -105,83 +105,57 @@
                         <h6 class="mb-4">Student Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
-                                <!--                                <thead>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="col">#</th>-->
-                                <!--                                    <th scope="col">First Name</th>-->
-                                <!--                                    <th scope="col">Last Name</th>-->
-                                <!--                                    <th scope="col">Email</th>-->
-                                <!--                                    <th scope="col">Password</th>-->
-                                <!--                                    <th scope="col">Contact Number</th>-->
-                                <!--                                </tr>-->
-                                <!--                                </thead>-->
-                                <!--                                <tbody>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">1</th>-->
-                                <!--                                    <td>Pavithri</td>-->
-                                <!--                                    <td>Apeksha</td>-->
-                                <!--                                    <td>apeksha@gmail.com</td>-->
-                                <!--                                    <td>1234</td>-->
-                                <!--                                    <td>0712353981</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">2</th>-->
-                                <!--                                    <td>Kokila</td>-->
-                                <!--                                    <td>Abhayasundara</td>-->
-                                <!--                                    <td>kvabhahaya@gmail.com</td>-->
-                                <!--                                    <td>4231</td>-->
-                                <!--                                    <td>0714824677</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">3</th>-->
-                                <!--                                    <td>Piyumi</td>-->
-                                <!--                                    <td>Nadeesha</td>-->
-                                <!--                                    <td>piyumi@gmail.com</td>-->
-                                <!--                                    <td>2098</td>-->
-                                <!--                                    <td>0773920012</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">3</th>-->
-                                <!--                                    <td>Tharushi</td>-->
-                                <!--                                    <td>Shashikala</td>-->
-                                <!--                                    <td>tharu@gmail.com</td>-->
-                                <!--                                    <td>2758</td>-->
-                                <!--                                    <td>0773284012</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">3</th>-->
-                                <!--                                    <td>Dilshan</td>-->
-                                <!--                                    <td>Sandaruwan</td>-->
-                                <!--                                    <td>dilshan@gmail.com</td>-->
-                                <!--                                    <td>2081</td>-->
-                                <!--                                    <td>0703819235</td>-->
-                                <!--                                </tr>-->
-                                <!--                                </tbody>-->
-
                                 <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>First Name</th>
-                                    <th>Last Name</th>
-                                    <th>Email</th>
-                                    <th>Password</th>
-                                    <th>Contact Number</th>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="col">#</th>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Password</th>
+                                    <th scope="col">Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for student in students %}
                                 <tr>
-                                    <td>{{ student.id }}</td>
-                                    <td>{{ student.fname }}</td>
-                                    <td>{{ student.lname }}</td>
-                                    <td>{{ student.email }}</td>
-                                    <td>{{ student.password }}</td>
-                                    <td>{{ student.cnumber }}</td>
-                                    <td>{{ student.otp }}</td>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="row">1</th>
+                                    <td>Pavithri</td>
+                                    <td>Apeksha</td>
+                                    <td>apeksha@gmail.com</td>
+                                    <td>1234</td>
+                                    <td>0712353981</td>
                                 </tr>
-                                {% endfor %}
+                                <tr>
+                                    <th scope="row">2</th>
+                                    <td>Kokila</td>
+                                    <td>Abhayasundara</td>
+                                    <td>kvabhahaya@gmail.com</td>
+                                    <td>4231</td>
+                                    <td>0714824677</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">3</th>
+                                    <td>Piyumi</td>
+                                    <td>Nadeesha</td>
+                                    <td>piyumi@gmail.com</td>
+                                    <td>2098</td>
+                                    <td>0773920012</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">3</th>
+                                    <td>Tharushi</td>
+                                    <td>Shashikala</td>
+                                    <td>tharu@gmail.com</td>
+                                    <td>2758</td>
+                                    <td>0773284012</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">3</th>
+                                    <td>Dilshan</td>
+                                    <td>Sandaruwan</td>
+                                    <td>dilshan@gmail.com</td>
+                                    <td>2081</td>
+                                    <td>0703819235</td>
+                                </tr>
                                 </tbody>
 
                             </table>
@@ -198,66 +172,41 @@
                         <h6 class="mb-4">Lecturer Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
-                                <!--                                <thead>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="col">#</th>-->
-                                <!--                                    <th scope="col">First Name</th>-->
-                                <!--                                    <th scope="col">Last Name</th>-->
-                                <!--                                    <th scope="col">Email</th>-->
-                                <!--                                    <th scope="col">Password</th>-->
-                                <!--                                    <th scope="col">Contact Number</th>-->
-                                <!--                                </tr>-->
-                                <!--                                </thead>-->
-                                <!--                                <tbody>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">1</th>-->
-                                <!--                                    <td>Kasun</td>-->
-                                <!--                                    <td>Fernando</td>-->
-                                <!--                                    <td>kasun@gmail.com</td>-->
-                                <!--                                    <td>2144</td>-->
-                                <!--                                    <td>0714454242</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">2</th>-->
-                                <!--                                    <td>Nishmi</td>-->
-                                <!--                                    <td>Nadeesha</td>-->
-                                <!--                                    <td>nisha@gmail.com</td>-->
-                                <!--                                    <td>2154</td>-->
-                                <!--                                    <td>0762392031</td>-->
-                                <!--                                </tr>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">3</th>-->
-                                <!--                                    <td>Piyumi</td>-->
-                                <!--                                    <td>Dilshana</td>-->
-                                <!--                                    <td>dil@gmail.com</td>-->
-                                <!--                                    <td>2212</td>-->
-                                <!--                                    <td>0777858435</td>-->
-                                <!--                                </tr>-->
-                                <!--                                </tbody>-->
-
                                 <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>First Name</th>
-                                    <th>Last Name</th>
-                                    <th>Email</th>
-                                    <th>Password</th>
-                                    <th>Contact Number</th>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="col">#</th>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Password</th>
+                                    <th scope="col">Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for staff in staffs %}
                                 <tr>
-                                    <td>{{ staff.id }}</td>
-                                    <td>{{ staff.fname }}</td>
-                                    <td>{{ staff.lname }}</td>
-                                    <td>{{ staff.email }}</td>
-                                    <td>{{ staff.password }}</td>
-                                    <td>{{ staff.cnumber }}</td>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="row">1</th>
+                                    <td>Kasun</td>
+                                    <td>Fernando</td>
+                                    <td>kasun@gmail.com</td>
+                                    <td>2144</td>
+                                    <td>0714454242</td>
                                 </tr>
-                                {% endfor %}
+                                <tr>
+                                    <th scope="row">2</th>
+                                    <td>Nishmi</td>
+                                    <td>Nadeesha</td>
+                                    <td>nisha@gmail.com</td>
+                                    <td>2154</td>
+                                    <td>0762392031</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">3</th>
+                                    <td>Piyumi</td>
+                                    <td>Dilshana</td>
+                                    <td>dil@gmail.com</td>
+                                    <td>2212</td>
+                                    <td>0777858435</td>
+                                </tr>
                                 </tbody>
 
                             </table>
@@ -274,50 +223,25 @@
                         <h6 class="mb-4">Admin Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
-                                <!--                                <thead>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="col">#</th>-->
-                                <!--                                    <th scope="col">First Name</th>-->
-                                <!--                                    <th scope="col">Last Name</th>-->
-                                <!--                                    <th scope="col">Email</th>-->
-                                <!--                                    <th scope="col">Password</th>-->
-                                <!--                                    <th scope="col">Contact Number</th>-->
-                                <!--                                </tr>-->
-                                <!--                                </thead>-->
-                                <!--                                <tbody>-->
-                                <!--                                <tr>-->
-                                <!--                                    <th scope="row">1</th>-->
-                                <!--                                    <td>Yasinsa</td>-->
-                                <!--                                    <td>Mahanama</td>-->
-                                <!--                                    <td>yasi@gmail.com</td>-->
-                                <!--                                    <td>1215</td>-->
-                                <!--                                    <td>0706638182</td>-->
-                                <!--                                </tr>-->
-                                <!--                                </tbody>-->
-
                                 <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>First Name</th>
-                                    <th>Last Name</th>
-                                    <th>Email</th>
-                                    <th>Password</th>
-                                    <th>Contact Number</th>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="col">#</th>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Password</th>
+                                    <th scope="col">Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for admin in admins %}
                                 <tr>
-                                    <td>{{ admin.id }}</td>
-                                    <td>{{ admin.fname }}</td>
-                                    <td>{{ admin.lname }}</td>
-                                    <td>{{ admin.email }}</td>
-                                    <td>{{ admin.password }}</td>
-                                    <td>{{ admin.cnumber }}</td>
-                                    <!-- Add more columns as needed -->
+                                    <th scope="row">1</th>
+                                    <td>Yasinsa</td>
+                                    <td>Mahanama</td>
+                                    <td>yasi@gmail.com</td>
+                                    <td>1215</td>
+                                    <td>0706638182</td>
                                 </tr>
-                                {% endfor %}
                                 </tbody>
 
                             </table>
