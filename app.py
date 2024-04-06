@@ -43,6 +43,15 @@ class Staff(db.Model):
     cnumber = db.Column(db.String(50))
 
 
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fname = db.Column(db.String(50))
+    lname = db.Column(db.String(50))
+    email = db.Column(db.String(50))
+    password = db.Column(db.String(50))
+    cnumber = db.Column(db.String(50))
+
+
 
 @app.route('/')
 def index_form():
@@ -197,6 +206,29 @@ def signinStaff_form():
     return render_template('signinStaff.html')
 
 
+@app.route('/signinAdmin', methods=["GET", "POST"])
+def signinAdmin_form():
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Query the database for the users with the given email and password
+        admin = Admin.query.filter_by(email=email, password=password).first()
+
+        if admin:
+            # Store users information in session
+            session['admin_id'] = admin.id
+            session['admin_email'] = admin.email
+            session['admin_fname'] = admin.fname
+            # Redirect to the home page after successful login
+            return redirect(url_for('homeAdmin'))  # Redirect to the home page
+        else:
+            # Users not found or incorrect credentials, redirect back to sign-in page with a message
+            return render_template('signinAdmin.html', error_message="Invalid email or password.")
+
+    return render_template('signinAdmin.html')
+
+
 
 @app.route('/homeStudent')
 def homeStudent():
@@ -216,6 +248,16 @@ def homeStaff():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
 
+
+@app.route('/homeAdmin')
+def homeAdmin():
+    # Check if user is logged in
+    if 'admin_id' in session:
+        return render_template('homeAdmin.html', admin_email=session['admin_email'], admin_fname=session['admin_fname'])
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
+
 @app.route('/dashboardStudent')
 def dashboardStudent_form():
     return render_template('dashboardStudent.html')
@@ -223,6 +265,10 @@ def dashboardStudent_form():
 @app.route('/dashboardStaff')
 def dashboardStaff_form():
     return render_template('dashboardStaff.html')
+
+@app.route('/dashboardAdmin')
+def dashboardAdmin_form():
+    return render_template('dashboardAdmin.html')
 
 @app.route('/profileStudent')
 def profileStudent_form():
@@ -253,14 +299,46 @@ def profileStaff_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
 
+
+@app.route('/profileAdmin')
+def profileAdmin_form():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin = Admin.query.get(admin_id)
+        if admin:
+            return render_template('profileAdmin.html', admin=admin)
+        else:
+            # Handle the case where the user does not exist
+            return "User not found"
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
+
 @app.route('/predictionsStaff')
 def predictionStaff_form():
     return render_template('predictionsStaff.html')
+
+@app.route('/predictionsAdmin')
+def predictionAdmin_form():
+    return render_template('predictionsAdmin.html')
 
 @app.route('/analysingStaff')
 def analysingStaff_form():
     return render_template('analysingStaff.html')
 
+@app.route('/analysingAdmin')
+def analysingAdmin_form():
+    return render_template('analysingAdmin.html')
+
+
+@app.route('/accessAdmin')
+def accessAdmin_form():
+    return render_template('accessAdmin.html')
+
+
+@app.route('/meterAdmin')
+def meterAdmin_form():
+    return render_template('meterAdmin.html')
 
 
 @app.route('/data/<path:filename>')
