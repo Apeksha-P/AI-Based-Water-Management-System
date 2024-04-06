@@ -336,6 +336,10 @@ def accessAdmin_form():
     return render_template('accessAdmin.html')
 
 
+@app.route('/meterAdmin')
+def meterAdmin_form():
+    return render_template('meterAdmin.html')
+
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
