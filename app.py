@@ -20,7 +20,7 @@ mail = Mail(app)
 
 
 # Database configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://:root@localhost/reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
