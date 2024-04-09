@@ -20,7 +20,7 @@ mail = Mail(app)
 
 
 # Database configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://:root@localhost/reg'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -69,6 +69,15 @@ def signupStudent_form():
 def signupStaff_form():
     return render_template('signupStaff.html')
 
+def send_otp_email(email, otp):
+    msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+    msg.body = f"Hi,\nYour email OTP is: {otp}"
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print("An error occurred while sending the email:", e)
+        # Handle error
+
 
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
@@ -101,14 +110,35 @@ def signupStudent():
     return render_template('signupStudent.html')
 
 
-def send_otp_email(email, otp):
-    msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}"
-    try:
-        mail.send(msg)
-    except Exception as e:
-        print("An error occurred while sending the email:", e)
-        # Handle error
+@app.route('/signupStaff', methods=["POST"])
+def signupStaff():
+    if request.method == "POST":
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        cnumber = request.form.get('cnumber')
+
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+
+        # Send OTP via email
+        send_otp_email(email, otp)
+
+        # Store signup data in session
+        session['signup_data'] = {
+            'fname': fname,
+            'lname': lname,
+            'email': email,
+            'password': password,
+            'cnumber': cnumber,
+            'otp': otp
+        }
+
+        # Redirect to verifyStudent page
+        return redirect(url_for('verifyStaff'))
+
+    return render_template('signupStaff.html')
 
 
 @app.route('/verifyStudent', methods=["GET", "POST"])
@@ -143,22 +173,37 @@ def verifyStudent():
     # If GET request, render the verifyStudent.html template
     return render_template('verifyStudent.html')
 
+@app.route('/verifyStaff', methods=["GET", "POST"])
+def verifyStaff():
+    if request.method == "POST":
+        email = request.form.get('email')
+        entered_otp = request.form.get('otp')
 
-@app.route('/signupStaff', methods=["POST"])
-def signupStaff():
-    fname = request.form.get('fname')
-    lname = request.form.get('lname')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    cnumber = request.form.get('cnumber')
+        signup_data = session.get('signup_data')
+        if signup_data['otp'] == entered_otp:
+            # Create Student object and add to database
+            staff = Staff(
+                fname=signup_data['fname'],
+                lname=signup_data['lname'],
+                email=signup_data['email'],
+                password=signup_data['password'],
+                cnumber=signup_data['cnumber'],
+            )
+            try:
+                db.session.add(staff)
+                db.session.commit()
+                flash('Email verified successfully! Please sign in.')
+                return redirect(url_for('signinStaff_form'))
+            except Exception as e:
+                flash('An error occurred while saving data. Please try again later.')
+                print("Error:", e)
+                return redirect(url_for('verifyStaff'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyStaff'))  # Redirect back to verifyStudent page
 
-    # Create a new Users instance and add it to the database
-    staff = Staff(fname=fname, lname=lname, email=email, password=password, cnumber=cnumber)
-    db.session.add(staff)
-    db.session.commit()
-
-    # Redirect to the sign-in page after successful signup
-    return redirect(url_for('signinStaff_form'))
+    # If GET request, render the verifyStudent.html template
+    return render_template('verifyStaff.html')
 
 
 @app.route('/signinStudent', methods=["GET", "POST"])
