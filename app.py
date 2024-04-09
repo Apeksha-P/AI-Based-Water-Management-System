@@ -3,11 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 import random
 from flask_mail import *
 from flask import flash
+from flask_bcrypt import Bcrypt
+
 
 
 
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
+bcrypt = Bcrypt(app)
 
 app.config["MAIL_SERVER"]='smtp.office365.com'
 app.config["MAIL_PORT"]=587
@@ -90,8 +93,9 @@ def signupStudent():
 
         # Generate OTP
         otp = str(random.randint(100000, 999999))
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        # Send OTP via email
+    # Send OTP via email
         send_otp_email(email, otp)
 
         # Store signup data in session
@@ -99,7 +103,7 @@ def signupStudent():
             'fname': fname,
             'lname': lname,
             'email': email,
-            'password': password,
+            'password': hashed_password,
             'cnumber': cnumber,
             'otp': otp
         }
@@ -215,7 +219,7 @@ def signinStudent_form():
         # Query the database for the users with the given email and password
         student = Student.query.filter_by(email=email, password=password).first()
 
-        if student:
+        if student and check_password_hash(student.password, password):
             # Store users information in session
             session['student_id'] = student.id
             session['student_email'] = student.email
