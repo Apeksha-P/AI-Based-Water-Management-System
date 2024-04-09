@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import random
 from flask_mail import *
 from flask import flash
-from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt, check_password_hash
 
 
 
@@ -210,27 +210,32 @@ def verifyStaff():
     return render_template('verifyStaff.html')
 
 
+from flask_bcrypt import check_password_hash
+
 @app.route('/signinStudent', methods=["GET", "POST"])
 def signinStudent_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # Query the database for the users with the given email and password
-        student = Student.query.filter_by(email=email, password=password).first()
+        # Query the database for the user with the given email
+        student = Student.query.filter_by(email=email).first()
 
         if student and check_password_hash(student.password, password):
-            # Store users information in session
+            # Passwords match, user is authenticated
+            # Store user's information in session
             session['student_id'] = student.id
             session['student_email'] = student.email
             session['student_fname'] = student.fname
             # Redirect to the home page after successful login
-            return redirect(url_for('homeStudent'))  # Redirect to the home page
+            return redirect(url_for('homeStudent'))
         else:
-            # Users not found or incorrect credentials, redirect back to sign-in page with a message
+            # Invalid email or password, render the signinStudent.html template with an error message
             return render_template('signinStudent.html', error_message="Invalid email or password.")
 
+    # Render the signinStudent.html template for GET requests
     return render_template('signinStudent.html')
+
 
 @app.route('/signinStaff', methods=["GET", "POST"])
 def signinStaff_form():
