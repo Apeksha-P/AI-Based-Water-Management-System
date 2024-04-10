@@ -5,9 +5,6 @@ from flask_mail import *
 from flask import flash
 from flask_bcrypt import Bcrypt, check_password_hash
 
-
-
-
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 bcrypt = Bcrypt(app)
@@ -21,13 +18,10 @@ app.config["MAIL_USE_SSL"]=False
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
-
 # Database configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
-
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,7 +39,6 @@ class Staff(db.Model):
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
 
-
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
@@ -53,8 +46,6 @@ class Admin(db.Model):
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
-
-
 
 @app.route('/')
 def index_form():
@@ -148,9 +139,7 @@ def signupStaff():
 @app.route('/verifyStudent', methods=["GET", "POST"])
 def verifyStudent():
     if request.method == "POST":
-        email = request.form.get('email')
         entered_otp = request.form.get('otp')
-
         signup_data = session.get('signup_data')
         if signup_data['otp'] == entered_otp:
             # Create Student object and add to database
@@ -172,20 +161,17 @@ def verifyStudent():
                 return redirect(url_for('verifyStudent'))
         else:
             flash('Invalid OTP. Please try again.')
-            return redirect(url_for('verifyStudent'))  # Redirect back to verifyStudent page
-
+            return redirect(url_for('verifyStudent'))
     # If GET request, render the verifyStudent.html template
     return render_template('verifyStudent.html')
 
 @app.route('/verifyStaff', methods=["GET", "POST"])
 def verifyStaff():
     if request.method == "POST":
-        email = request.form.get('email')
         entered_otp = request.form.get('otp')
-
         signup_data = session.get('signup_data')
         if signup_data['otp'] == entered_otp:
-            # Create Student object and add to database
+            # Create Staff object and add to database
             staff = Staff(
                 fname=signup_data['fname'],
                 lname=signup_data['lname'],
@@ -204,26 +190,21 @@ def verifyStaff():
                 return redirect(url_for('verifyStaff'))
         else:
             flash('Invalid OTP. Please try again.')
-            return redirect(url_for('verifyStaff'))  # Redirect back to verifyStudent page
+            return redirect(url_for('verifyStaff'))
 
-    # If GET request, render the verifyStudent.html template
+    # If GET request, render the verifyStaff.html template
     return render_template('verifyStaff.html')
-
-
-from flask_bcrypt import check_password_hash
 
 @app.route('/signinStudent', methods=["GET", "POST"])
 def signinStudent_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-
-        # Query the database for the user with the given email
+        # Query the database for the student with the given email
         student = Student.query.filter_by(email=email).first()
-
         if student and check_password_hash(student.password, password):
             # Passwords match, user is authenticated
-            # Store user's information in session
+            # Store student's information in session
             session['student_id'] = student.id
             session['student_email'] = student.email
             session['student_fname'] = student.fname
@@ -232,7 +213,6 @@ def signinStudent_form():
         else:
             # Invalid email or password, render the signinStudent.html template with an error message
             return render_template('signinStudent.html', error_message="Invalid email or password.")
-
     # Render the signinStudent.html template for GET requests
     return render_template('signinStudent.html')
 
@@ -242,17 +222,15 @@ def signinStaff_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-
-        # Query the database for the users with the given email and password
+        # Query the database for the staff with the given email and password
         staff = Staff.query.filter_by(email=email, password=password).first()
-
         if staff:
-            # Store users information in session
+            # Store staff information in session
             session['staff_id'] = staff.id
             session['staff_email'] = staff.email
             session['staff_fname'] = staff.fname
             # Redirect to the home page after successful login
-            return redirect(url_for('homeStaff'))  # Redirect to the home page
+            return redirect(url_for('homeStaff'))
         else:
             # Users not found or incorrect credentials, redirect back to sign-in page with a message
             return render_template('signinStaff.html', error_message="Invalid email or password.")
@@ -265,28 +243,25 @@ def signinAdmin_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-
-        # Query the database for the users with the given email and password
+        # Query the database for the Admin with the given email and password
         admin = Admin.query.filter_by(email=email, password=password).first()
-
         if admin:
-            # Store users information in session
+            # Store Admin information in session
             session['admin_id'] = admin.id
             session['admin_email'] = admin.email
             session['admin_fname'] = admin.fname
             # Redirect to the home page after successful login
-            return redirect(url_for('homeAdmin'))  # Redirect to the home page
+            return redirect(url_for('homeAdmin'))
         else:
             # Users not found or incorrect credentials, redirect back to sign-in page with a message
             return render_template('signinAdmin.html', error_message="Invalid email or password.")
-
     return render_template('signinAdmin.html')
 
 
 
 @app.route('/homeStudent')
 def homeStudent():
-    # Check if user is logged in
+    # Check if student is logged in
     if 'student_id' in session:
         return render_template('homeStudent.html', student_email=session['student_email'], student_fname=session['student_fname'])
     else:
@@ -295,7 +270,7 @@ def homeStudent():
 
 @app.route('/homeStaff')
 def homeStaff():
-    # Check if user is logged in
+    # Check if staff is logged in
     if 'staff_id' in session:
         return render_template('homeStaff.html', staff_email=session['staff_email'], staff_fname=session['staff_fname'])
     else:
@@ -305,7 +280,7 @@ def homeStaff():
 
 @app.route('/homeAdmin')
 def homeAdmin():
-    # Check if user is logged in
+    # Check if Admin is logged in
     if 'admin_id' in session:
         return render_template('homeAdmin.html', admin_email=session['admin_email'], admin_fname=session['admin_fname'])
     else:
@@ -332,7 +307,7 @@ def profileStudent_form():
         if student:
             return render_template('profileStudent.html', student=student)
         else:
-            # Handle the case where the user does not exist
+            # Handle the case where the student does not exist
             return "User not found"
     else:
         # Redirect to sign-in page if not logged in
@@ -347,7 +322,7 @@ def profileStaff_form():
         if staff:
             return render_template('profileStaff.html', staff=staff)
         else:
-            # Handle the case where the user does not exist
+            # Handle the case where the staff does not exist
             return "User not found"
     else:
         # Redirect to sign-in page if not logged in
@@ -362,7 +337,7 @@ def profileAdmin_form():
         if admin:
             return render_template('profileAdmin.html', admin=admin)
         else:
-            # Handle the case where the user does not exist
+            # Handle the case where the Admin does not exist
             return "User not found"
     else:
         # Redirect to sign-in page if not logged in
