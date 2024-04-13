@@ -19,3 +19,21 @@ Staff members have access to advanced features for analyzing water consumption p
 <li>Profile Management:</li>
 Users can view and update their profiles, including personal information and contact details, ensuring up-to-date records within the system.<br><br>
 </ul>
+
+## Installation
+1. Clone the repository to your local machine:<br>
+   git clone https://github.com/Apeksha-P/AI-Based-Water-Management-System.git<br><br>
+2. Install dependencies:<br>
+   pip install ---------<br><br>
+3. Set up the database:<br>
+  Configure your database settings in app.py under the Database configurations section.<br>
+  Run the following commands to create the database tables:<br>
+    flask db init<br>
+    flask db migrate<br>
+    flask db upgrade<br><br>
+4. Configure email settings:<br>
+  Update the MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, and MAIL_PASSWORD variables in app.py with your email server details.<br><br>
+5. Run the application:<br>
+  flask run<br><br>
+6. Access the application in your web browser at http://localhost:5000.<br><br>
+
