@@ -4,6 +4,8 @@ import random
 from flask_mail import *
 from flask import flash
 from flask_bcrypt import Bcrypt, check_password_hash
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
@@ -23,6 +25,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+UPLOAD_FOLDER = 'static/pictures'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
@@ -30,6 +35,7 @@ class Student(db.Model):
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
+    picture = db.Column(db.String(255))
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -312,6 +318,34 @@ def profileStudent_form():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStudent_form'))
+
+
+@app.route('/upload_picture', methods=['POST'])
+def upload_picture():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student = Student.query.get(student_id)
+        if student:
+            if 'picture' in request.files:
+                file = request.files['picture']
+                if file.filename != '':
+                    # Save the uploaded file
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    # Update the student's profile picture filename in the database
+                    student.picture = filename
+                    db.session.commit()  # Save changes to the database
+                    flash('Profile picture uploaded successfully!')
+                    return redirect(url_for('profileStudent_form'))
+                else:
+                    flash('No file selected!')
+            else:
+                flash('No file part!')
+        else:
+            flash('Student not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileStudent_form'))
 
 
 @app.route('/profileStaff')
