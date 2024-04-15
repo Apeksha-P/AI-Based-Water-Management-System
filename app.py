@@ -347,6 +347,9 @@ def upload_picture():
         flash('You need to be logged in!')
     return redirect(url_for('profileStudent_form'))
 
+@app.route('/uploads/<filename>')
+def serve_uploaded_picture(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/profileStaff')
 def profileStaff_form():
