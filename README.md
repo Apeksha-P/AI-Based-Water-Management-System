@@ -37,3 +37,15 @@ Users can view and update their profiles, including personal information and con
   flask run<br><br>
 6. Access the application in your web browser at http://localhost:5000.<br><br>
 
+## Usage
+<ol>
+  <li>Sign up as a student or staff member using the provided registration form.</li>
+  <li>Verify your email address by entering the OTP sent to your email.</li>
+  <li>Log in to access your dashboard, profile, and other features.</li>
+  <li>Explore the dashboard for insights into water consumption and take necessary actions to optimize usage.</li>
+  <li>Update your profile as needed to ensure accurate records within the system.</li>
+</ol>
+
+## Contributing
+Contributions to the AI-Based Water Management System project are welcome! If you'd like to contribute, please fork the repository, make your changes, and submit a pull request. Be sure to follow the contribution guidelines and adhere to the code of conduct.
+
