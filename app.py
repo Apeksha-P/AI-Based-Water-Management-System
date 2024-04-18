@@ -331,8 +331,8 @@ def profileStudent_form():
         return redirect(url_for('signinStudent_form'))
 
 
-@app.route('/upload_picture', methods=['POST'])
-def upload_picture():
+@app.route('/upload_pictureStudent', methods=['POST'])
+def upload_pictureStudent():
     if 'student_id' in session:
         student_id = session['student_id']
         student_email = session['student_email']
