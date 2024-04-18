@@ -39,12 +39,14 @@ class Student(db.Model):
     picture = db.Column(db.String(255))
 
 class Staff(db.Model):
+    __staff__ = 'staffs'
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
     email = db.Column(db.String(50))
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
+    picture = db.Column(db.String(255))
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -358,6 +360,35 @@ def upload_pictureStudent():
     else:
         flash('You need to be logged in!')
     return redirect(url_for('profileStudent_form'))
+
+@app.route('/upload_pictureStaff', methods=['POST'])
+def upload_pictureStaff():
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id, email=staff_email).first()
+        if staff:
+            if 'picture' in request.files:
+                file = request.files['picture']
+                if file.filename != '':
+                    # Save the uploaded file
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    # Update the student's profile picture filename in the database
+                    staff.picture = filename
+                    db.session.commit()  # Save changes to the database
+                    flash('Profile picture uploaded successfully!')
+                    return redirect(url_for('profileStaff_form'))
+                else:
+                    flash('No file selected!')
+            else:
+                flash('No file part!')
+        else:
+            flash('Student not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileStaff_form'))
+
 
 @app.route('/uploads/<filename>')
 def serve_uploaded_picture(filename):
