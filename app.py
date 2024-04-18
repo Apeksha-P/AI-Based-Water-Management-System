@@ -29,10 +29,11 @@ UPLOAD_FOLDER = 'static/pictures'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 class Student(db.Model):
+    __student__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50))
+    email = db.Column(db.String(50),primary_key=True, unique=True)
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
     picture = db.Column(db.String(255))
@@ -82,34 +83,43 @@ def send_otp_email(email, otp):
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
     if request.method == "POST":
-        fname = request.form.get('fname')
-        lname = request.form.get('lname')
         email = request.form.get('email')
-        password = request.form.get('password')
-        cnumber = request.form.get('cnumber')
+        existing_student = Student.query.filter_by(email=email).first()
+        if existing_student:
+            flash('Email already exists. Please use a different email.')
+            return redirect(url_for('alreadySignupStudent_form'))
+        else:
+            fname = request.form.get('fname')
+            lname = request.form.get('lname')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            cnumber = request.form.get('cnumber')
 
-        # Generate OTP
-        otp = str(random.randint(100000, 999999))
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    # Send OTP via email
-        send_otp_email(email, otp)
+        # Send OTP via email
+            send_otp_email(email, otp)
 
-        # Store signup data in session
-        session['signup_data'] = {
-            'fname': fname,
-            'lname': lname,
-            'email': email,
-            'password': hashed_password,
-            'cnumber': cnumber,
-            'otp': otp
-        }
+            # Store signup data in session
+            session['signup_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'password': hashed_password,
+                'cnumber': cnumber,
+                'otp': otp
+            }
 
-        # Redirect to verifyStudent page
-        return redirect(url_for('verifyStudent'))
+            # Redirect to verifyStudent page
+            return redirect(url_for('verifyStudent'))
 
     return render_template('signupStudent.html')
 
+@app.route('/alreadySignupStudent')
+def alreadySignupStudent_form():
+    return render_template('alreadySignupStudent.html')
 
 @app.route('/signupStaff', methods=["POST"])
 def signupStaff():
