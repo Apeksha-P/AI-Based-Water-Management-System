@@ -319,7 +319,8 @@ def dashboardAdmin_form():
 def profileStudent_form():
     if 'student_id' in session:
         student_id = session['student_id']
-        student = Student.query.get(student_id)
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
             return render_template('profileStudent.html', student=student)
         else:
@@ -334,7 +335,8 @@ def profileStudent_form():
 def upload_picture():
     if 'student_id' in session:
         student_id = session['student_id']
-        student = Student.query.get(student_id)
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
             if 'picture' in request.files:
                 file = request.files['picture']
