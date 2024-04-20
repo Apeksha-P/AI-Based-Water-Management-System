@@ -285,7 +285,14 @@ def signinAdmin_form():
 def homeStudent():
     # Check if student is logged in
     if 'student_id' in session:
-        return render_template('homeStudent.html', student_email=session['student_email'], student_fname=session['student_fname'])
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            return render_template('homeStudent.html', student=student)
+        else:
+            # Handle the case where the student does not exist
+            return "User not found"
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStudent_form'))
@@ -311,7 +318,18 @@ def homeAdmin():
 
 @app.route('/dashboardStudent')
 def dashboardStudent_form():
-    return render_template('dashboardStudent.html')
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            return render_template('dashboardStudent.html',student=student)
+        else:
+            # Handle the case where the student does not exist
+            return "User not found"
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinStudent_form'))
 
 @app.route('/dashboardStaff')
 def dashboardStaff_form():
