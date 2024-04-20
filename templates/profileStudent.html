@@ -76,8 +76,11 @@
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
-                    </a>
+                        {% if student.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=student.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% endif %}                    </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileStudent_form')}}" class="dropdown-item">My Profile</a>
                         <a href="#" class="dropdown-item">Reports</a>
@@ -99,7 +102,7 @@
                             <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
                             {% endif %}
                             <!-- Hidden file input -->
-                            <form action="{{ url_for('upload_picture') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ url_for('upload_pictureStudent') }}" method="POST" enctype="multipart/form-data">
                                 <input type="file" id="image-upload" name="picture" style="display: none;" accept="image/*">
                                 <!-- Pencil image to trigger file input click -->
                                 <img src="{{ url_for('static', filename='img/pencil.png') }}" alt="Edit" width="30px"
