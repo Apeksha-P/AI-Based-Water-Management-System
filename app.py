@@ -56,6 +56,7 @@ class Admin(db.Model):
     password = db.Column(db.String(50))
     cnumber = db.Column(db.String(50))
 
+
 @app.route('/')
 def index_form():
     return render_template('index.html')
