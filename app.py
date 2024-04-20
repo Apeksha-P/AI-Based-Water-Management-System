@@ -471,22 +471,6 @@ def accessAdmin_form():
     return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
 
 
-# Modify the route to remove_student
-@app.route('/remove_student/<int:student_id>', methods=['POST'])
-def remove_student(student_id):
-    # Find the student in the database
-    student = Student.query.get(student_id)
-    if student:
-        # Delete the student
-        db.session.delete(student)
-        db.session.commit()
-        flash('Student removed successfully!')
-    else:
-        flash('Student not found!')
-    # Redirect back to the accessAdmin page
-    return redirect(url_for('accessAdmin_form'))
-
-
 @app.route('/meterAdmin')
 def meterAdmin_form():
     return render_template('meterAdmin.html')

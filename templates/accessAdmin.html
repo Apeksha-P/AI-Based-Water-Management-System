@@ -4,13 +4,12 @@
 <head>
     <meta charset="utf-8">
     <title>UOK FCT AI Based Water Management System</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
 
     <!-- Favicon -->
-    <!-- <link href="img/favicon.ico" rel="icon"> -->
-    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+    <link rel="icon" type="image/png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,8 +54,8 @@
                 <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                 <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
                 <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
-                <a href="{{ url_for('accessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa-solid fa-universal-access"></i>   Access</a>
-                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
+                <a href="{{ url_for('accessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fas fa-universal-access"></i>   Access</a>
+                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fab fa-readme"></i>   Meter</a>
             </div>
         </nav>
     </div>
@@ -66,7 +65,7 @@
     <div class="content">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeAdmin')}}"     class="navbar-brand d-flex d-lg-none me-4">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand d-flex d-lg-none me-4">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
             <a href="#" class="sidebar-toggler flex-shrink-0">
@@ -77,7 +76,7 @@
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="fa fa-bell me-lg-2"></i>
-                        <span class="d-none d-lg-inline-flex">Notificatin</span>
+                        <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
                 </div>
                 <div class="nav-item dropdown">
@@ -99,7 +98,7 @@
         <div class="container-fluid pt-4 px-4 ">
             <div class="row g-4">
 
-                <!--Start Student Table -->
+                <!-- Start Student Table -->
                 <div class="col-12">
                     <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
                         <h6 class="mb-4" style="font-size: 25px !important;">Student Table</h6>
@@ -111,7 +110,6 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Contact Number</th>
-                                    <th>Remove</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -121,11 +119,6 @@
                                     <td>{{ student.fname }} {{ student.lname }}</td>
                                     <td>{{ student.email }}</td>
                                     <td>{{ student.cnumber }}</td>
-                                    <td>
-                                        <form action="{{ url_for('remove_student', student_id=student.id) }}" method="post">
-                                            <button type="submit">Remove</button>
-                                        </form>
-                                    </td>
                                 </tr>
                                 {% endfor %}
                                 </tbody>
@@ -135,7 +128,7 @@
                     </div>
                 </div>
 
-                <!--End Student Table -->
+                <!-- End Student Table -->
 
                 <!-- Start Lecturer Table -->
 
@@ -168,7 +161,7 @@
                     </div>
                 </div>
 
-                <!--End Lecturer Table -->
+                <!-- End Lecturer Table -->
 
                 <!-- Start Admin Table -->
 
@@ -277,4 +270,3 @@
 </body>
 
 </html>
-
