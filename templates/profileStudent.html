@@ -81,7 +81,7 @@
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileStudent_form')}}" class="dropdown-item">My Profile</a>
                         <a href="#" class="dropdown-item">Reports</a>
-                        <a href="{{ url_for('signinStudent_form')}}" class="dropdown-item">Log Out</a>
+                        <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                             <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
                             {% endif %}
                             <!-- Hidden file input -->
-                            <form action="{{ url_for('upload_picture') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ url_for('upload_pictureStudent') }}" method="POST" enctype="multipart/form-data">
                                 <input type="file" id="image-upload" name="picture" style="display: none;" accept="image/*">
                                 <!-- Pencil image to trigger file input click -->
                                 <img src="{{ url_for('static', filename='img/pencil.png') }}" alt="Edit" width="30px"
@@ -108,6 +108,7 @@
                                 <h2 class="pt-5">{{ student.fname }}  {{ student.lname }}</h2>
                                 <h4 class="pt-2">Student</h4>
                                 <button type="submit" class="btn mt-3" style="border: 1px solid black; position: relative;top: -300px;left: 180px">Upload Picture</button>
+                                <button id="remove-picture-btn" type="button" class="btn mt-3" style="border: 1px solid black; position: relative;top: -300px;left: 180px">Remove Picture</button>
                             </form>
                         </div>
                     </div>
