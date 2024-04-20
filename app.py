@@ -33,7 +33,7 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50),primary_key=True, unique=True)
+    email = db.Column(db.String(50),unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
     picture = db.Column(db.String(255))
@@ -43,7 +43,7 @@ class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50),primary_key=True, unique=True)
+    email = db.Column(db.String(50),unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
     picture = db.Column(db.String(255))
@@ -52,9 +52,10 @@ class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50))
-    password = db.Column(db.String(50))
+    email = db.Column(db.String(50),unique=True)
+    password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
+    picture = db.Column(db.String(255))
 
 @app.route('/')
 def index_form():
@@ -154,9 +155,60 @@ def signupStaff():
             return redirect(url_for('verifyStaff'))
     return render_template('signupStaff.html')
 
+
+@app.route('/addAdmin', methods=["GET", "POST"])
+def addAdmin_form():
+    if request.method == "POST":
+        # Check if the email already exists
+        email = request.form.get('email')
+        existing_admin = Admin.query.filter_by(email=email).first()
+        if existing_admin:
+            flash("Email already exists. Please use a different email.")
+            return redirect(url_for("alreadySignupAdmin_form"))
+
+        else:
+            # Get data from form
+            fname = request.form.get("firstname")
+            lname = request.form.get("lastname")
+            email = request.form.get("email")
+            password = request.form.get("password")
+            cnumber = request.form.get("contact")
+
+
+
+            # Hash the password
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+            # Create a new Admin object and add it to the database
+            admin = Admin(
+                fname=fname,
+                lname=lname,
+                email=email,
+                password=hashed_password,
+                cnumber=cnumber
+            )
+
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                flash("Admin added successfully!")
+                return redirect(url_for("accessAdmin_form"))  # Redirect to the admin management page
+            except Exception as e:
+                flash("An error occurred while saving data. Please try again.")
+                print("Error:", e)
+                return redirect(url_for("addAdmin_form"))  # Redirect back to the add admin form
+    else:
+        # This would handle the GET request if needed, such as displaying the form
+        return render_template("addAdmin.html")  # Replace with rendering a template or appropriate response
+
+
 @app.route('/alreadySignupStaff')
 def alreadySignupStaff_form():
     return render_template('alreadySignupStaff.html')
+
+@app.route('/alreadySignupAdmin')
+def alreadySignupAdmin_form():
+    return render_template('alreadySignupAdmin.html')
 
 @app.route('/verifyStudent', methods=["GET", "POST"])
 def verifyStudent():
@@ -463,9 +515,12 @@ def analysingAdmin_form():
     return render_template('analysingAdmin.html')
 
 
-@app.route('/accessAdmin')
+@app.route('/accessAdmin', methods=["GET","POST"])
 def accessAdmin_form():
-    return render_template('accessAdmin.html')
+    admins = Admin.query.all()
+    students = Student.query.all()
+    staff = Staff.query.all()
+    return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
 
 
 @app.route('/meterAdmin')
