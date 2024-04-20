@@ -36,7 +36,7 @@ class Student(db.Model):
     email = db.Column(db.String(50),primary_key=True, unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
-    picture = db.Column(db.String(255))
+    # picture = db.Column(db.String(255))
 
 class Staff(db.Model):
     __staff__ = 'staffs'
@@ -46,7 +46,7 @@ class Staff(db.Model):
     email = db.Column(db.String(50),primary_key=True, unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
-    picture = db.Column(db.String(255))
+    # picture = db.Column(db.String(255))
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -465,7 +465,26 @@ def analysingAdmin_form():
 
 @app.route('/accessAdmin')
 def accessAdmin_form():
-    return render_template('accessAdmin.html')
+    admins = Admin.query.all()
+    students = Student.query.all()
+    staff = Staff.query.all()
+    return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
+
+
+# Modify the route to remove_student
+@app.route('/remove_student/<int:student_id>', methods=['POST'])
+def remove_student(student_id):
+    # Find the student in the database
+    student = Student.query.get(student_id)
+    if student:
+        # Delete the student
+        db.session.delete(student)
+        db.session.commit()
+        flash('Student removed successfully!')
+    else:
+        flash('Student not found!')
+    # Redirect back to the accessAdmin page
+    return redirect(url_for('accessAdmin_form'))
 
 
 @app.route('/meterAdmin')
