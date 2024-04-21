@@ -9,7 +9,6 @@
     <meta content="" name="description">
 
     <!-- Favicon -->
-    <!-- <link href="img/favicon.ico" rel="icon"> -->
     <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
 
     <!-- Google Web Fonts -->
@@ -30,71 +29,17 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
 
     <style>
-        /* Add some basic styling for the widgets */
-        .approval-outer {
-            margin-top: 150px;
-            display: flex;
-            flex-wrap: wrap; /* Allow widgets to wrap to the next line */
-            justify-content: center; /* Center widgets horizontally */
-            padding: 20px; /* Add some space around the widgets */
+        .form-floating label:before {
+            content:"*  ";
+            color: #ec4b4b;
         }
-
-        .widget {
-            flex: 1 1 200px; /* Each widget takes 200px width and can shrink or grow */
-            max-width: 300px; /* Maximum width for the widgets */
-            margin: 10px; /* Add some space between widgets */
-            padding: 20px;
-            border: 1px solid #ccc;
-            background-color: #242B3E;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer; /* Let users know it's clickable */
-            transition: background-color 0.3s, transform 0.3s;
-        }
-
-        .widget:hover {
-            background-color: #192a56; /* Change background color on hover */
-            transform: scale(1.05); /* Slightly increase the widget size */
-        }
-
-        .widget h2 {
-            color: #fff; /* White color for text inside the widget */
-            transition: color 0.3s; /* Smooth color transition */
-        }
-
-        .widget h2:hover {
-            color: #7f8fa6; /* Lighter color on hover */
-        }
-
-        .widget img {
-            width: 100px;
-            height: 100px;
-            background-size: contain;
-            display: block;
-            margin: 0 auto 10px; /* Center the image horizontally and add some space below */
-        }
-
-        /* Media query for smaller screens */
-        @media (max-width: 768px) {
-            .widget {
-                flex-basis: calc(50% - 20px); /* Each widget takes 50% width with some space in between */
-                max-width: calc(50% - 20px); /* Maximum width for the widgets */
-            }
-        }
-
-        /* Media query for even smaller screens */
-        @media (max-width: 576px) {
-            .widget {
-                flex-basis: calc(100% - 20px); /* Each widget takes 100% width with some space in between */
-                max-width: calc(100% - 20px); /* Maximum width for the widgets */
-            }
-        }
-
     </style>
-
 </head>
+
 <body>
 <div class="container-fluid position-relative d-flex p-0">
     <!-- Spinner Start -->
@@ -104,26 +49,42 @@
         </div>
     </div>
     <!-- Spinner End -->
+
+
+    <!-- Sign In Start -->
+    <div class="container-fluid">
+        <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
+            <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+                <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3">
+                    <form method="post" action="/accessAdmin">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <a href="index.html" class="navbar-brand mx-4 mb-3">
+                                <h3 class="text font-bold text-3xl" style="color: #826AF9;">AIBWMS</h3>
+                            </a>
+
+                        </div>
+                        <div class="form-floating mb-3">
+                            <p class="text-xl font-semibold text-white text-center">Looks like already have this Account </p>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <p class="text-center mb-0">
+                                We couldn't create a new AIBWMS acoount because there's already an account with this email address.
+                            </p>
+
+                        </div>
+
+                        <button class="btn btn-light py-3 w-100 mb-4"><a href="{{ url_for('accessAdmin_form') }} ">Back</a></button>
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+
+                            <a href="">Forgot Password</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sign In End -->
 </div>
-
-<!-- Content Start -->
-<div class="approval-outer">
-    <div class="widget" id="staff-widget"><a href="{{ url_for('signinStaff_form')}}">
-        <img src="../static/img/staff.png" alt="Staff">
-        <h2>Staff</h2></a>
-    </div>
-
-    <div class="widget" id="student-widget"><a href="{{ url_for('signinStudent_form')}}">
-        <img src="../static/img/student.png" alt="Student">
-        <h2>Student</h2></a>
-    </div>
-
-    <div class="widget" id="admin-widget"><a href="{{ url_for('signinAdmin_form')}}">
-        <img src="../static/img/admin.png" alt="Admin">
-        <h2>Admin</h2></a>
-    </div>
-</div>
-<!-- Content End -->
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -138,5 +99,6 @@
 
 <!-- Template Javascript -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
 </body>
+
+</html>
