@@ -75,7 +75,7 @@ def signupStaff_form():
 
 def send_otp_email(email, otp):
     msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}"
+    msg.body = f"Hi,\nYour email OTP is: {otp}. Verify your email"
     try:
         mail.send(msg)
     except Exception as e:
@@ -97,14 +97,12 @@ def signupStudent():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
-
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         # Send OTP via email
             send_otp_email(email, otp)
-
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
@@ -114,7 +112,6 @@ def signupStudent():
                 'cnumber': cnumber,
                 'otp': otp
             }
-
             # Redirect to verifyStudent page
             return redirect(url_for('verifyStudent'))
 
