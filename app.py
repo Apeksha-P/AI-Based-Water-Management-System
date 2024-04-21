@@ -524,6 +524,88 @@ def accessAdmin_form():
 def meterAdmin_form():
     return render_template('meterAdmin.html')
 
+@app.route('/delete_student', methods=["POST"])
+def delete_student():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the student ID from the form data
+    student_id = request.form.get("student_id")
+
+    # Query the student to be deleted
+    student = Student.query.filter_by(id=student_id).first()
+
+    if student:
+        try:
+            db.session.delete(student)  # Remove the student from the database
+            db.session.commit()  # Save changes
+            flash("Student deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the student. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Student not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
+@app.route('/delete_staff', methods=["POST"])
+def delete_staff():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the staff ID from the form data
+    staff_id = request.form.get("staff_id")
+
+    # Query the staff to be deleted
+    staff = Staff.query.filter_by(id=staff_id).first()
+
+    if staff:
+        try:
+            db.session.delete(staff)  # Remove the student from the database
+            db.session.commit()  # Save changes
+            flash("Staff deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the staff. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Staff not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
+@app.route('/delete_admin', methods=["POST"])
+def delete_admin():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the admin ID from the form data
+    admin_id = request.form.get("admin_id")
+
+    # Query the student to be deleted
+    admin = Admin.query.filter_by(id=admin_id).first()
+
+    if admin:
+        try:
+            db.session.delete(admin)  # Remove the admin from the database
+            db.session.commit()  # Save changes
+            flash("Admin deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the admin. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Admin not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
+
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
