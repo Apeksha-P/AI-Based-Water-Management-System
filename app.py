@@ -76,7 +76,7 @@ def signupStaff_form():
 
 def send_otp_email(email, otp):
     msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}"
+    msg.body = f"Hi,\nYour email OTP is: {otp}. Verify your email"
     try:
         mail.send(msg)
     except Exception as e:
@@ -98,14 +98,12 @@ def signupStudent():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
-
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         # Send OTP via email
             send_otp_email(email, otp)
-
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
@@ -115,7 +113,6 @@ def signupStudent():
                 'cnumber': cnumber,
                 'otp': otp
             }
-
             # Redirect to verifyStudent page
             return redirect(url_for('verifyStudent'))
 
@@ -354,7 +351,11 @@ def homeStudent():
 def homeStaff():
     # Check if staff is logged in
     if 'staff_id' in session:
-        return render_template('homeStaff.html', staff_email=session['staff_email'], staff_fname=session['staff_fname'])
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('homeStaff.html', staff=staff)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
@@ -376,7 +377,7 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('dashboardStudent.html',student=student)
+            return render_template('dashboardStudent.html', student=student)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -386,8 +387,16 @@ def dashboardStudent_form():
 
 @app.route('/dashboardStaff')
 def dashboardStaff_form():
-    return render_template('dashboardStaff.html')
-
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('dashboardStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
 @app.route('/dashboardAdmin')
 def dashboardAdmin_form():
     return render_template('dashboardAdmin.html')
@@ -501,7 +510,17 @@ def profileAdmin_form():
 
 @app.route('/predictionsStaff')
 def predictionStaff_form():
-    return render_template('predictionsStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('predictionsStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
@@ -509,7 +528,17 @@ def predictionAdmin_form():
 
 @app.route('/analysingStaff')
 def analysingStaff_form():
-    return render_template('analysingStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('analysingStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/analysingAdmin')
 def analysingAdmin_form():
@@ -527,6 +556,88 @@ def accessAdmin_form():
 @app.route('/meterAdmin')
 def meterAdmin_form():
     return render_template('meterAdmin.html')
+
+@app.route('/delete_student', methods=["POST"])
+def delete_student():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the student ID from the form data
+    student_id = request.form.get("student_id")
+
+    # Query the student to be deleted
+    student = Student.query.filter_by(id=student_id).first()
+
+    if student:
+        try:
+            db.session.delete(student)  # Remove the student from the database
+            db.session.commit()  # Save changes
+            flash("Student deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the student. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Student not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
+@app.route('/delete_staff', methods=["POST"])
+def delete_staff():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the staff ID from the form data
+    staff_id = request.form.get("staff_id")
+
+    # Query the staff to be deleted
+    staff = Staff.query.filter_by(id=staff_id).first()
+
+    if staff:
+        try:
+            db.session.delete(staff)  # Remove the student from the database
+            db.session.commit()  # Save changes
+            flash("Staff deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the staff. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Staff not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
+@app.route('/delete_admin', methods=["POST"])
+def delete_admin():
+    # Check if user has proper permissions to delete
+    if 'admin_id' not in session:
+        flash("You need to be logged in as an admin to perform this action.")
+        return redirect(url_for("signinAdmin_form"))
+
+    # Get the admin ID from the form data
+    admin_id = request.form.get("admin_id")
+
+    # Query the student to be deleted
+    admin = Admin.query.filter_by(id=admin_id).first()
+
+    if admin:
+        try:
+            db.session.delete(admin)  # Remove the admin from the database
+            db.session.commit()  # Save changes
+            flash("Admin deleted successfully.")
+        except Exception as e:
+            flash("An error occurred while trying to delete the admin. Please try again.")
+            print("Error:", e)
+    else:
+        flash("Admin not found.")
+
+    # Redirect back to the table after deletion
+    return redirect(url_for("accessAdmin_form"))
+
 
 
 @app.route('/data/<path:filename>')
