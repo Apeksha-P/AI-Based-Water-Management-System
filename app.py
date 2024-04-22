@@ -57,6 +57,7 @@ class Admin(db.Model):
     cnumber = db.Column(db.String(50))
     picture = db.Column(db.String(255))
 
+
 @app.route('/')
 def index_form():
     return render_template('index.html')
@@ -75,7 +76,7 @@ def signupStaff_form():
 
 def send_otp_email(email, otp):
     msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}"
+    msg.body = f"Hi,\nYour email OTP is: {otp}. Verify your email"
     try:
         mail.send(msg)
     except Exception as e:
@@ -97,14 +98,12 @@ def signupStudent():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
-
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         # Send OTP via email
             send_otp_email(email, otp)
-
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
@@ -114,7 +113,6 @@ def signupStudent():
                 'cnumber': cnumber,
                 'otp': otp
             }
-
             # Redirect to verifyStudent page
             return redirect(url_for('verifyStudent'))
 
@@ -353,7 +351,11 @@ def homeStudent():
 def homeStaff():
     # Check if staff is logged in
     if 'staff_id' in session:
-        return render_template('homeStaff.html', staff_email=session['staff_email'], staff_fname=session['staff_fname'])
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('homeStaff.html', staff=staff)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
@@ -375,7 +377,7 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('dashboardStudent.html',student=student)
+            return render_template('dashboardStudent.html', student=student)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -385,8 +387,16 @@ def dashboardStudent_form():
 
 @app.route('/dashboardStaff')
 def dashboardStaff_form():
-    return render_template('dashboardStaff.html')
-
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('dashboardStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
 @app.route('/dashboardAdmin')
 def dashboardAdmin_form():
     return render_template('dashboardAdmin.html')
@@ -500,7 +510,17 @@ def profileAdmin_form():
 
 @app.route('/predictionsStaff')
 def predictionStaff_form():
-    return render_template('predictionsStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('predictionsStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
@@ -508,7 +528,17 @@ def predictionAdmin_form():
 
 @app.route('/analysingStaff')
 def analysingStaff_form():
-    return render_template('analysingStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('analysingStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/analysingAdmin')
 def analysingAdmin_form():
@@ -607,6 +637,54 @@ def delete_admin():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+@app.route('/forgotPasswordStudent', methods=["GET","POST"])
+def forgotPasswordStudent():
+    if request.method == "POST":
+        email = request.form.get('email')
+        existing_student = Student.query.filter_by(email=email).first()
+        if existing_student:
+            otp = str(random.randint(100000, 999999))
+            send_otp_email(email, otp)
+            session['forgot_password_data'] = {
+                'email': email,
+                'otp': otp
+            }
+            return redirect(url_for('verifyOTPStudent'))
+        else:
+            return render_template('signupStudent.html')
+    else:
+        return render_template('forgotPasswordStudent.html')
+
+@app.route('/verifyOTPStudent', methods=["GET", "POST"])
+def verifyOTPStudent():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        forgot_password_data = session.get('forgot_password_data')
+        if forgot_password_data['otp'] == entered_otp:
+            return redirect(url_for('resetPasswordStudent'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyOTPStudent'))
+    return render_template('verifyOTPStudent.html')
+
+@app.route('/resetPasswordStudent',methods=["GET","POST"])
+def resetPasswordStudent():
+    if request.method == "POST":
+        new_password = request.form.get('newpassword')
+        reentered_password = request.form.get('reenternewpassword')
+        if new_password == reentered_password:
+            student = Student.query.filter_by(email=session['forgot_password_data']['email']).first()
+            student.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+            db.session.commit()
+
+            flash('Password reset successful! Please sign in with your new password.')
+            return redirect(url_for('signinStudent_form'))
+        else:
+            flash('Passwords do not match. Please re-enter.')
+            return redirect(url_for('resetPasswordStudent'))
+    return render_template('resetPasswordStudent.html')
+
 
 
 
