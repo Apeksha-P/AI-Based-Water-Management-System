@@ -350,7 +350,11 @@ def homeStudent():
 def homeStaff():
     # Check if staff is logged in
     if 'staff_id' in session:
-        return render_template('homeStaff.html', staff_email=session['staff_email'], staff_fname=session['staff_fname'])
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('homeStaff.html', staff=staff)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
@@ -372,7 +376,7 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('dashboardStudent.html',student=student)
+            return render_template('dashboardStudent.html', student=student)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -382,8 +386,16 @@ def dashboardStudent_form():
 
 @app.route('/dashboardStaff')
 def dashboardStaff_form():
-    return render_template('dashboardStaff.html')
-
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('dashboardStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
 @app.route('/dashboardAdmin')
 def dashboardAdmin_form():
     return render_template('dashboardAdmin.html')
@@ -497,7 +509,17 @@ def profileAdmin_form():
 
 @app.route('/predictionsStaff')
 def predictionStaff_form():
-    return render_template('predictionsStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('predictionsStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
@@ -505,7 +527,17 @@ def predictionAdmin_form():
 
 @app.route('/analysingStaff')
 def analysingStaff_form():
-    return render_template('analysingStaff.html')
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            return render_template('analysingStaff.html', staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStaff_form'))
+
 
 @app.route('/analysingAdmin')
 def analysingAdmin_form():
