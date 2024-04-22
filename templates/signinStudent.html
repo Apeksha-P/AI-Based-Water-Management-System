@@ -73,7 +73,7 @@
                                 <input type="checkbox" style="background-color: #5c617d" class="form-check-input" id="exampleCheck1">
                                 <label class="form-check-label" for="exampleCheck1">Check me out</label>
                             </div>
-                            <a href="">Forgot Password</a>
+                            <a href="{{ url_for('forgotPasswordStudent')}}">Forgot Password</a>
                         </div>
                         <button type="submit" class="btn btn-light py-3 w-100 mb-4">Sign In</button>
                         <p class="text-center mb-0">Don't have an Account? <a href="{{ url_for('signupStudent_form') }}">Sign Up</a></p>

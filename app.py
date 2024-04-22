@@ -638,6 +638,54 @@ def delete_admin():
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
 
+@app.route('/forgotPasswordStudent', methods=["GET","POST"])
+def forgotPasswordStudent():
+    if request.method == "POST":
+        email = request.form.get('email')
+        existing_student = Student.query.filter_by(email=email).first()
+        if existing_student:
+            otp = str(random.randint(100000, 999999))
+            send_otp_email(email, otp)
+            session['forgot_password_data'] = {
+                'email': email,
+                'otp': otp
+            }
+            return redirect(url_for('verifyOTPStudent'))
+        else:
+            return render_template('signupStudent.html')
+    else:
+        return render_template('forgotPasswordStudent.html')
+
+@app.route('/verifyOTPStudent', methods=["GET", "POST"])
+def verifyOTPStudent():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        forgot_password_data = session.get('forgot_password_data')
+        if forgot_password_data['otp'] == entered_otp:
+            return redirect(url_for('resetPasswordStudent'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyOTPStudent'))
+    return render_template('verifyOTPStudent.html')
+
+@app.route('/resetPasswordStudent',methods=["GET","POST"])
+def resetPasswordStudent():
+    if request.method == "POST":
+        new_password = request.form.get('newpassword')
+        reentered_password = request.form.get('reenternewpassword')
+        if new_password == reentered_password:
+            student = Student.query.filter_by(email=session['forgot_password_data']['email']).first()
+            student.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+            db.session.commit()
+
+            flash('Password reset successful! Please sign in with your new password.')
+            return redirect(url_for('signinStudent_form'))
+        else:
+            flash('Passwords do not match. Please re-enter.')
+            return redirect(url_for('resetPasswordStudent'))
+    return render_template('resetPasswordStudent.html')
+
+
 
 
 @app.route('/data/<path:filename>')
