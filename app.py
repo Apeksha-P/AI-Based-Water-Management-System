@@ -331,7 +331,23 @@ def signinAdmin_form():
             return render_template('signinAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAdmin.html')
 
-
+@app.route('/signinAccessAdmin', methods=["GET", "POST"])
+def signinAccessAdmin_form():
+    if request.method == "POST":
+        password = request.form.get('password')
+        # Query the database for the Admin with the given email and password
+        admin = Admin.query.filter_by(password=password).first()
+        if admin:
+            # Store Admin information in session
+            session['admin_id'] = admin.id
+            session['admin_email'] = admin.email
+            session['admin_fname'] = admin.fname
+            # Redirect to the home page after successful login
+            return redirect(url_for('accessAdmin_form'))
+        else:
+            # Users not found or incorrect credentials, redirect back to sign-in page with a message
+            return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
+    return render_template('signinAccessAdmin.html')
 
 @app.route('/homeStudent')
 def homeStudent():
