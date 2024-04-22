@@ -532,5 +532,13 @@ def meterAdmin_form():
 def serve_data(filename):
     return send_from_directory('data', filename)
 
+@app.route('/forgotPassword')
+def forgotPassword():
+    return render_template('forgotPassword.html')
+
+@app.route('/resetPassword')
+def resetPassword():
+    return render_template('resetPassword.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
