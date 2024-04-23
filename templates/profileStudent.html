@@ -97,9 +97,9 @@
                     <div class="bg-secondary rounded h-100 p-4 pt-4">
                         <div class="text-center">
                             {% if student.picture %}
-                            <img src="{{ url_for('serve_uploaded_picture', filename=student.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+                            <img id="profile-picture" src="{{ url_for('serve_uploaded_picture', filename=student.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
                             {% else %}
-                            <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+                            <img id="profile-picture" src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
                             {% endif %}
                             <!-- Hidden file input -->
                             <form action="{{ url_for('upload_pictureStudent') }}" method="POST" enctype="multipart/form-data">
@@ -110,8 +110,8 @@
                                      onclick="document.getElementById('image-upload').click()">
                                 <h2 class="pt-5">{{ student.fname }}  {{ student.lname }}</h2>
                                 <h4 class="pt-2">Student</h4>
-                                <button type="submit" class="btn mt-3" style="border: 1px solid black; position: relative;top: -300px;left: 180px">Upload Picture</button>
-                                <button id="remove-picture-btn" type="button" class="btn mt-3" style="border: 1px solid black; position: relative;top: -300px;left: 180px">Remove Picture</button>
+                                <button type="submit" class="btn mt-3" style="border: 1px solid black; position: relative;top: -200px">Upload Picture</button>
+                                <button type="button" class="btn mt-3" onclick="removeProfilePicture()" style="border: 1px solid black; position: relative;top: -200px">Remove Picture</button>
                             </form>
                         </div>
                     </div>
@@ -194,6 +194,22 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
+<script>
+    function removeProfilePicture() {
+        var profilePicture = document.getElementById('profile-picture');
+        profilePicture.src = "{{ url_for('static', filename='img/profile.png') }}";
+        document.getElementById('image-upload').value = '';
+        fetch('/remove_picture', {
+            method: 'POST',
+            body: new FormData()
+        }).then(response => {
+            console.log('Profile picture removed successfully');
+            window.location.reload();
+        }).catch(error => {
+            console.error('Error removing profile picture:', error);
+        });
+    }
+</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
