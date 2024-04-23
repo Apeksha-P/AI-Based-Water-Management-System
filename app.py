@@ -702,8 +702,8 @@ def resetPasswordStudent():
             return redirect(url_for('resetPasswordStudent'))
     return render_template('resetPasswordStudent.html')
 
-@app.route('/remove_picture', methods=['POST'])
-def remove_picture():
+@app.route('/remove_pictureStudent', methods=['POST'])
+def remove_pictureStudent():
     student = get_current_student()
     if student:
         filename = student.picture
@@ -719,6 +719,22 @@ def remove_picture():
     else:
         return json.dumps({'error': 'Student not found'}), 404, {'ContentType': 'application/json'}
 
+@app.route('/remove_pictureStaff', methods=['POST'])
+def remove_pictureStaff():
+    staff = get_current_staff()
+    if staff:
+        filename = staff.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            staff.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
@@ -728,6 +744,12 @@ def get_current_student():
     if 'student_id' in session:
         student_id = session['student_id']
         return Student.query.get(student_id)
+    return None
+
+def get_current_staff():
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        return Staff.query.get(staff_id)
     return None
 
 if __name__ == '__main__':
