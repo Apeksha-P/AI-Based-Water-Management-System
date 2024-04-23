@@ -199,7 +199,7 @@
         var profilePicture = document.getElementById('profile-picture');
         profilePicture.src = "{{ url_for('static', filename='img/profile.png') }}";
         document.getElementById('image-upload').value = '';
-        fetch('/remove_picture', {
+        fetch('/remove_pictureStudent', {
             method: 'POST',
             body: new FormData()
         }).then(response => {
