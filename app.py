@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
@@ -700,7 +702,39 @@ def resetPasswordStudent():
             flash('Passwords do not match. Please re-enter.')
             return redirect(url_for('resetPasswordStudent'))
     return render_template('resetPasswordStudent.html')
+@app.route('/remove_pictureStudent', methods=['POST'])
+def remove_pictureStudent():
+    student = get_current_student()
+    if student:
+        filename = student.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            student.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'Student not found'}), 404, {'ContentType': 'application/json'}
 
+@app.route('/remove_pictureStaff', methods=['POST'])
+def remove_pictureStaff():
+    staff = get_current_staff()
+    if staff:
+        filename = staff.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            staff.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
 @app.route('/forgotPasswordStaff', methods=["GET","POST"])
 def forgotPasswordStaff():
     if request.method == "POST":
