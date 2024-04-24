@@ -6,7 +6,6 @@ from flask import flash
 from flask_bcrypt import Bcrypt, check_password_hash
 import os
 from werkzeug.utils import secure_filename
-import  json
 
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
