@@ -701,9 +701,6 @@ def resetPasswordStudent():
             return redirect(url_for('resetPasswordStudent'))
     return render_template('resetPasswordStudent.html')
 
-
-
-
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
