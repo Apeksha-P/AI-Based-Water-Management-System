@@ -419,9 +419,19 @@ def dashboardStaff_form():
             return "user not found"
     else:
         return redirect(url_for('signinStaff_form'))
+
 @app.route('/dashboardAdmin')
 def dashboardAdmin_form():
-    return render_template('dashboardAdmin.html')
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('dashboardAdmin.html', admin=admin)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 @app.route('/profileStudent')
 def profileStudent_form():
