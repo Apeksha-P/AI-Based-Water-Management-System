@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
@@ -734,12 +736,100 @@ def resetPasswordStudent():
             return redirect(url_for('resetPasswordStudent'))
     return render_template('resetPasswordStudent.html')
 
+@app.route('/forgotPasswordStaff', methods=["GET","POST"])
+def forgotPasswordStaff():
+    if request.method == "POST":
+        email = request.form.get('email')
+        existing_staff = Staff.query.filter_by(email=email).first()
+        if existing_staff:
+            otp = str(random.randint(100000, 999999))
+            send_otp_email(email, otp)
+            session['forgot_password_data'] = {
+                'email': email,
+                'otp': otp
+            }
+            return redirect(url_for('verifyOTPStaff'))
+        else:
+            return render_template('signupStaff.html')
+    else:
+        return render_template('forgotPasswordStaff.html')
 
+@app.route('/verifyOTPStaff', methods=["GET", "POST"])
+def verifyOTPStaff():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        forgot_password_data = session.get('forgot_password_data')
+        if forgot_password_data['otp'] == entered_otp:
+            return redirect(url_for('resetPasswordStaff'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyOTPStaff'))
+    return render_template('verifyOTPStaff.html')
 
+@app.route('/resetPasswordStaff',methods=["GET","POST"])
+def resetPasswordStaff():
+    if request.method == "POST":
+        new_password = request.form.get('newpassword')
+        reentered_password = request.form.get('reenternewpassword')
+        if new_password == reentered_password:
+            staff = Staff.query.filter_by(email=session['forgot_password_data']['email']).first()
+            staff.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+            db.session.commit()
 
+            flash('Password reset successful! Please sign in with your new password.')
+            return redirect(url_for('signinStaff_form'))
+        else:
+            flash('Passwords do not match. Please re-enter.')
+            return redirect(url_for('resetPasswordStaff'))
+    return render_template('resetPasswordStaff.html')
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
+
+@app.route('/remove_pictureStudent', methods=['POST'])
+def remove_pictureStudent():
+    student = get_current_student()
+    if student:
+        filename = student.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            student.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'Student not found'}), 404, {'ContentType': 'application/json'}
+
+@app.route('/remove_pictureStaff', methods=['POST'])
+def remove_pictureStaff():
+    staff = get_current_staff()
+    if staff:
+        filename = staff.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            staff.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
+
+def get_current_student():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        return Student.query.get(student_id)
+    return None
+
+def get_current_staff():
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        return Staff.query.get(staff_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
