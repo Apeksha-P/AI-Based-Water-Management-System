@@ -77,13 +77,12 @@ def signupStaff_form():
     return render_template('signupStaff.html')
 
 def send_otp_email(email, otp):
-    msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}. Verify your email"
     try:
+        msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
         mail.send(msg)
     except Exception as e:
         print("An error occurred while sending the email:", e)
-        # Handle error
 
 
 @app.route('/signupStudent', methods=["POST"])
