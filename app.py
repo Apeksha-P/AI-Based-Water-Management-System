@@ -706,17 +706,5 @@ def resetPasswordStudent():
 def serve_data(filename):
     return send_from_directory('data', filename)
 
-def get_current_student():
-    if 'student_id' in session:
-        student_id = session['student_id']
-        return Student.query.get(student_id)
-    return None
-
-def get_current_staff():
-    if 'staff_id' in session:
-        staff_id = session['staff_id']
-        return Staff.query.get(staff_id)
-    return None
-
 if __name__ == '__main__':
     app.run(debug=True)
