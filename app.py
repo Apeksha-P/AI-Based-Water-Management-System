@@ -704,7 +704,6 @@ def resetPasswordStudent():
 
 
 
-
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
