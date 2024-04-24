@@ -1,5 +1,3 @@
-import json
-
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
