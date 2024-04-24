@@ -381,7 +381,11 @@ def homeStaff():
 def homeAdmin():
     # Check if Admin is logged in
     if 'admin_id' in session:
-        return render_template('homeAdmin.html', admin_email=session['admin_email'], admin_fname=session['admin_fname'])
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('homeAdmin.html', admin=admin)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
@@ -490,6 +494,34 @@ def upload_pictureStaff():
     return redirect(url_for('profileStaff_form'))
 
 
+@app.route('/upload_pictureAdmin', methods=['POST'])
+def upload_pictureAdmin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+        if admin:
+            if 'picture' in request.files:
+                file = request.files['picture']
+                if file.filename != '':
+                    # Save the uploaded file
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    # Update the admin's profile picture filename in the database
+                    admin.picture = filename
+                    db.session.commit()  # Save changes to the database
+                    flash('Profile picture uploaded successfully!')
+                    return redirect(url_for('profileAdmin_form'))
+                else:
+                    flash('No file selected!')
+            else:
+                flash('No file part!')
+        else:
+            flash('Admin not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileAdmin_form'))
+
 @app.route('/uploads/<filename>')
 def serve_uploaded_picture(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -514,7 +546,8 @@ def profileStaff_form():
 def profileAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
-        admin = Admin.query.get(admin_id)
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
             return render_template('profileAdmin.html', admin=admin)
         else:
