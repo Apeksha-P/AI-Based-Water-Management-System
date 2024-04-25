@@ -3,7 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.10" />
   </component>
-  <component name="ProjectRootManager" version="2" default="true" project-jdk-name="Python 3.11" project-jdk-type="Python SDK">
+  <component name="ProjectRootManager" version="2" default="true" project-jdk-name="Python 3.13" project-jdk-type="Python SDK">
     <output url="file://$APPLICATION_HOME_DIR$/jbr/bin/usr/local/etc" />
   </component>
 </project>

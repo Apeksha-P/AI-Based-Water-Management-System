@@ -76,10 +76,10 @@ def signupStudent_form():
 def signupStaff_form():
     return render_template('signupStaff.html')
 
-def send_otp_email(email, otp):
+def send_otp_email(email, otp, fname):
     try:
         msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
+        msg.html = render_template('emailtemplate.html', otp=otp,email=email,fname=fname)
         mail.send(msg)
     except Exception as e:
         print("An error occurred while sending the email:", e)
@@ -104,7 +104,7 @@ def signupStudent():
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         # Send OTP via email
-            send_otp_email(email, otp)
+            send_otp_email(email, otp , fname )
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
