@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
@@ -75,13 +77,12 @@ def signupStaff_form():
     return render_template('signupStaff.html')
 
 def send_otp_email(email, otp):
-    msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-    msg.body = f"Hi,\nYour email OTP is: {otp}. Verify your email"
     try:
+        msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
         mail.send(msg)
     except Exception as e:
         print("An error occurred while sending the email:", e)
-        # Handle error
 
 
 @app.route('/signupStudent', methods=["POST"])
@@ -381,7 +382,11 @@ def homeStaff():
 def homeAdmin():
     # Check if Admin is logged in
     if 'admin_id' in session:
-        return render_template('homeAdmin.html', admin_email=session['admin_email'], admin_fname=session['admin_fname'])
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('homeAdmin.html', admin=admin)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
@@ -413,9 +418,19 @@ def dashboardStaff_form():
             return "user not found"
     else:
         return redirect(url_for('signinStaff_form'))
+
 @app.route('/dashboardAdmin')
 def dashboardAdmin_form():
-    return render_template('dashboardAdmin.html')
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('dashboardAdmin.html', admin=admin)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 @app.route('/profileStudent')
 def profileStudent_form():
@@ -490,6 +505,34 @@ def upload_pictureStaff():
     return redirect(url_for('profileStaff_form'))
 
 
+@app.route('/upload_pictureAdmin', methods=['POST'])
+def upload_pictureAdmin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+        if admin:
+            if 'picture' in request.files:
+                file = request.files['picture']
+                if file.filename != '':
+                    # Save the uploaded file
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    # Update the admin's profile picture filename in the database
+                    admin.picture = filename
+                    db.session.commit()  # Save changes to the database
+                    flash('Profile picture uploaded successfully!')
+                    return redirect(url_for('profileAdmin_form'))
+                else:
+                    flash('No file selected!')
+            else:
+                flash('No file part!')
+        else:
+            flash('Admin not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileAdmin_form'))
+
 @app.route('/uploads/<filename>')
 def serve_uploaded_picture(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -514,7 +557,8 @@ def profileStaff_form():
 def profileAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
-        admin = Admin.query.get(admin_id)
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
             return render_template('profileAdmin.html', admin=admin)
         else:
@@ -750,6 +794,51 @@ def resetPasswordStaff():
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
+
+@app.route('/remove_pictureStudent', methods=['POST'])
+def remove_pictureStudent():
+    student = get_current_student()
+    if student:
+        filename = student.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            student.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'Student not found'}), 404, {'ContentType': 'application/json'}
+
+@app.route('/remove_pictureStaff', methods=['POST'])
+def remove_pictureStaff():
+    staff = get_current_staff()
+    if staff:
+        filename = staff.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            staff.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
+
+def get_current_student():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        return Student.query.get(student_id)
+    return None
+
+def get_current_staff():
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        return Staff.query.get(staff_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
