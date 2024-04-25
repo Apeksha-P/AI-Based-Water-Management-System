@@ -602,7 +602,16 @@ def analysingStaff_form():
 
 @app.route('/analysingAdmin')
 def analysingAdmin_form():
-    return render_template('analysingAdmin.html')
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('analysingAdmin.html', admin=admin)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 
 @app.route('/accessAdmin', methods=["GET","POST"])
