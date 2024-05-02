@@ -154,53 +154,6 @@ def signupStaff():
             return redirect(url_for('verifyStaff'))
     return render_template('signupStaff.html')
 
-
-@app.route('/addAdmin', methods=["GET", "POST"])
-def addAdmin_form():
-    if request.method == "POST":
-        # Check if the email already exists
-        email = request.form.get('email')
-        existing_admin = Admin.query.filter_by(email=email).first()
-        if existing_admin:
-            flash("Email already exists. Please use a different email.")
-            return redirect(url_for("alreadySignupAdmin_form"))
-
-        else:
-            # Get data from form
-            fname = request.form.get("firstname")
-            lname = request.form.get("lastname")
-            email = request.form.get("email")
-            password = request.form.get("password")
-            cnumber = request.form.get("contact")
-
-
-
-            # Hash the password
-            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-
-            # Create a new Admin object and add it to the database
-            admin = Admin(
-                fname=fname,
-                lname=lname,
-                email=email,
-                password=hashed_password,
-                cnumber=cnumber
-            )
-
-            try:
-                db.session.add(admin)
-                db.session.commit()
-                flash("Admin added successfully!")
-                return redirect(url_for("accessAdmin_form"))  # Redirect to the admin management page
-            except Exception as e:
-                flash("An error occurred while saving data. Please try again.")
-                print("Error:", e)
-                return redirect(url_for("addAdmin_form"))  # Redirect back to the add admin form
-    else:
-        # This would handle the GET request if needed, such as displaying the form
-        return render_template("addAdmin.html")  # Replace with rendering a template or appropriate response
-
-
 @app.route('/alreadySignupStaff')
 def alreadySignupStaff_form():
     return render_template('alreadySignupStaff.html')
@@ -625,11 +578,19 @@ def analysingAdmin_form():
 
 @app.route('/accessAdmin', methods=["GET","POST"])
 def accessAdmin_form():
-    admins = Admin.query.all()
-    students = Student.query.all()
-    staff = Staff.query.all()
-    return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
-
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            admins = Admin.query.all()
+            students = Student.query.all()
+            staff = Staff.query.all()
+            return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 
 @app.route('/meterAdmin')
@@ -644,6 +605,53 @@ def meterAdmin_form():
             return "user not found"
     else:
         return redirect(url_for('signinAdmin_form'))
+
+@app.route('/addAdmin', methods=["GET", "POST"])
+def addAdmin_form():
+    if request.method == "POST":
+        # Check if the email already exists
+        email = request.form.get('email')
+        existing_admin = Admin.query.filter_by(email=email).first()
+        if existing_admin:
+            flash("Email already exists. Please use a different email.")
+            return redirect(url_for("alreadySignupAdmin_form"))
+
+        else:
+            # Get data from form
+            fname = request.form.get("firstname")
+            lname = request.form.get("lastname")
+            email = request.form.get("email")
+            password = request.form.get("password")
+            cnumber = request.form.get("contact")
+
+
+
+            # Hash the password
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+            # Create a new Admin object and add it to the database
+            admin = Admin(
+                fname=fname,
+                lname=lname,
+                email=email,
+                password=hashed_password,
+                cnumber=cnumber
+            )
+
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                flash("Admin added successfully!")
+                return redirect(url_for("accessAdmin_form"))  # Redirect to the admin management page
+            except Exception as e:
+                flash("An error occurred while saving data. Please try again.")
+                print("Error:", e)
+                return redirect(url_for("addAdmin_form"))  # Redirect back to the add admin form
+    else:
+        # This would handle the GET request if needed, such as displaying the form
+        return render_template("addAdmin.html")  # Replace with rendering a template or appropriate response
+
+
 
 @app.route('/delete_student', methods=["POST"])
 def delete_student():
