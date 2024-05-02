@@ -631,9 +631,19 @@ def accessAdmin_form():
     return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
 
 
+
 @app.route('/meterAdmin')
 def meterAdmin_form():
-    return render_template('meterAdmin.html')
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            return render_template('meterAdmin.html', admin=admin)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 @app.route('/delete_student', methods=["POST"])
 def delete_student():
