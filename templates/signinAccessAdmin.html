@@ -29,9 +29,6 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-
     <style>
         .form-floating label:before {
             content:"*  ";
@@ -56,28 +53,26 @@
         <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
                 <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3">
-                    <form method="post" action="/signinStaff">
+                    <form method="post" action="/signinAccessAdmin">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <a href="index.html" class="navbar-brand mx-4 mb-3">
-                                <h3 class="text font-bold text-3xl" style="color: #826AF9;">AIBWMS</h3>
+                                <h3 class="text" style="color: #826AF9; padding-left: 8% !important;">Log In Access Page</h3>
                             </a>
+                        </div>
 
-                        </div>
-                        <div class="form-floating mb-3">
-                            <p class="text-xl font-semibold text-white text-center">Looks like you already have an Account </p>
-                        </div>
                         <div class="form-floating mb-4">
-                            <p class="text-center mb-0">
-                                We couldn't create a new AIBWMS acoount because there's already an account with your email address.
-                            </p>
-
+                            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password" required>
+                            <label for="floatingPassword">Password</label>
                         </div>
-
-                        <button type="submit" class="btn btn-light py-3 w-100 mb-4"><a href="{{ url_for('signinStudent_form') }}">Sign In</a></button>
                         <div class="d-flex align-items-center justify-content-between mb-4">
-
+                            <div class="form-check">
+                                <input type="checkbox" style="background-color: #5c617d" class="form-check-input" id="exampleCheck1" required>
+                                <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                            </div>
                             <a href="">Forgot Password</a>
                         </div>
+                        <button type="submit" class="btn btn-light py-3 w-100 mb-4">Log In</button>
+                        <!--<p class="text-center mb-0">Don't have an Account? <a href="{{ url_for('signinAdmin_form') }}">Sign Up</a></p>-->
                     </form>
                 </div>
             </div>

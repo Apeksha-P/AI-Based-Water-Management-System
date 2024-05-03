@@ -54,7 +54,7 @@
                 <a href="{{ url_for('homeStaff')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
                 <a href="{{ url_for('dashboardStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                 <a href="{{ url_for('analysingStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
-                <a href="{{ url_for('predictionStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                <a href="{{ url_for('predictionStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-table me-2"></i>Predictions</a>
             </div>
         </nav>
     </div>
@@ -70,6 +70,7 @@
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
+            <h3 style="margin: 2%">PREDICTIONS</h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -79,7 +80,11 @@
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% if staff.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=staff.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% endif %}
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileStaff_form')}}" class="dropdown-item">My Profile</a>

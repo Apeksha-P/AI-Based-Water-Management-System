@@ -29,9 +29,6 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-
     <style>
         .form-floating label:before {
             content:"*  ";
@@ -50,40 +47,60 @@
     </div>
     <!-- Spinner End -->
 
-
-    <!-- Sign In Start -->
+    <!--    Add Admin-->
     <div class="container-fluid">
         <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
                 <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3">
-                    <form method="post" action="/signinStaff">
+
+                    <!-- admin creation form -->
+                    <form method="POST" action="/addAdmin">
                         <div class="d-flex align-items-center justify-content-between mb-3">
-                            <a href="index.html" class="navbar-brand mx-4 mb-3">
-                                <h3 class="text font-bold text-3xl" style="color: #826AF9;">AIBWMS</h3>
-                            </a>
-
-                        </div>
-                        <div class="form-floating mb-3">
-                            <p class="text-xl font-semibold text-white text-center">Looks like you already have an Account </p>
-                        </div>
-                        <div class="form-floating mb-4">
-                            <p class="text-center mb-0">
-                                We couldn't create a new AIBWMS acoount because there's already an account with your email address.
-                            </p>
-
+                            <label for="firstname" style="font-weight: 700 !important; font-size: 20px !important;">First Name:</label>
+                            <div class="form-floating mb-3">
+                                <input type="text" id="firstname" name="firstname" style="margin-top: 10% !important;" required><br>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-light py-3 w-100 mb-4"><a href="{{ url_for('signinStudent_form') }}">Sign In</a></button>
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-
-                            <a href="">Forgot Password</a>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <label for="lastname" style="font-weight: 700 !important; font-size: 20px !important;">Last Name:</label>
+                            <div class="form-floating mb-3">
+                                <input type="text" id="lastname" name="lastname" style="margin-top: 10% !important;" required><br>
+                            </div>
                         </div>
+
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <label for="email" style="font-weight: 700 !important; font-size: 20px !important;">Email:</label>
+                            <div class="form-floating mb-3">
+                                <input type="email" id="email" name="email" style="margin-top: 10% !important;" required><br>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <label for="password" style="font-weight: 700 !important; font-size: 20px !important;">Password:</label>
+                            <div class="form-floating mb-3">
+                                <input type="password" id="password" name="password" style="margin-top: 10% !important;" required><br>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <label for="contact" style="font-weight: 700 !important; font-size: 20px !important;">Contact Number:</label>
+                            <div class="form-floating mb-3">
+                                <input type="text" id="contact" name="contact" style="margin-top: 10% !important;" required><br>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <button type="submit" class="btn btn-light py-3 w-100 mb-4" style="margin-top: 15% !important;">Add Admin</button>
+                        </div>
+
                     </form>
+
                 </div>
             </div>
         </div>
     </div>
-    <!-- Sign In End -->
+    <!-- Add Admin End -->
 </div>
 
 <!-- JavaScript Libraries -->

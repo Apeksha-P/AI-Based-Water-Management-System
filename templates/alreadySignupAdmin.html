@@ -56,7 +56,7 @@
         <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
             <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
                 <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3">
-                    <form method="post" action="/signinStaff">
+                    <form method="post" action="/accessAdmin">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <a href="index.html" class="navbar-brand mx-4 mb-3">
                                 <h3 class="text font-bold text-3xl" style="color: #826AF9;">AIBWMS</h3>
@@ -64,16 +64,16 @@
 
                         </div>
                         <div class="form-floating mb-3">
-                            <p class="text-xl font-semibold text-white text-center">Looks like you already have an Account </p>
+                            <p class="text-xl font-semibold text-white text-center">Looks like already have this Account </p>
                         </div>
                         <div class="form-floating mb-4">
                             <p class="text-center mb-0">
-                                We couldn't create a new AIBWMS acoount because there's already an account with your email address.
+                                We couldn't create a new AIBWMS acoount because there's already an account with this email address.
                             </p>
 
                         </div>
 
-                        <button type="submit" class="btn btn-light py-3 w-100 mb-4"><a href="{{ url_for('signinStudent_form') }}">Sign In</a></button>
+                        <button class="btn btn-light py-3 w-100 mb-4"><a href="{{ url_for('accessAdmin_form') }} ">Back</a></button>
                         <div class="d-flex align-items-center justify-content-between mb-4">
 
                             <a href="">Forgot Password</a>

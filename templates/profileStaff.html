@@ -78,7 +78,11 @@
         </div>
         <div class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-            <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+            {% if staff.picture %}
+            <img src="{{ url_for('serve_uploaded_picture', filename=staff.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+            {% else %}
+            <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+            {% endif %}
           </a>
           <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
             <a href="{{ url_for('profileStaff_form')}}" class="dropdown-item">My Profile</a>
@@ -95,9 +99,23 @@
         <div class="col-sm-12 col-xl-6">
           <div class="bg-secondary rounded h-100 p-4 pt-4">
             <div class="text-center">
-              <img src="{{ url_for('static', filename='img/profile.png') }}" alt="" class="rounded-circle pt-2 pb-2" width="150">
-              <h2 class="pt-5">{{ staff.fname }}  {{ staff.lname }}</h2>
-              <h4 class="pt-2">Staff</h4>
+              {% if staff.picture %}
+              <img id="profile-picture" src="{{ url_for('serve_uploaded_picture', filename=staff.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+              {% else %}
+              <img id="profile-picture" src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+              {% endif %}
+              <!-- Hidden file input -->
+              <form action="{{ url_for('upload_pictureStaff') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" id="image-upload" name="picture" style="display: none;" accept="image/*">
+                <!-- Pencil image to trigger file input click -->
+                <img src="{{ url_for('static', filename='img/pencil.png') }}" alt="Edit" width="30px"
+                     style="padding-top: 40px; position: relative; top:-70px; left: 20px; transform: rotate(-70deg); cursor: pointer"
+                     onclick="document.getElementById('image-upload').click()">
+                <h2 class="pt-5">{{ staff.fname }}  {{ staff.lname }}</h2>
+                <h4 class="pt-2">Staff</h4>
+                <button type="submit" class="btn mt-3" style="border: 1px solid black; position: relative;top: -200px">Upload Picture</button>
+                <button type="button" class="btn mt-3" onclick="removeProfilePicture()" style="border: 1px solid black; position: relative;top: -200px">Remove Picture</button>
+              </form>
             </div>
           </div>
         </div>
@@ -181,6 +199,23 @@
   <!-- Back to Top -->
   <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
+
+<script>
+  function removeProfilePicture() {
+    var profilePicture = document.getElementById('profile-picture');
+    profilePicture.src = "{{ url_for('static', filename='img/profile.png') }}";
+    document.getElementById('image-upload').value = '';
+    fetch('/remove_pictureStaff', {
+      method: 'POST',
+      body: new FormData()
+    }).then(response => {
+      console.log('Profile picture removed successfully');
+      window.location.reload();
+    }).catch(error => {
+      console.error('Error removing profile picture:', error);
+    });
+  }
+</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
