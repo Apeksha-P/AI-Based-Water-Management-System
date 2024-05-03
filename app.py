@@ -85,6 +85,15 @@ def send_otp_email(email, otp, fname):
         print("An error occurred while sending the email:", e)
 
 
+def send_otp_email_p(email, otp):
+    try:
+        msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
+        mail.send(msg)
+    except Exception as e:
+        print("An error occurred while sending the email:", e)
+
+
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
     if request.method == "POST":
@@ -141,7 +150,7 @@ def signupStaff():
             otp = str(random.randint(100000, 999999))
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             # Send OTP via email
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
@@ -741,7 +750,7 @@ def forgotPasswordStudent():
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             otp = str(random.randint(100000, 999999))
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
@@ -788,7 +797,7 @@ def forgotPasswordStaff():
         existing_staff = Staff.query.filter_by(email=email).first()
         if existing_staff:
             otp = str(random.randint(100000, 999999))
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
