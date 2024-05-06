@@ -836,6 +836,44 @@ def resetPasswordStaff():
             flash('Passwords do not match. Please re-enter.')
             return redirect(url_for('resetPasswordStaff'))
     return render_template('resetPasswordStaff.html')
+
+
+@app.route('/forgotPasswordAdmin', methods=["GET","POST"])
+def forgotPasswordAdmin():
+    if request.method == "POST":
+        email = request.form.get('email')
+        existing_admin = Admin.query.filter_by(email=email).first()
+        if existing_admin:
+            otp = str(random.randint(100000, 999999))
+            fname = existing_admin.fname  # Get the first name
+
+            send_otp_email(email, otp, fname)
+
+            session['forgot_password_data'] = {
+                'email': email,
+                'otp': otp
+            }
+            return redirect(url_for('verifyOTPAdmin'))
+        else:
+            return render_template('approval.html')
+    else:
+        return render_template('forgotPasswordAdmin.html')
+
+
+@app.route('/verifyOTPAdmin', methods=["GET", "POST"])
+def verifyOTPAdmin():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        forgot_password_data = session.get('forgot_password_data')
+        if forgot_password_data['otp'] == entered_otp:
+            return redirect(url_for('resetPasswordAdmin'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyOTPAdmin'))
+    return render_template('verifyOTPAdmin.html')
+
+
+
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
