@@ -229,6 +229,37 @@ def verifyStaff():
     # If GET request, render the verifyStudent.html template
     return render_template('verifyStaff.html')
 
+
+@app.route('/verifyAdmin', methods=["GET", "POST"])
+def verifyAdmin():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        addAdmin_data = session.get('addAdmin_data')
+        if addAdmin_data['otp'] == entered_otp:
+            # Create Admin object and add to database
+            admin = Admin(
+                fname=addAdmin_data['fname'],
+                lname=addAdmin_data['lname'],
+                email=addAdmin_data['email'],
+                password=addAdmin_data['password'],
+                cnumber=addAdmin_data['cnumber'],
+            )
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                flash('Email verified successfully!')
+                return redirect(url_for('accessAdmin_form'))
+            except Exception as e:
+                flash('An error occurred while saving data. Please try again later.')
+                print("Error:", e)
+                return redirect(url_for('verifyAdmin'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyAdmin'))
+    # If GET request, render the verifyAdmin.html template
+    return render_template('verifyAdmin.html')
+
+
 @app.route('/signinStudent', methods=["GET", "POST"])
 def signinStudent_form():
     if request.method == "POST":
@@ -633,7 +664,21 @@ def addAdmin_form():
             password = request.form.get("password")
             cnumber = request.form.get("contact")
 
-
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            # Send OTP via email
+            send_otp_email_p(email, otp)
+            # Store addAdmin data in session
+            session['addAdmin_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'password': hashed_password,
+                'cnumber': cnumber,
+                'otp': otp
+            }
+            return redirect(url_for('verifyAdmin'))
 
             # Hash the password
             hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
@@ -651,7 +696,7 @@ def addAdmin_form():
                 db.session.add(admin)
                 db.session.commit()
                 flash("Admin added successfully!")
-                return redirect(url_for("accessAdmin_form"))  # Redirect to the admin management page
+                return redirect(url_for("verifyAdmin"))  # Redirect to the admin management page
             except Exception as e:
                 flash("An error occurred while saving data. Please try again.")
                 print("Error:", e)
