@@ -957,6 +957,23 @@ def remove_pictureStaff():
     else:
         return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
 
+@app.route('/remove_pictureAdmin', methods=['POST'])
+def remove_pictureAdmin():
+    admin = get_current_admin()
+    if admin:
+        filename = admin.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            admin.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
+
 def get_current_student():
     if 'student_id' in session:
         student_id = session['student_id']
@@ -967,6 +984,11 @@ def get_current_staff():
     if 'staff_id' in session:
         staff_id = session['staff_id']
         return Staff.query.get(staff_id)
+
+def get_current_admin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        return Admin.query.get(admin_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
