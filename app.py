@@ -303,33 +303,30 @@ def signinStaff_form():
     # Render the signinStaff.html template for GET requests
     return render_template('signinStaff.html')
 
-
 @app.route('/signinAdmin', methods=["GET", "POST"])
 def signinAdmin_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-        # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by(email=email, password=password).first()
-        if admin:
-            # Store Admin information in session
+        admin = Admin.query.filter_by(email=email).first()
+        if admin and bcrypt.check_password_hash(admin.password, password):
             session['admin_id'] = admin.id
             session['admin_email'] = admin.email
             session['admin_fname'] = admin.fname
-            # Redirect to the home page after successful login
             return redirect(url_for('homeAdmin'))
         else:
-            # Users not found or incorrect credentials, redirect back to sign-in page with a message
-            return render_template('signinAdmin.html', error_message="Invalid email or password.")
+            flash("Invalid email or password.")
+            return render_template('signinAdmin.html')
     return render_template('signinAdmin.html')
+
 
 @app.route('/signinAccessAdmin', methods=["GET", "POST"])
 def signinAccessAdmin_form():
     if request.method == "POST":
         password = request.form.get('password')
         # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by(password=password).first()
-        if admin:
+        admin = Admin.query.filter_by().first()
+        if admin and bcrypt.check_password_hash(admin.password, password):
             # Store Admin information in session
             session['admin_id'] = admin.id
             session['admin_email'] = admin.email
@@ -916,6 +913,24 @@ def verifyOTPAdmin():
             flash('Invalid OTP. Please try again.')
             return redirect(url_for('verifyOTPAdmin'))
     return render_template('verifyOTPAdmin.html')
+
+
+@app.route('/resetPasswordAdmin',methods=["GET","POST"])
+def resetPasswordAdmin():
+    if request.method == "POST":
+        new_password = request.form.get('newpassword')
+        reentered_password = request.form.get('reenternewpassword')
+        if new_password == reentered_password:
+            admin = Admin.query.filter_by(email=session['forgot_password_data']['email']).first()
+            admin.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+            db.session.commit()
+
+            flash('Password reset successful! Please sign in with your new password.')
+            return redirect(url_for('signinAdmin_form'))
+        else:
+            flash('Passwords do not match. Please re-enter.')
+            return redirect(url_for('resetPasswordAdmin'))
+    return render_template('resetPasswordAdmin.html')
 
 
 
