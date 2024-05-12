@@ -558,6 +558,8 @@ def profileAdmin_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
 
+
+
 @app.route('/predictionsStaff')
 def predictionStaff_form():
     if 'staff_id' in session:
