@@ -621,7 +621,7 @@ def accessAdmin_form():
         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
         if admin:
             admins = Admin.query.all()
-            students = Student.query.all()
+            students = Student.query.order_by(Student.id.asc()).all()
             staff = Staff.query.all()
             return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
         else:
@@ -719,9 +719,12 @@ def delete_student():
 
     if student:
         try:
+            deleted_student_id = student.id  # Store the ID of the student to be deleted
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
             flash("Student deleted successfully.")
+
+            update_student_ids(deleted_student_id)
         except Exception as e:
             flash("An error occurred while trying to delete the student. Please try again.")
             print("Error:", e)
@@ -730,6 +733,22 @@ def delete_student():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+def update_student_ids(deleted_student_id):
+    # Retrieve all students from the database sorted by ID in ascending order
+    students = Student.query.order_by(Student.id.asc()).all()
+
+    # Check if the deleted student's ID is within the list of students
+    if deleted_student_id in [student.id for student in students]:
+        # Iterate over the students and update their IDs to remove gaps
+        for index, student in enumerate(students, start=1):
+            student.id = index
+
+        db.session.commit()
+    else:
+        # Handle the case where the deleted student's ID is not found
+        flash("Deleted student ID not found.")
+
 
 @app.route('/delete_staff', methods=["POST"])
 def delete_staff():
