@@ -542,6 +542,28 @@ def profileStaff_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
 
+@app.route('/update_profileStaff', methods=['POST'])
+def update_profileStaff():
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id, email=staff_email).first()
+        if staff:
+            # Update the profile details based on the form submission
+            staff.fname = request.form['fname']
+            staff.lname = request.form['lname']
+            staff.cnumber = request.form['cnumber']
+
+            db.session.commit()  # Save changes to the database
+            flash('Profile details updated successfully!')
+            return redirect(url_for('profileStaff_form'))
+        else:
+            flash('Staff not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileStaff_form'))
+
+
 
 @app.route('/profileAdmin')
 def profileAdmin_form():
