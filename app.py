@@ -85,6 +85,15 @@ def send_otp_email(email, otp, fname):
         print("An error occurred while sending the email:", e)
 
 
+def send_otp_email_p(email, otp):
+    try:
+        msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
+        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
+        mail.send(msg)
+    except Exception as e:
+        print("An error occurred while sending the email:", e)
+
+
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
     if request.method == "POST":
@@ -141,7 +150,7 @@ def signupStaff():
             otp = str(random.randint(100000, 999999))
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             # Send OTP via email
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             # Store signup data in session
             session['signup_data'] = {
                 'fname': fname,
@@ -153,53 +162,6 @@ def signupStaff():
             }
             return redirect(url_for('verifyStaff'))
     return render_template('signupStaff.html')
-
-
-@app.route('/addAdmin', methods=["GET", "POST"])
-def addAdmin_form():
-    if request.method == "POST":
-        # Check if the email already exists
-        email = request.form.get('email')
-        existing_admin = Admin.query.filter_by(email=email).first()
-        if existing_admin:
-            flash("Email already exists. Please use a different email.")
-            return redirect(url_for("alreadySignupAdmin_form"))
-
-        else:
-            # Get data from form
-            fname = request.form.get("firstname")
-            lname = request.form.get("lastname")
-            email = request.form.get("email")
-            password = request.form.get("password")
-            cnumber = request.form.get("contact")
-
-
-
-            # Hash the password
-            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-
-            # Create a new Admin object and add it to the database
-            admin = Admin(
-                fname=fname,
-                lname=lname,
-                email=email,
-                password=hashed_password,
-                cnumber=cnumber
-            )
-
-            try:
-                db.session.add(admin)
-                db.session.commit()
-                flash("Admin added successfully!")
-                return redirect(url_for("accessAdmin_form"))  # Redirect to the admin management page
-            except Exception as e:
-                flash("An error occurred while saving data. Please try again.")
-                print("Error:", e)
-                return redirect(url_for("addAdmin_form"))  # Redirect back to the add admin form
-    else:
-        # This would handle the GET request if needed, such as displaying the form
-        return render_template("addAdmin.html")  # Replace with rendering a template or appropriate response
-
 
 @app.route('/alreadySignupStaff')
 def alreadySignupStaff_form():
@@ -267,6 +229,37 @@ def verifyStaff():
     # If GET request, render the verifyStudent.html template
     return render_template('verifyStaff.html')
 
+
+@app.route('/verifyAdmin', methods=["GET", "POST"])
+def verifyAdmin():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        addAdmin_data = session.get('addAdmin_data')
+        if addAdmin_data['otp'] == entered_otp:
+            # Create Admin object and add to database
+            admin = Admin(
+                fname=addAdmin_data['fname'],
+                lname=addAdmin_data['lname'],
+                email=addAdmin_data['email'],
+                password=addAdmin_data['password'],
+                cnumber=addAdmin_data['cnumber'],
+            )
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                flash('Email verified successfully!')
+                return redirect(url_for('accessAdmin_form'))
+            except Exception as e:
+                flash('An error occurred while saving data. Please try again later.')
+                print("Error:", e)
+                return redirect(url_for('verifyAdmin'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyAdmin'))
+    # If GET request, render the verifyAdmin.html template
+    return render_template('verifyAdmin.html')
+
+
 @app.route('/signinStudent', methods=["GET", "POST"])
 def signinStudent_form():
     if request.method == "POST":
@@ -310,33 +303,30 @@ def signinStaff_form():
     # Render the signinStaff.html template for GET requests
     return render_template('signinStaff.html')
 
-
 @app.route('/signinAdmin', methods=["GET", "POST"])
 def signinAdmin_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-        # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by(email=email, password=password).first()
-        if admin:
-            # Store Admin information in session
+        admin = Admin.query.filter_by(email=email).first()
+        if admin and bcrypt.check_password_hash(admin.password, password):
             session['admin_id'] = admin.id
             session['admin_email'] = admin.email
             session['admin_fname'] = admin.fname
-            # Redirect to the home page after successful login
             return redirect(url_for('homeAdmin'))
         else:
-            # Users not found or incorrect credentials, redirect back to sign-in page with a message
-            return render_template('signinAdmin.html', error_message="Invalid email or password.")
+            flash("Invalid email or password.")
+            return render_template('signinAdmin.html')
     return render_template('signinAdmin.html')
+
 
 @app.route('/signinAccessAdmin', methods=["GET", "POST"])
 def signinAccessAdmin_form():
     if request.method == "POST":
         password = request.form.get('password')
         # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by(password=password).first()
-        if admin:
+        admin = Admin.query.filter_by().first()
+        if admin and bcrypt.check_password_hash(admin.password, password):
             # Store Admin information in session
             session['admin_id'] = admin.id
             session['admin_email'] = admin.email
@@ -568,6 +558,29 @@ def profileAdmin_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
 
+@app.route('/update_profileAdmin', methods=['POST'])
+def update_profileAdmin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+        if admin:
+            # Update the profile details based on the form submission
+            admin.fname = request.form['fname']
+            admin.lname = request.form['lname']
+            admin.cnumber = request.form['cnumber']
+
+            db.session.commit()  # Save changes to the database
+            flash('Profile details updated successfully!')
+            return redirect(url_for('profileAdmin_form'))
+        else:
+            flash('Admin not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileAdmin_form'))
+
+
+
 @app.route('/predictionsStaff')
 def predictionStaff_form():
     if 'staff_id' in session:
@@ -625,11 +638,19 @@ def analysingAdmin_form():
 
 @app.route('/accessAdmin', methods=["GET","POST"])
 def accessAdmin_form():
-    admins = Admin.query.all()
-    students = Student.query.all()
-    staff = Staff.query.all()
-    return render_template('accessAdmin.html', admins=admins, students=students, staff=staff)
-
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        if admin:
+            admins = Admin.query.all()
+            students = Student.query.order_by(Student.id.asc()).all()
+            staff = Staff.query.all()
+            return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinAdmin_form'))
 
 
 @app.route('/meterAdmin')
@@ -644,6 +665,67 @@ def meterAdmin_form():
             return "user not found"
     else:
         return redirect(url_for('signinAdmin_form'))
+
+@app.route('/addAdmin', methods=["GET", "POST"])
+def addAdmin_form():
+    if request.method == "POST":
+        # Check if the email already exists
+        email = request.form.get('email')
+        existing_admin = Admin.query.filter_by(email=email).first()
+        if existing_admin:
+            flash("Email already exists. Please use a different email.")
+            return redirect(url_for("alreadySignupAdmin_form"))
+
+        else:
+            # Get data from form
+            fname = request.form.get("firstname")
+            lname = request.form.get("lastname")
+            email = request.form.get("email")
+            password = request.form.get("password")
+            cnumber = request.form.get("contact")
+
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            # Send OTP via email
+            send_otp_email_p(email, otp)
+            # Store addAdmin data in session
+            session['addAdmin_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'password': hashed_password,
+                'cnumber': cnumber,
+                'otp': otp
+            }
+            return redirect(url_for('verifyAdmin'))
+
+            # Hash the password
+            hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+            # Create a new Admin object and add it to the database
+            admin = Admin(
+                fname=fname,
+                lname=lname,
+                email=email,
+                password=hashed_password,
+                cnumber=cnumber
+            )
+
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                flash("Admin added successfully!")
+                return redirect(url_for("verifyAdmin"))  # Redirect to the admin management page
+            except Exception as e:
+                flash("An error occurred while saving data. Please try again.")
+                print("Error:", e)
+                return redirect(url_for("addAdmin_form"))  # Redirect back to the add admin form
+    else:
+        # This would handle the GET request if needed, such as displaying the form
+        return render_template("addAdmin.html")  # Replace with rendering a template or appropriate response
+
+
 
 @app.route('/delete_student', methods=["POST"])
 def delete_student():
@@ -660,9 +742,12 @@ def delete_student():
 
     if student:
         try:
+            deleted_student_id = student.id  # Store the ID of the student to be deleted
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
             flash("Student deleted successfully.")
+
+            update_student_ids(deleted_student_id)
         except Exception as e:
             flash("An error occurred while trying to delete the student. Please try again.")
             print("Error:", e)
@@ -671,6 +756,22 @@ def delete_student():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+def update_student_ids(deleted_student_id):
+    # Retrieve all students from the database sorted by ID in ascending order
+    students = Student.query.order_by(Student.id.asc()).all()
+
+    # Check if the deleted student's ID is within the list of students
+    if deleted_student_id in [student.id for student in students]:
+        # Iterate over the students and update their IDs to remove gaps
+        for index, student in enumerate(students, start=1):
+            student.id = index
+
+        db.session.commit()
+    else:
+        # Handle the case where the deleted student's ID is not found
+        flash("Deleted student ID not found.")
+
 
 @app.route('/delete_staff', methods=["POST"])
 def delete_staff():
@@ -733,7 +834,7 @@ def forgotPasswordStudent():
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             otp = str(random.randint(100000, 999999))
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
@@ -780,7 +881,7 @@ def forgotPasswordStaff():
         existing_staff = Staff.query.filter_by(email=email).first()
         if existing_staff:
             otp = str(random.randint(100000, 999999))
-            send_otp_email(email, otp)
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
@@ -819,6 +920,62 @@ def resetPasswordStaff():
             flash('Passwords do not match. Please re-enter.')
             return redirect(url_for('resetPasswordStaff'))
     return render_template('resetPasswordStaff.html')
+
+
+@app.route('/forgotPasswordAdmin', methods=["GET","POST"])
+def forgotPasswordAdmin():
+    if request.method == "POST":
+        email = request.form.get('email')
+        existing_admin = Admin.query.filter_by(email=email).first()
+        if existing_admin:
+            otp = str(random.randint(100000, 999999))
+            fname = existing_admin.fname  # Get the first name
+
+            send_otp_email(email, otp, fname)
+
+            session['forgot_password_data'] = {
+                'email': email,
+                'otp': otp
+            }
+            return redirect(url_for('verifyOTPAdmin'))
+        else:
+            return render_template('approval.html')
+    else:
+        return render_template('forgotPasswordAdmin.html')
+
+
+@app.route('/verifyOTPAdmin', methods=["GET", "POST"])
+def verifyOTPAdmin():
+    if request.method == "POST":
+        entered_otp = request.form.get('otp')
+        forgot_password_data = session.get('forgot_password_data')
+        if forgot_password_data['otp'] == entered_otp:
+            return redirect(url_for('resetPasswordAdmin'))
+        else:
+            flash('Invalid OTP. Please try again.')
+            return redirect(url_for('verifyOTPAdmin'))
+    return render_template('verifyOTPAdmin.html')
+
+
+@app.route('/resetPasswordAdmin',methods=["GET","POST"])
+def resetPasswordAdmin():
+    if request.method == "POST":
+        new_password = request.form.get('newpassword')
+        reentered_password = request.form.get('reenternewpassword')
+        if new_password == reentered_password:
+            admin = Admin.query.filter_by(email=session['forgot_password_data']['email']).first()
+            admin.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+            db.session.commit()
+
+            flash('Password reset successful! Please sign in with your new password.')
+            return redirect(url_for('signinAdmin_form'))
+        else:
+            flash('Passwords do not match. Please re-enter.')
+            return redirect(url_for('resetPasswordAdmin'))
+    return render_template('resetPasswordAdmin.html')
+
+
+
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     return send_from_directory('data', filename)
@@ -857,6 +1014,23 @@ def remove_pictureStaff():
     else:
         return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
 
+@app.route('/remove_pictureAdmin', methods=['POST'])
+def remove_pictureAdmin():
+    admin = get_current_admin()
+    if admin:
+        filename = admin.picture
+        if filename:
+            picture_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+            admin.picture = None
+            db.session.commit()
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            return json.dumps({'error': 'No profile picture to remove'}), 400, {'ContentType': 'application/json'}
+    else:
+        return json.dumps({'error': 'staff not found'}), 404, {'ContentType': 'application/json'}
+
 def get_current_student():
     if 'student_id' in session:
         student_id = session['student_id']
@@ -867,6 +1041,11 @@ def get_current_staff():
     if 'staff_id' in session:
         staff_id = session['staff_id']
         return Staff.query.get(staff_id)
+
+def get_current_admin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        return Admin.query.get(admin_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
