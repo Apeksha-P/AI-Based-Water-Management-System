@@ -558,6 +558,27 @@ def profileAdmin_form():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
 
+@app.route('/update_profileAdmin', methods=['POST'])
+def update_profileAdmin():
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+        if admin:
+            # Update the profile details based on the form submission
+            admin.fname = request.form['fname']
+            admin.lname = request.form['lname']
+            admin.cnumber = request.form['cnumber']
+
+            db.session.commit()  # Save changes to the database
+            flash('Profile details updated successfully!')
+            return redirect(url_for('profileAdmin_form'))
+        else:
+            flash('Admin not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileAdmin_form'))
+
 
 
 @app.route('/predictionsStaff')
