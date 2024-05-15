@@ -479,7 +479,7 @@ def upload_pictureStaff():
                     # Save the uploaded file
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    # Update the student's profile picture filename in the database
+                    # Update the staff's profile picture filename in the database
                     staff.picture = filename
                     db.session.commit()  # Save changes to the database
                     flash('Profile picture uploaded successfully!')
@@ -600,6 +600,27 @@ def update_profileAdmin():
     else:
         flash('You need to be logged in!')
     return redirect(url_for('profileAdmin_form'))
+
+@app.route('/update_profileStudent', methods=['POST'])
+def update_profileStudent():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            # Update the profile details based on the form submission
+            student.fname = request.form['fname']
+            student.lname = request.form['lname']
+            student.cnumber = request.form['cnumber']
+
+            db.session.commit()  # Save changes to the database
+            flash('Profile details updated successfully!')
+            return redirect(url_for('profileStudent_form'))
+        else:
+            flash('Student not found!')
+    else:
+        flash('You need to be logged in!')
+    return redirect(url_for('profileStudent_form'))
 
 
 
