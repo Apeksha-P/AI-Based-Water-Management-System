@@ -60,6 +60,15 @@
               </a>
               <h3>Sign Up</h3>
             </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alert alert-warning">
+              {% for category, message in messages %}
+              <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
             <div class="form-floating mb-2">
               <input type="text" name="fname" class="form-control" id="floatingTextfname" placeholder="jhondoe" required>
               <label for="floatingTextfname">First Name</label>
@@ -69,7 +78,7 @@
               <label for="floatingTextlname">Last Name</label>
             </div>
             <div class="form-floating mb-2">
-              <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@stu.kln.ac.lk" required>
+              <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@stu.kln.ac.lk" pattern="[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk" required>
               <label for="floatingInput">Email address</label>
             </div>
             <div class="form-floating mb-2" >

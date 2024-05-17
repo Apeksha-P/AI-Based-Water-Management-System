@@ -1,5 +1,4 @@
 import json
-
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
@@ -8,6 +7,7 @@ from flask import flash
 from flask_bcrypt import Bcrypt, check_password_hash
 import os
 from werkzeug.utils import secure_filename
+import re
 
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
@@ -94,37 +94,45 @@ def send_otp_email_p(email, otp):
         print("An error occurred while sending the email:", e)
 
 
-@app.route('/signupStudent', methods=["POST"])
+
+@app.route('/signupStudent', methods=["POST", "GET"])
 def signupStudent():
     if request.method == "POST":
         email = request.form.get('email')
+        # Check if email matches the pattern
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
+            flash('Invalid email address. Please use an student email from the name-CSXXXXX@stu.kln.ac.lk.')
+            return redirect(url_for('signupStudent'))
+
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             flash('Email already exists. Please use a different email.')
             return redirect(url_for('alreadySignupStudent_form'))
-        else:
-            fname = request.form.get('fname')
-            lname = request.form.get('lname')
-            email = request.form.get('email')
-            password = request.form.get('password')
-            cnumber = request.form.get('cnumber')
-            # Generate OTP
-            otp = str(random.randint(100000, 999999))
-            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
+        password = request.form.get('password')
+        cnumber = request.form.get('cnumber')
+
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
         # Send OTP via email
-            send_otp_email(email, otp , fname )
-            # Store signup data in session
-            session['signup_data'] = {
-                'fname': fname,
-                'lname': lname,
-                'email': email,
-                'password': hashed_password,
-                'cnumber': cnumber,
-                'otp': otp
-            }
-            # Redirect to verifyStudent page
-            return redirect(url_for('verifyStudent'))
+        send_otp_email(email, otp, fname)
+
+        # Store signup data in session
+        session['signup_data'] = {
+            'fname': fname,
+            'lname': lname,
+            'email': email,
+            'password': hashed_password,
+            'cnumber': cnumber,
+            'otp': otp
+        }
+
+        # Redirect to verifyStudent page
+        return redirect(url_for('verifyStudent'))
 
     return render_template('signupStudent.html')
 
