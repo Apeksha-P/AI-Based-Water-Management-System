@@ -13,12 +13,12 @@ app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 bcrypt = Bcrypt(app)
 
-app.config["MAIL_SERVER"]='smtp.office365.com'
-app.config["MAIL_PORT"]=587
-app.config["MAIL_USERNAME"]="apeksha-cs20070@stu.kln.ac.lk"
-app.config["MAIL_PASSWORD"]='CpDa@6080Ap'
-app.config["MAIL_USE_TLS"]=True
-app.config["MAIL_USE_SSL"]=False
+app.config["MAIL_SERVER"] = 'smtp.office365.com'
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USERNAME"] = "apeksha-cs20070@stu.kln.ac.lk"
+app.config["MAIL_PASSWORD"] = 'CpDa@6080Ap'
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
@@ -76,11 +76,13 @@ def signupStudent_form():
 def signupStaff_form():
     return render_template('signupStaff.html')
 
+
 def send_otp_email(email, otp, fname):
     try:
-        msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-        msg.html = render_template('emailtemplate.html', otp=otp,email=email,fname=fname)
+        msg = Message('Email verification', sender=app.config["MAIL_DEFAULT_SENDER"], recipients=[email])
+        msg.html = render_template('emailtemplate.html', otp=otp, email=email, fname=fname)
         mail.send(msg)
+        print("Email sent successfully!")
     except Exception as e:
         print("An error occurred while sending the email:", e)
 
@@ -144,6 +146,11 @@ def alreadySignupStudent_form():
 def signupStaff():
     if request.method == "POST":
         email = request.form.get('email')
+        # Check if email matches the pattern
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
+            flash('Invalid email address. Please use an staff email from the name-CSXXXXX@stu.kln.ac.lk.')
+            return redirect(url_for('signupStaff'))
+
         existing_staff = Staff.query.filter_by(email=email).first()
         if existing_staff:
             flash('Email already exists. Please use a different email.')
