@@ -800,12 +800,10 @@ def delete_student():
 
     if student:
         try:
-            deleted_student_id = student.id  # Store the ID of the student to be deleted
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
-            flash("Student deleted successfully.")
+            flash("Student deleted and IDs renumbered successfully.")
 
-            update_student_ids(deleted_student_id)
         except Exception as e:
             flash("An error occurred while trying to delete the student. Please try again.")
             print("Error:", e)
@@ -814,21 +812,6 @@ def delete_student():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
-
-def update_student_ids(deleted_student_id):
-    # Retrieve all students from the database sorted by ID in ascending order
-    students = Student.query.order_by(Student.id.asc()).all()
-
-    # Check if the deleted student's ID is within the list of students
-    if deleted_student_id in [student.id for student in students]:
-        # Iterate over the students and update their IDs to remove gaps
-        for index, student in enumerate(students, start=1):
-            student.id = index
-
-        db.session.commit()
-    else:
-        # Handle the case where the deleted student's ID is not found
-        flash("Deleted student ID not found.")
 
 
 @app.route('/delete_staff', methods=["POST"])
@@ -846,9 +829,10 @@ def delete_staff():
 
     if staff:
         try:
-            db.session.delete(staff)  # Remove the student from the database
+            db.session.delete(staff)  # Remove the staff from the database
             db.session.commit()  # Save changes
-            flash("Staff deleted successfully.")
+            renumber_staff()  # Renumber remaining staff
+            flash("Staff deleted and IDs renumbered successfully.")
         except Exception as e:
             flash("An error occurred while trying to delete the staff. Please try again.")
             print("Error:", e)
@@ -857,6 +841,14 @@ def delete_staff():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+def renumber_staff():
+    staff_members = Staff.query.order_by(Staff.id).all()
+    for index, staff_member in enumerate(staff_members, start=1):
+        staff_member.id = index
+    db.session.commit()
+
+# Ensure you have the rest of your routes and logic here
 
 @app.route('/delete_admin', methods=["POST"])
 def delete_admin():
