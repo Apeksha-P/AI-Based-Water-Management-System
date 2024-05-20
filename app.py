@@ -802,6 +802,7 @@ def delete_student():
         try:
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
+            renumber_student()  # Renumber remaining student
             flash("Student deleted and IDs renumbered successfully.")
 
         except Exception as e:
@@ -812,6 +813,13 @@ def delete_student():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+
+def renumber_student():
+    student_members = Student.query.order_by(Student.id).all()
+    for index, student_member in enumerate(student_members, start=1):
+        student_member.id = index
+    db.session.commit()
 
 
 @app.route('/delete_staff', methods=["POST"])
