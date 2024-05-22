@@ -875,6 +875,7 @@ def delete_admin():
         try:
             db.session.delete(admin)  # Remove the admin from the database
             db.session.commit()  # Save changes
+            renumber_admin()  # Renumber remaining admin
             flash("Admin deleted successfully.")
         except Exception as e:
             flash("An error occurred while trying to delete the admin. Please try again.")
@@ -884,6 +885,13 @@ def delete_admin():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+
+def renumber_admin():
+    admin_members = Admin.query.order_by(Admin.id).all()
+    for index, admin_member in enumerate(admin_members, start=1):
+        admin_member.id = index
+    db.session.commit()
 
 @app.route('/forgotPasswordStudent', methods=["GET","POST"])
 def forgotPasswordStudent():
