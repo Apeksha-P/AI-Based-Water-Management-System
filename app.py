@@ -795,6 +795,7 @@ def delete_student():
 
     # Get the student ID from the form data
     student_id = request.form.get("student_id")
+    logged_in_student_id = session.get('student_id')
 
     # Query the student to be deleted
     student = Student.query.filter_by(id=student_id).first()
@@ -805,6 +806,11 @@ def delete_student():
             db.session.commit()  # Save changes
             renumber_student()  # Renumber remaining student
             flash("Student deleted and IDs renumbered successfully.")
+
+            # Check if the deleted student is the currently logged-in student
+            if student_id == str(logged_in_student_id):
+                session.pop('student_id')  # Clear the session
+                return redirect(url_for("signinStudent_form"))  # Redirect to sign-in page
 
         except Exception as e:
             flash("An error occurred while trying to delete the student. Please try again.")
