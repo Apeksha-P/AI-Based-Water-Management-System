@@ -338,9 +338,10 @@ def signinAdmin_form():
 @app.route('/signinAccessAdmin', methods=["GET", "POST"])
 def signinAccessAdmin_form():
     if request.method == "POST":
+        email = request.form.get('email')
         password = request.form.get('password')
         # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by().first()
+        admin = Admin.query.filter_by(email=email).first()
         if admin and bcrypt.check_password_hash(admin.password, password):
             # Store Admin information in session
             session['admin_id'] = admin.id
@@ -867,24 +868,32 @@ def delete_admin():
 
     # Get the admin ID from the form data
     admin_id = request.form.get("admin_id")
+    logged_in_admin_id = session.get('admin_id')
 
-    # Query the student to be deleted
+    # Query the admin to be deleted
     admin = Admin.query.filter_by(id=admin_id).first()
 
     if admin:
         try:
             db.session.delete(admin)  # Remove the admin from the database
             db.session.commit()  # Save changes
-            renumber_admin()  # Renumber remaining admin
+            renumber_admin()  # Renumber remaining admins
             flash("Admin deleted successfully.")
+
+            # Check if the deleted admin is the currently logged-in admin
+            if admin_id == str(logged_in_admin_id):
+                session.pop('admin_id')  # Clear the session
+                return redirect(url_for("signinAdmin_form"))  # Redirect to sign-in page
+
         except Exception as e:
             flash("An error occurred while trying to delete the admin. Please try again.")
             print("Error:", e)
     else:
         flash("Admin not found.")
 
-    # Redirect back to the table after deletion
+    # Redirect back to the table after deletion if the deleted admin is not the currently logged-in admin
     return redirect(url_for("accessAdmin_form"))
+
 
 
 def renumber_admin():
