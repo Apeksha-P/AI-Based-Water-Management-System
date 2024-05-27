@@ -837,7 +837,7 @@ def delete_staff():
         return redirect(url_for("signinAdmin_form"))
 
     # Get the staff ID from the form data
-    staff_id = request.form.get("c")
+    staff_id = request.form.get("staff_id")
     logged_in_staff_id = session.get('staff_id')
 
     # Query the staff to be deleted
