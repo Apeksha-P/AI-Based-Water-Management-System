@@ -338,9 +338,10 @@ def signinAdmin_form():
 @app.route('/signinAccessAdmin', methods=["GET", "POST"])
 def signinAccessAdmin_form():
     if request.method == "POST":
+        email = request.form.get('email')
         password = request.form.get('password')
         # Query the database for the Admin with the given email and password
-        admin = Admin.query.filter_by().first()
+        admin = Admin.query.filter_by(email=email).first()
         if admin and bcrypt.check_password_hash(admin.password, password):
             # Store Admin information in session
             session['admin_id'] = admin.id
@@ -794,18 +795,23 @@ def delete_student():
 
     # Get the student ID from the form data
     student_id = request.form.get("student_id")
+    logged_in_student_id = session.get('student_id')
 
     # Query the student to be deleted
     student = Student.query.filter_by(id=student_id).first()
 
     if student:
         try:
-            deleted_student_id = student.id  # Store the ID of the student to be deleted
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
-            flash("Student deleted successfully.")
+            renumber_student()  # Renumber remaining student
+            flash("Student deleted and IDs renumbered successfully.")
 
-            update_student_ids(deleted_student_id)
+            # Check if the deleted student is the currently logged-in student
+            if student_id == str(logged_in_student_id):
+                session.pop('student_id')  # Clear the session
+                return redirect(url_for("signinStudent_form"))  # Redirect to sign-in page
+
         except Exception as e:
             flash("An error occurred while trying to delete the student. Please try again.")
             print("Error:", e)
@@ -815,20 +821,12 @@ def delete_student():
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
 
-def update_student_ids(deleted_student_id):
-    # Retrieve all students from the database sorted by ID in ascending order
-    students = Student.query.order_by(Student.id.asc()).all()
 
-    # Check if the deleted student's ID is within the list of students
-    if deleted_student_id in [student.id for student in students]:
-        # Iterate over the students and update their IDs to remove gaps
-        for index, student in enumerate(students, start=1):
-            student.id = index
-
-        db.session.commit()
-    else:
-        # Handle the case where the deleted student's ID is not found
-        flash("Deleted student ID not found.")
+def renumber_student():
+    student_members = Student.query.order_by(Student.id).all()
+    for index, student_member in enumerate(student_members, start=1):
+        student_member.id = index
+    db.session.commit()
 
 
 @app.route('/delete_staff', methods=["POST"])
@@ -840,15 +838,23 @@ def delete_staff():
 
     # Get the staff ID from the form data
     staff_id = request.form.get("staff_id")
+    logged_in_staff_id = session.get('staff_id')
 
     # Query the staff to be deleted
     staff = Staff.query.filter_by(id=staff_id).first()
 
     if staff:
         try:
-            db.session.delete(staff)  # Remove the student from the database
+            db.session.delete(staff)  # Remove the staff from the database
             db.session.commit()  # Save changes
-            flash("Staff deleted successfully.")
+            renumber_staff()  # Renumber remaining staff
+            flash("Staff deleted and IDs renumbered successfully.")
+
+            # Check if the deleted staff is the currently logged-in staff
+            if staff_id == str(logged_in_staff_id):
+                session.pop('staff_id')  # Clear the session
+                return redirect(url_for("signinStaff_form"))  # Redirect to sign-in page
+
         except Exception as e:
             flash("An error occurred while trying to delete the staff. Please try again.")
             print("Error:", e)
@@ -857,6 +863,14 @@ def delete_staff():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
+
+def renumber_staff():
+    staff_members = Staff.query.order_by(Staff.id).all()
+    for index, staff_member in enumerate(staff_members, start=1):
+        staff_member.id = index
+    db.session.commit()
+
+# Ensure you have the rest of your routes and logic here
 
 @app.route('/delete_admin', methods=["POST"])
 def delete_admin():
@@ -867,23 +881,39 @@ def delete_admin():
 
     # Get the admin ID from the form data
     admin_id = request.form.get("admin_id")
+    logged_in_admin_id = session.get('admin_id')
 
-    # Query the student to be deleted
+    # Query the admin to be deleted
     admin = Admin.query.filter_by(id=admin_id).first()
 
     if admin:
         try:
             db.session.delete(admin)  # Remove the admin from the database
             db.session.commit()  # Save changes
+            renumber_admin()  # Renumber remaining admins
             flash("Admin deleted successfully.")
+
+            # Check if the deleted admin is the currently logged-in admin
+            if admin_id == str(logged_in_admin_id):
+                session.pop('admin_id')  # Clear the session
+                return redirect(url_for("signinAdmin_form"))  # Redirect to sign-in page
+
         except Exception as e:
             flash("An error occurred while trying to delete the admin. Please try again.")
             print("Error:", e)
     else:
         flash("Admin not found.")
 
-    # Redirect back to the table after deletion
+    # Redirect back to the table after deletion if the deleted admin is not the currently logged-in admin
     return redirect(url_for("accessAdmin_form"))
+
+
+
+def renumber_admin():
+    admin_members = Admin.query.order_by(Admin.id).all()
+    for index, admin_member in enumerate(admin_members, start=1):
+        admin_member.id = index
+    db.session.commit()
 
 @app.route('/forgotPasswordStudent', methods=["GET","POST"])
 def forgotPasswordStudent():
