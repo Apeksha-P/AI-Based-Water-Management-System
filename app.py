@@ -838,6 +838,7 @@ def delete_staff():
 
     # Get the staff ID from the form data
     staff_id = request.form.get("staff_id")
+    logged_in_staff_id = session.get('staff_id')
 
     # Query the staff to be deleted
     staff = Staff.query.filter_by(id=staff_id).first()
@@ -848,6 +849,12 @@ def delete_staff():
             db.session.commit()  # Save changes
             renumber_staff()  # Renumber remaining staff
             flash("Staff deleted and IDs renumbered successfully.")
+
+            # Check if the deleted staff is the currently logged-in staff
+            if staff_id == str(logged_in_staff_id):
+                session.pop('staff_id')  # Clear the session
+                return redirect(url_for("signinStaff_form"))  # Redirect to sign-in page
+
         except Exception as e:
             flash("An error occurred while trying to delete the staff. Please try again.")
             print("Error:", e)
