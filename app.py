@@ -100,46 +100,49 @@ def send_otp_email_p(email, otp):
         flash("An error occurred while sending the email. Please try again later.", "danger")
 
 
-@app.route('/signupStudent', methods=["POST", "GET"])
+@app.route('/signupStudent', methods=["POST"])
 def signupStudent():
     if request.method == "POST":
         email = request.form.get('email')
         # Check if email matches the pattern
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$'
+        if not re.match(email_pattern, email):
             flash('Invalid email address. Please use a student email from the format name-CSXXXXX@stu.kln.ac.lk.')
             return redirect(url_for('signupStudent'))
 
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             flash('Email already exists. Please use a different email.')
-            return redirect(url_for('signupStudent'))
+            return redirect(url_for('alreadySignupStudent_form'))
+        else:
 
-        fname = request.form.get('fname')
-        lname = request.form.get('lname')
-        password = request.form.get('password')
-        cnumber = request.form.get('cnumber')
+            fname = request.form.get('fname')
+            lname = request.form.get('lname')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            cnumber = request.form.get('cnumber')
 
-        # Generate OTP
-        otp = str(random.randint(100000, 999999))
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        # Send OTP via email
-        send_otp_email(email, otp, fname)
+            # Send OTP via email
+            send_otp_email_p(email, otp)
 
         # Store signup data in session
-        session['signup_data'] = {
-            'fname': fname,
-            'lname': lname,
-            'email': email,
-            'password': hashed_password,
-            'cnumber': cnumber,
-            'otp': otp
-        }
+            session['signup_data'] = {
+                'fname': fname,
+                'lname': lname,
+                'email': email,
+                'password': hashed_password,
+                'cnumber': cnumber,
+                'otp': otp
+            }
 
-        # Redirect to verifyStudent page
-        return redirect(url_for('verifyStudent'))
+            # Redirect to verifyStudent page
+            return redirect(url_for('verifyStudent'))
 
-    return render_template('signupStudent.html')
+        return render_template('signupStudent.html')
 
 @app.route('/alreadySignupStudent')
 def alreadySignupStudent_form():
