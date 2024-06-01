@@ -107,12 +107,12 @@ def signupStudent():
         # Check if email matches the pattern
         if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
             flash('Invalid email address. Please use a student email from the format name-CSXXXXX@stu.kln.ac.lk.')
-            return redirect(url_for('signupStudent_form'))
+            return redirect(url_for('signupStudent'))
 
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             flash('Email already exists. Please use a different email.')
-            return redirect(url_for('signupStudent_form'))
+            return redirect(url_for('signupStudent'))
 
         fname = request.form.get('fname')
         lname = request.form.get('lname')
