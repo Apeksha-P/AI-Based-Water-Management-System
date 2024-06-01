@@ -104,6 +104,22 @@
   </div>
   <!-- Sign Up End -->
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector('form');
+    const emailInput = document.querySelector('input[name="email"]');
+
+    form.addEventListener('submit', function(event) {
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$/;
+      const email = emailInput.value;
+
+      if (!emailPattern.test(email)) {
+        alert('Invalid email address. Please use an email with the pattern name-CSXXXXX@stu.kln.ac.lk.');
+        event.preventDefault();
+      }
+    });
+  });
+</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
