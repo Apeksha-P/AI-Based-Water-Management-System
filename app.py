@@ -2,7 +2,8 @@ import json
 from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import random
-from flask_mail import *
+from flask_mail import Mail, Message
+#from flask_mail import *
 from flask import flash
 from flask_bcrypt import Bcrypt, check_password_hash
 import os
@@ -13,12 +14,14 @@ app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 bcrypt = Bcrypt(app)
 
+# Flask-Mail configuration
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
 app.config["MAIL_PORT"] = 587
-app.config["MAIL_USERNAME"] = "apeksha-cs20070@stu.kln.ac.lk"
-app.config["MAIL_PASSWORD"] = 'CpDa@6080Ap'
+app.config["MAIL_USERNAME"] = "abhayas-cs20048@stu.kln.ac.lk"
+app.config["MAIL_PASSWORD"] = 'Sk19990919..'
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USE_SSL"] = False
+app.config['MAIL_DEFAULT_SENDER'] = 'apeksha-cs20070@stu.kln.ac.lk'
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
@@ -85,16 +88,16 @@ def send_otp_email(email, otp, fname):
         print("Email sent successfully!")
     except Exception as e:
         print("An error occurred while sending the email:", e)
-
+        flash("An error occurred while sending the email. Please try again later.", "danger")
 
 def send_otp_email_p(email, otp):
     try:
         msg = Message('Email verification', sender=app.config["MAIL_USERNAME"], recipients=[email])
-        msg.html = render_template('emailtemplate.html', otp=otp,email=email)
+        msg.html = render_template('emailtemplate.html', otp=otp, email=email)
         mail.send(msg)
     except Exception as e:
         print("An error occurred while sending the email:", e)
-
+        flash("An error occurred while sending the email. Please try again later.", "danger")
 
 
 @app.route('/signupStudent', methods=["POST", "GET"])
@@ -103,13 +106,13 @@ def signupStudent():
         email = request.form.get('email')
         # Check if email matches the pattern
         if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
-            flash('Invalid email address. Please use an student email from the name-CSXXXXX@stu.kln.ac.lk.')
+            flash('Invalid email address. Please use a student email from the format name-CSXXXXX@stu.kln.ac.lk.')
             return redirect(url_for('signupStudent'))
 
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             flash('Email already exists. Please use a different email.')
-            return redirect(url_for('alreadySignupStudent_form'))
+            return redirect(url_for('signupStudent'))
 
         fname = request.form.get('fname')
         lname = request.form.get('lname')
@@ -147,8 +150,9 @@ def signupStaff():
     if request.method == "POST":
         email = request.form.get('email')
         # Check if email matches the pattern
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
-            flash('Invalid email address. Please use an staff email from the name-CSXXXXX@stu.kln.ac.lk.')
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$'
+        if not re.match(email_pattern, email):
+            flash('Invalid email address. Please use an email with the pattern name-CSXXXXX@stu.kln.ac.lk.', 'danger')
             return redirect(url_for('signupStaff'))
 
         existing_staff = Staff.query.filter_by(email=email).first()
