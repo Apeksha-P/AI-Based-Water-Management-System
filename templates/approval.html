@@ -55,7 +55,7 @@
         }
 
         .widget:hover {
-            background-color: #0d6efd; /* Change background color on hover */
+            background-color: #192a56; /* Change background color on hover */
             transform: scale(1.05); /* Slightly increase the widget size */
         }
 
@@ -65,7 +65,7 @@
         }
 
         .widget h2:hover {
-            color: #ccc; /* Lighter color on hover */
+            color: #7f8fa6; /* Lighter color on hover */
         }
 
         .widget img {
@@ -118,27 +118,12 @@
         <h2>Student</h2></a>
     </div>
 
-    <div class="widget" id="admin-widget">
+    <div class="widget" id="admin-widget"><a href="{{ url_for('signinAdmin_form')}}">
         <img src="../static/img/admin.png" alt="Admin">
-        <h2>Admin</h2>
+        <h2>Admin</h2></a>
     </div>
 </div>
 <!-- Content End -->
-{#    <div class="approval-section">#}
-{#        <div class="row approval-section-upper-row">#}
-{#            <div class="col-12 col-sm-6 col-md-4 col-lg-3 approval-section-widget upper-row-box-1">#}
-{#                <a href="{{ url_for('signinStaff_form')}}"><h1>Staff</h1></a>#}
-{#            </div>#}
-{#            <div class="col-12 col-sm-6 col-md-4 col-lg-3 approval-section-widget upper-row-box-2">#}
-{#                <a href="{{ url_for('signinStudent_form')}}"><h1>Student</h1></a>#}
-{#            </div>#}
-{#        </div>#}
-{#        <div class="row approval-section-bottom-row">#}
-{#            <div class="col-12 col-sm-6 col-md-4 col-lg-3 approval-section-widget bottom-row-box-1">#}
-{#                <a href=""><h1>Admin</h1></a>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

@@ -4,13 +4,12 @@
 <head>
     <meta charset="utf-8">
     <title>UOK FCT AI Based Water Management System</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
 
     <!-- Favicon -->
-    <!-- <link href="img/favicon.ico" rel="icon"> -->
-    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+    <link rel="icon" type="image/png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,8 +54,8 @@
                 <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                 <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
                 <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
-                <a href="{{ url_for('accessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa-solid fa-universal-access"></i>   Access</a>
-                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
+                <a href="{{ url_for('signinAccessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fas fa-universal-access"></i>   Access</a>
+                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fab fa-readme"></i>   Meter</a>
             </div>
         </nav>
     </div>
@@ -66,23 +65,27 @@
     <div class="content">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeAdmin')}}"     class="navbar-brand d-flex d-lg-none me-4">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand d-flex d-lg-none me-4">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%">ACCESS</h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('accessAdmin_form')}}">ACCESS</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="fa fa-bell me-lg-2"></i>
-                        <span class="d-none d-lg-inline-flex">Notificatin</span>
+                        <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% if admin.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=admin.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% endif %}
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
@@ -99,63 +102,36 @@
         <div class="container-fluid pt-4 px-4 ">
             <div class="row g-4">
 
-                <!--Start Student Table -->
+                <!-- Start Student Table -->
                 <div class="col-12">
                     <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
-                        <h6 class="mb-4">Student Table</h6>
+                        <h6 class="mb-4" style="font-size: 25px !important;">Student Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
                                 <thead>
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">First Name</th>
-                                    <th scope="col">Last Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Password</th>
-                                    <th scope="col">Contact Number</th>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
+                                {% for student in students %}
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Pavithri</td>
-                                    <td>Apeksha</td>
-                                    <td>apeksha@gmail.com</td>
-                                    <td>1234</td>
-                                    <td>0712353981</td>
+                                    <td>{{ student.id }}</td>
+                                    <td>{{ student.fname }} {{ student.lname }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.cnumber }}</td>
+                                    <td>
+                                        <!-- Delete button -->
+                                        <form action="{{ url_for('delete_student') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>Kokila</td>
-                                    <td>Abhayasundara</td>
-                                    <td>kvabhahaya@gmail.com</td>
-                                    <td>4231</td>
-                                    <td>0714824677</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>Piyumi</td>
-                                    <td>Nadeesha</td>
-                                    <td>piyumi@gmail.com</td>
-                                    <td>2098</td>
-                                    <td>0773920012</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>Tharushi</td>
-                                    <td>Shashikala</td>
-                                    <td>tharu@gmail.com</td>
-                                    <td>2758</td>
-                                    <td>0773284012</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>Dilshan</td>
-                                    <td>Sandaruwan</td>
-                                    <td>dilshan@gmail.com</td>
-                                    <td>2081</td>
-                                    <td>0703819235</td>
-                                </tr>
+                                {% endfor %}
                                 </tbody>
 
                             </table>
@@ -163,50 +139,39 @@
                     </div>
                 </div>
 
-                <!--End Student Table -->
+                <!-- End Student Table -->
 
                 <!-- Start Lecturer Table -->
 
                 <div class="col-12">
                     <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
-                        <h6 class="mb-4">Lecturer Table</h6>
+                        <h6 class="mb-4" style="font-size: 25px !important;">Staff Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
                                 <thead>
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">First Name</th>
-                                    <th scope="col">Last Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Password</th>
-                                    <th scope="col">Contact Number</th>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
+                                {% for staff in staff %}
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Kasun</td>
-                                    <td>Fernando</td>
-                                    <td>kasun@gmail.com</td>
-                                    <td>2144</td>
-                                    <td>0714454242</td>
+                                    <td>{{ staff.id }}</td>
+                                    <td>{{ staff.fname }} {{ staff.lname }}</td>
+                                    <td>{{ staff.email }}</td>
+                                    <td>{{ staff.cnumber }}</td>
+                                    <td>
+                                        <!-- Delete button -->
+                                        <form action="{{ url_for('delete_staff') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this staff?');">
+                                            <input type="hidden" name="staff_id" value="{{ staff.id }}">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>Nishmi</td>
-                                    <td>Nadeesha</td>
-                                    <td>nisha@gmail.com</td>
-                                    <td>2154</td>
-                                    <td>0762392031</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>Piyumi</td>
-                                    <td>Dilshana</td>
-                                    <td>dil@gmail.com</td>
-                                    <td>2212</td>
-                                    <td>0777858435</td>
-                                </tr>
+                                {% endfor %}
                                 </tbody>
 
                             </table>
@@ -214,37 +179,45 @@
                     </div>
                 </div>
 
-                <!--End Lecturer Table -->
+                <!-- End Lecturer Table -->
 
                 <!-- Start Admin Table -->
 
                 <div class="col-12">
                     <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
-                        <h6 class="mb-4">Admin Table</h6>
+                        <h6 class="mb-4" style="font-size: 25px !important;">Admin Table</h6>
                         <div class="table-responsive">
                             <table class="table" style="color:rgba(255, 255, 255, 0.7) !important;">
+
                                 <thead>
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">First Name</th>
-                                    <th scope="col">Last Name</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Password</th>
-                                    <th scope="col">Contact Number</th>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Contact Number</th>
                                 </tr>
                                 </thead>
                                 <tbody>
+                                {% for admin in admins %}
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Yasinsa</td>
-                                    <td>Mahanama</td>
-                                    <td>yasi@gmail.com</td>
-                                    <td>1215</td>
-                                    <td>0706638182</td>
+                                    <td>{{ admin.id }}</td>
+                                    <td>{{ admin.fname }} {{ admin.lname }}</td>
+                                    <td>{{ admin.email }}</td>
+                                    <td>{{ admin.cnumber }}</td>
+                                    <td>
+                                        <!-- Delete button -->
+                                        <form action="{{ url_for('delete_admin') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this admin?');">
+                                            <input type="hidden" name="admin_id" value="{{ admin.id }}">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
+                                {% endfor %}
                                 </tbody>
 
                             </table>
+
+                            <a href="{{ url_for('addAdmin_form')}}" class="btn btn-primary" style="background-color: #192a56 !important; margin-left: 1000px !important;">Add Admin</a>
                         </div>
                     </div>
                 </div>
@@ -276,7 +249,7 @@
                         <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
                         <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
                         <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
-                        <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
+                        <a href="{{ url_for('signinAccessAdmin_form')}}" target="_blank">Access</a><br>
                         <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
                     </div>
                     <div class="col-12 col-md-3 text-left">
@@ -324,4 +297,3 @@
 </body>
 
 </html>
-
