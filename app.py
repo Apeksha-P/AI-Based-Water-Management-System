@@ -1,20 +1,20 @@
 import json
-from flask import Flask, render_template, request, redirect, url_for, session,send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, flash,g
 from flask_sqlalchemy import SQLAlchemy
-import random
 from flask_mail import Mail, Message
-#from flask_mail import *
-from flask import flash
-from flask_bcrypt import Bcrypt, check_password_hash
-import os
+from flask_bcrypt import Bcrypt,check_password_hash
+import mysql.connector
+from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
+import os
 import re
+import random
 
+# Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
-bcrypt = Bcrypt(app)
 
-# Flask-Mail configuration
+# Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USERNAME"] = "abhayas-cs20048@stu.kln.ac.lk"
@@ -25,43 +25,95 @@ app.config['MAIL_DEFAULT_SENDER'] = 'apeksha-cs20070@stu.kln.ac.lk'
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
-# Database configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/reg'
+# Configure Flask-SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:1234@localhost/AIBWMS'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Initialize Flask-Bcrypt
+bcrypt = Bcrypt(app)
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
+
+# Database configuration
+db_config = {
+    'user': 'root',
+    'password': '1234',
+    'host': 'localhost',
+    'database': 'AIBWMS'
+}
+
+def create_database_if_not_exists():
+    try:
+        cnx = mysql.connector.connect(user=db_config['user'], password=db_config['password'], host=db_config['host'])
+        cursor = cnx.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_config['database']}")
+        cursor.close()
+        cnx.close()
+        print(f"Database '{db_config['database']}' created or already exists.")
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
 
 UPLOAD_FOLDER = 'static/pictures'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 class Student(db.Model):
-    __student__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
-    fname = db.Column(db.String(50))
-    lname = db.Column(db.String(50))
-    email = db.Column(db.String(50),unique=True)
+    fname = db.Column(db.String(100))
+    lname = db.Column(db.String(100))
+    email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255))
-    cnumber = db.Column(db.String(50))
-    picture = db.Column(db.String(255))
+    cnumber = db.Column(db.String(20))
+    picture = db.Column(db.String(255), nullable=True, default=None)
+
+    def __init__(self, fname, lname, email, password, cnumber, picture=None):
+        self.fname = fname
+        self.lname = lname
+        self.email = email
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.cnumber = cnumber
+        self.picture = picture
 
 class Staff(db.Model):
-    __staff__ = 'staffs'
+    __tablename__ = 'staffs'
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50),unique=True)
+    email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
-    picture = db.Column(db.String(255))
+    picture = db.Column(db.String(255), nullable=True, default=None)
+
+    def __init__(self, fname, lname, email, password, cnumber, picture=None):
+        self.fname = fname
+        self.lname = lname
+        self.email = email
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.cnumber = cnumber
+        self.picture = picture
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
-    email = db.Column(db.String(50),unique=True)
+    email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(255))
     cnumber = db.Column(db.String(50))
-    picture = db.Column(db.String(255))
+    picture = db.Column(db.String(255), nullable=True, default=None)
 
+    def __init__(self, fname, lname, email, password, cnumber, picture=None):
+        self.fname = fname
+        self.lname = lname
+        self.email = email
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.cnumber = cnumber
+        self.picture = picture
+@app.before_request
+def create_tables():
+    if not hasattr(g, '_db_tables_created'):
+        db.create_all()
+        g._db_tables_created = True
 
 @app.route('/')
 def index_form():
@@ -100,33 +152,31 @@ def send_otp_email_p(email, otp):
         flash("An error occurred while sending the email. Please try again later.", "danger")
 
 
-@app.route('/signupStudent', methods=["POST", "GET"])
+@app.route('/signupStudent', methods=["POST"])
 def signupStudent():
     if request.method == "POST":
         email = request.form.get('email')
-        # Check if email matches the pattern
-        if not re.match(r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$', email):
-            flash('Invalid email address. Please use a student email from the format name-CSXXXXX@stu.kln.ac.lk.')
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$'
+        if not re.match(email_pattern, email):
+            flash('Invalid email address. Please use a student email in the format name-CSXXXXX@stu.kln.ac.lk.')
             return redirect(url_for('signupStudent'))
 
         existing_student = Student.query.filter_by(email=email).first()
         if existing_student:
             flash('Email already exists. Please use a different email.')
-            return redirect(url_for('signupStudent'))
+            return redirect(url_for('alreadySignupStudent_form'))
 
         fname = request.form.get('fname')
         lname = request.form.get('lname')
         password = request.form.get('password')
         cnumber = request.form.get('cnumber')
 
-        # Generate OTP
         otp = str(random.randint(100000, 999999))
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        print(f"Signup hashed password: {hashed_password}")  # Debugging log
 
-        # Send OTP via email
-        send_otp_email(email, otp, fname)
+        send_otp_email_p(email, otp)
 
-        # Store signup data in session
         session['signup_data'] = {
             'fname': fname,
             'lname': lname,
@@ -136,7 +186,6 @@ def signupStudent():
             'otp': otp
         }
 
-        # Redirect to verifyStudent page
         return redirect(url_for('verifyStudent'))
 
     return render_template('signupStudent.html')
@@ -284,20 +333,28 @@ def signinStudent_form():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
-        # Query the database for the student with the given email
+
+        print(f"Sign in attempt with email: {email}")  # Debugging log
+
         student = Student.query.filter_by(email=email).first()
-        if student and check_password_hash(student.password, password):
-            # Passwords match, user is authenticated
-            # Store student's information in session
-            session['student_id'] = student.id
-            session['student_email'] = student.email
-            session['student_fname'] = student.fname
-            # Redirect to the home page after successful login
-            return redirect(url_for('homeStudent'))
+
+        if student:
+            print(f"Student found: {student.fname}")  # Debugging log
+            print(f"Stored hashed password: {student.password}")  # Debugging log
+            print(f"Entered password: {password}")  # Debugging log
+            if bcrypt.check_password_hash(student.password, password):
+                print("Password match")  # Debugging log
+                session['student_id'] = student.id
+                session['student_email'] = student.email
+                session['student_fname'] = student.fname
+                return redirect(url_for('homeStudent'))
+            else:
+                print("Password mismatch")  # Debugging log
         else:
-            # Invalid email or password, render the signinStudent.html template with an error message
-            return render_template('signinStudent.html', error_message="Invalid email or password.")
-    # Render the signinStaff.html template for GET requests
+            print("No student found with this email")  # Debugging log
+
+        return render_template('signinStudent.html', error_message="Invalid email or password.")
+
     return render_template('signinStudent.html')
 
 
@@ -1139,5 +1196,6 @@ def get_current_admin():
         admin_id = session['admin_id']
         return Admin.query.get(admin_id)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    create_database_if_not_exists()  # Ensure the database exists before running the app
     app.run(debug=True)
