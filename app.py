@@ -1129,6 +1129,10 @@ def resetPasswordAdmin():
 def serve_data(filename):
     return send_from_directory('data', filename)
 
+@app.route('/ viewMore')
+def view_more():
+    return render_template('viewMore.html')
+
 @app.route('/remove_pictureStudent', methods=['POST'])
 def remove_pictureStudent():
     student = get_current_student()
