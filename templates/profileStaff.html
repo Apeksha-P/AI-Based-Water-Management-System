@@ -69,6 +69,7 @@
       <a href="#" class="sidebar-toggler flex-shrink-0">
         <i class="fa fa-bars"></i>
       </a>
+      <h3 style="margin: 2%"><a href="{{ url_for('profileStaff_form')}}">PROFILE</a></h3>
       <div class="navbar-nav align-items-center ms-auto">
         <div class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -145,6 +146,31 @@
               </tr>
               </tbody>
             </table>
+            <a href="{{ url_for('forgotPasswordStaff')}}" style="border: 1px solid black; padding: 5px; border-radius: 3px;">Reset Password</a>
+
+            <button id="editButton" style="border: 1px solid black; padding: 5px; border-radius: 3px; margin-left: 56%; background-color: #242B3E !important;" class="btn btn-primary">Edit Profile</button>
+
+            <!-- Edit Profile Form -->
+            <form id="editForm" action="{{ url_for('update_profileStaff') }}" method="POST" class="edit-form" style="display: none;">
+              <div class="mb-3">
+                <label for="fname" class="form-label">First Name:</label>
+                <input type="text" class="form-control" id="fname" name="fname" value="{{ staff.fname }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="lname" class="form-label">Last Name:</label>
+                <input type="text" class="form-control" id="lname" name="lname" value="{{ staff.lname }}" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ staff.email }}" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="cnumber" class="form-label">Contact Number:</label>
+                <input type="text" class="form-control" id="cnumber" name="cnumber" value="{{ staff.cnumber }}">
+              </div>
+              <button type="submit" style="border: 1px solid black; padding: 5px; border-radius: 3px; background-color: #242B3E !important;" class="btn btn-primary">Save Changes</button>
+            </form>
+
           </div>
         </div>
       </div>
@@ -215,6 +241,17 @@
       console.error('Error removing profile picture:', error);
     });
   }
+
+  // JavaScript to toggle the visibility of the edit form
+  document.getElementById('editButton').addEventListener('click', function() {
+    var editForm = document.getElementById('editForm');
+    if (editForm.style.display === 'none' || editForm.style.display === '') {
+      editForm.style.display = 'block';
+    } else {
+      editForm.style.display = 'none';
+    }
+  });
+
 </script>
 
 <!-- JavaScript Libraries -->
@@ -233,4 +270,3 @@
 </body>
 
 </html>
-
