@@ -44,6 +44,22 @@ db_config = {
     'database': 'AIBWMS'
 }
 
+# Path to the CSV file (make sure to create this file with initial data)
+csv_file_path = 'dataset.csv'
+
+# Load the dataset
+def load_data():
+    try:
+        df = pd.read_csv(csv_file_path)
+    except FileNotFoundError:
+        df = pd.DataFrame(columns=['Month', 'Meter Reading', 'Water Usage'])
+    return df
+
+# Save the dataset
+def save_data(df):
+    df.to_csv(csv_file_path, index=False)
+
+
 def create_database_if_not_exists():
     try:
         cnx = mysql.connector.connect(user=db_config['user'], password=db_config['password'], host=db_config['host'])
@@ -156,7 +172,7 @@ def send_otp_email_p(email, otp):
 def signupStudent():
     if request.method == "POST":
         email = request.form.get('email')
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$'
+        email_pattern = '^[a-zA-Z0-9._%+-]+@stu\.kln\.ac\.lk$'
         if not re.match(email_pattern, email):
             flash('Invalid email address. Please use a student email in the format name-CSXXXXX@stu.kln.ac.lk.')
             return redirect(url_for('signupStudent'))
