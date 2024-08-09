@@ -54,7 +54,7 @@
                 <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                 <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
                 <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
-                <a href="{{ url_for('accessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-solid fa-universal-access"></i>   Access</a>
+                <a href="{{ url_for('signinAccessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-solid fa-universal-access"></i>   Access</a>
                 <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
             </div>
         </nav>
@@ -71,17 +71,21 @@
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%">PROFILE</h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('profileAdmin_form')}}">PROFILE</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="fa fa-bell me-lg-2"></i>
-                        <span class="d-none d-lg-inline-flex">Notificatin</span>
+                        <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <img class="rounded-circle me-lg-2" src="{{ url_for('static', filename='img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
+                        {% if admin.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=admin.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% endif %}
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
@@ -98,9 +102,23 @@
                 <div class="col-sm-12 col-xl-6">
                     <div class="bg-secondary rounded h-100 p-4 pt-4">
                         <div class="text-center">
-                            <img src="{{ url_for('static', filename='img/profile.png') }}" alt="" class="rounded-circle pt-2 pb-2" width="150">
-                            <h2 class="pt-5">{{ admin.fname }}  {{ admin.lname }}</h2>
-                            <h4 class="pt-2">Admin</h4>
+                            {% if admin.picture %}
+                            <img id="profile-picture" src="{{ url_for('serve_uploaded_picture', filename=admin.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+                            {% else %}
+                            <img id="profile-picture" src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="200" height="200">
+                            {% endif %}
+                            <!-- Hidden file input -->
+                            <form action="{{ url_for('upload_pictureAdmin') }}" method="POST" enctype="multipart/form-data">
+                                <input type="file" id="image-upload" name="picture" style="display: none;" accept="image/*">
+                                <!-- Pencil image to trigger file input click -->
+                                <img src="{{ url_for('static', filename='img/pencil.png') }}" alt="Edit" width="30px"
+                                     style="padding-top: 40px; position: relative; top:-70px; left: 20px; transform: rotate(-70deg); cursor: pointer"
+                                     onclick="document.getElementById('image-upload').click()">
+                                <h2 class="pt-5">{{ admin.fname }}  {{ admin.lname }}</h2>
+                                <h4 class="pt-2">Admin</h4>
+                                <button type="submit" class="btn mt-3" style="border: 1px solid black; position: relative;top: -200px">Upload Picture</button>
+                                <button type="button" class="btn mt-3" onclick="removeProfilePicture()" style="border: 1px solid black; position: relative;top: -200px">Remove Picture</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -130,6 +148,30 @@
                             </tr>
                             </tbody>
                         </table>
+                        <a href="{{ url_for('forgotPasswordAdmin')}}" style="border: 1px solid black; padding: 5px; border-radius: 3px;">Reset Password</a>
+
+                        <button id="editButton" style="border: 1px solid black; padding: 5px; border-radius: 3px; margin-left: 56%; background-color: #242B3E !important;" class="btn btn-primary">Edit Profile</button>
+
+                        <!-- Edit Profile Form -->
+                        <form id="editForm" action="{{ url_for('update_profileAdmin') }}" method="POST" class="edit-form" style="display: none;">
+                            <div class="mb-3">
+                                <label for="fname" class="form-label">First Name:</label>
+                                <input type="text" class="form-control" id="fname" name="fname" value="{{ admin.fname }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="lname" class="form-label">Last Name:</label>
+                                <input type="text" class="form-control" id="lname" name="lname" value="{{ admin.lname }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ admin.email }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cnumber" class="form-label">Contact Number:</label>
+                                <input type="text" class="form-control" id="cnumber" name="cnumber" value="{{ admin.cnumber }}">
+                            </div>
+                            <button type="submit" style="border: 1px solid black; padding: 5px; border-radius: 3px; background-color: #242B3E !important;" class="btn btn-primary">Save Changes</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -156,7 +198,7 @@
                         <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
                         <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
                         <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
-                        <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
+                        <a href="{{ url_for('signinAccessAdmin_form')}}" target="_blank">Access</a><br>
                         <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter Reading</a><br>
                     </div>
                     <div class="col-12 col-md-3 text-left">
@@ -186,6 +228,34 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
+
+<script>
+    function removeProfilePicture() {
+        var profilePicture = document.getElementById('profile-picture');
+        profilePicture.src = "{{ url_for('static', filename='img/profile.png') }}";
+        document.getElementById('image-upload').value = '';
+        fetch('/remove_pictureAdmin', {
+            method: 'POST',
+            body: new FormData()
+        }).then(response => {
+            console.log('Profile picture removed successfully');
+            window.location.reload();
+        }).catch(error => {
+            console.error('Error removing profile picture:', error);
+        });
+    }
+
+    // JavaScript to toggle the visibility of the edit form
+    document.getElementById('editButton').addEventListener('click', function() {
+        var editForm = document.getElementById('editForm');
+        if (editForm.style.display === 'none' || editForm.style.display === '') {
+            editForm.style.display = 'block';
+        } else {
+            editForm.style.display = 'none';
+        }
+    });
+
+</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

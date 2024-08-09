@@ -29,10 +29,20 @@
     opacity: 1;
 }
 
-
 /*** Button ***/
 .btn {
-    transition: .5s;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #826AF9;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+}
+.btn:hover {
+    background-color: #0d6efd; /* This is a shade of blue. */
+    color: white;
 }
 
 .btn-square {

@@ -70,12 +70,12 @@
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%">HOME</h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('homeStaff')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="fa fa-bell me-lg-2"></i>
-                        <span class="d-none d-lg-inline-flex">Notificatin</span>
+                        <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
                 </div>
                 <div class="nav-item dropdown">
@@ -101,7 +101,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <h1><span>AI</span> Based<br>Water<br><span>Management</span><br>System</h1>
-                        <a href="#"><div class="view-more-button">View More</div></a>
+                        <a href="{{ url_for('view_more') }}"><div class="view-more-button">View More</div></a>
                     </div>
                     <div class="col-md-6">
                         <img src="{{ url_for('static', filename='img/home-img.png') }}" alt="Image" class="img-fluid">
