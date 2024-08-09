@@ -333,10 +333,6 @@ def signinStudent_form():
         student = Student.query.filter_by(email=email).first()
 
         if student:
-            # Debugging log
-            print(f"Sign in attempt for student: {student.fname}, Email: {student.email}")
-            print(f"Stored hashed password: {student.password}")
-            print(f"Entered password: {password}")
 
             if bcrypt.check_password_hash(student.password, password):
                 session['student_id'] = student.id
@@ -1075,10 +1071,8 @@ def forgotPasswordAdmin():
         existing_admin = Admin.query.filter_by(email=email).first()
         if existing_admin:
             otp = str(random.randint(100000, 999999))
-            fname = existing_admin.fname  # Get the first name
 
-            send_otp_email(email, otp, fname)
-
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
