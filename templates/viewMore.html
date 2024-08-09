@@ -30,9 +30,60 @@
 
     <!-- Template Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        .right-align {
+            float: left; /* Align the image to the right */
+        }
+
+        img.right-align {
+            width: 500px;
+            height: 350px;
+            align-items: center;
+            float: left;
+            margin-right: 20px; /* Add right margin */
+        }
+
+        .para p {
+            text-align: justify;
+            color: #fff;
+            word-spacing: 4px; /* Increase space between words */
+            font-size: 18px; /* Increase font size */
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .content-inner {
+            flex: 1; /* Allow content to grow and take available space */
+        }
+
+        footer.container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        html, body {
+            overflow: hidden; /* No scrollbars */
+            height: 100%; /* Full height */
+        }
+    </style>
 </head>
 
-<body>
+<body style="background-color: #545557">
 <div class="container-fluid position-relative d-flex p-0">
     <!-- Spinner Start -->
     <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -43,64 +94,35 @@
     <!-- Spinner End -->
 
 
-    <!-- Sidebar Start -->
-    <div class="sidebar pe-4 pb-3">
-        <nav class="navbar bg-secondary navbar-dark">
-            <a href="{{ url_for('index_form')}}" class="navbar-brand mx-4 mb-3">
-                <h3 class="text-primary">AIBWMS</h3>
-            </a>
-
-            <div class="navbar-nav w-100">
-                <a href="{{ url_for('homeAdmin')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
-                <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
-                <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
-                <a href="{{ url_for('signinAccessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-solid fa-universal-access"></i>   Access</a>
-                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
-            </div>
-        </nav>
-    </div>
-    <!-- Sidebar End -->
-
     <!-- Content Start -->
-    <div class="content">
-        <!-- Navbar Start -->
-        <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeAdmin')}}"     class="navbar-brand d-flex d-lg-none me-4">
-                <h3 class="text-primary">AIBWMS</h3>
-            </a>
-            <a href="#" class="sidebar-toggler flex-shrink-0">
-                <i class="fa fa-bars"></i>
-            </a>
-            <h3 style="margin: 2%"><a href="{{ url_for('analysingAdmin_form')}}">ANALYSING</a></h3>
-            <div class="navbar-nav align-items-center ms-auto">
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fa fa-bell me-lg-2"></i>
-                        <span class="d-none d-lg-inline-flex">Notification</span>
-                    </a>
-                </div>
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        {% if admin.picture %}
-                        <img src="{{ url_for('serve_uploaded_picture', filename=admin.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
-                        {% else %}
-                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
-                        {% endif %}
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
-                        <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
-                        <a href="#" class="dropdown-item">Reports</a>
-                        <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
-                    </div>
-                </div>
+    <div class="content" style="margin-top: 1.5%;   width: 100%">
+        <div class="content-inner" style="padding: 20px;">
+            <!-- Add Your items Here -->
+            <div class="imap" style="padding: 20px">
+                <img src="{{url_for('static', filename='img/imgeee.webp')}}" style="width: 500px; height: 360px; align-items: center" class="right-align" alt="photo">
             </div>
-        </nav>
-        <!-- Navbar End -->
-        <!-- Add Your items Here -->
+
+            <!--Start line-->
+            <div class="line" style="text-align: justify; color: #fff;">
+                <b><hr></b>
+            </div>
+            <!--End line-->
+
+            <!--start paragraph-->
+            <div class="para">
+                <br><p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring<br> tools, lacks predictive analytics, leading to pollution and dwindling<br>  water quality.</p>
+            </div>
+            <!--End paragraph-->
+
+            <!--Start line-->
+            <div class="line" style="margin-top: 200px; text-align: justify; color: #fff;">
+                <hr>
+            </div>
+            <!--End line-->
+        </div>
 
         <!-- Footer Start -->
-        <footer class="container-fluid pt-4 px-4">
+        <footer class="container-fluid pt-4 ">
             <div class="bg-secondary rounded-top p-3">
                 <div class="row justify-content-center">
                     <div class="col-12 col-md-3 text-left">
@@ -120,7 +142,7 @@
                         <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
                         <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
                         <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
-                        <a href="{{ url_for('signinAccessAdmin_form')}}" target="_blank">Access</a><br>
+                        <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
                         <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
                     </div>
                     <div class="col-12 col-md-3 text-left">
@@ -148,7 +170,7 @@
     <!-- Content End -->
 
     <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+    <!--    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>-->
 </div>
 
 <!-- JavaScript Libraries -->
