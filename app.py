@@ -76,7 +76,7 @@ class Student(db.Model):
         self.picture = picture
 
 class Staff(db.Model):
-    __tablename__ = 'staffs'
+    __tablename__ = 'staff'
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(50))
     lname = db.Column(db.String(50))
