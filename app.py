@@ -171,10 +171,7 @@ def signupStudent():
         lname = request.form.get('lname')
         password = request.form.get('password')
         cnumber = request.form.get('cnumber')
-
         otp = str(random.randint(100000, 999999))
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        print(f"Signup hashed password: {hashed_password}")  # Debugging log
 
         send_otp_email_p(email, otp)
 
@@ -182,7 +179,7 @@ def signupStudent():
             'fname': fname,
             'lname': lname,
             'email': email,
-            'password': hashed_password,
+            'password': password,
             'cnumber': cnumber,
             'otp': otp
         }
@@ -217,7 +214,6 @@ def signupStaff():
             cnumber = request.form.get('cnumber')
             # Generate OTP
             otp = str(random.randint(100000, 999999))
-            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
             # Send OTP via email
             send_otp_email_p(email, otp)
             # Store signup data in session
@@ -225,7 +221,7 @@ def signupStaff():
                 'fname': fname,
                 'lname': lname,
                 'email': email,
-                'password': hashed_password,
+                'password': password,
                 'cnumber': cnumber,
                 'otp': otp
             }
@@ -335,23 +331,24 @@ def signinStudent_form():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        print(f"Sign in attempt with email: {email}")  # Debugging log
-
         student = Student.query.filter_by(email=email).first()
 
         if student:
-            print(f"Student found: {student.fname}")  # Debugging log
-            print(f"Stored hashed password: {student.password}")  # Debugging log
-            print(f"Entered password: {password}")  # Debugging log
+            # Debugging log
+            print(f"Sign in attempt for student: {student.fname}, Email: {student.email}")
+            print(f"Stored hashed password: {student.password}")
+            print(f"Entered password: {password}")
+
             if bcrypt.check_password_hash(student.password, password):
-                print("Password match")  # Debugging log
                 session['student_id'] = student.id
                 session['student_email'] = student.email
                 session['student_fname'] = student.fname
                 return redirect(url_for('homeStudent'))
             else:
+                flash("Invalid email or password.", "danger")
                 print("Password mismatch")  # Debugging log
         else:
+            flash("Invalid email or password.", "danger")
             print("No student found with this email")  # Debugging log
 
         return render_template('signinStudent.html', error_message="Invalid email or password.")
