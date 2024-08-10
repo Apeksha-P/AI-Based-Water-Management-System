@@ -1071,7 +1071,6 @@ def forgotPasswordAdmin():
         existing_admin = Admin.query.filter_by(email=email).first()
         if existing_admin:
             otp = str(random.randint(100000, 999999))
-
             send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
