@@ -121,7 +121,7 @@
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-0" style="font-size: 20px !important;">Last Month : </h6>
-                                    <small style="font-size: 20px !important;">10345</small>
+                                    <small style="font-size: 20px !important;">{{ last_month }}</small>
                                 </div>
                             </div>
                         </div>
@@ -129,8 +129,8 @@
                             <i class="fa-solid fa-gauge-high" style="font-size: 20px !important;"></i>
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-0" style="font-size: 20px !important;">This Month : </h6>
-                                    <small style="font-size: 20px !important;">10405</small>
+                                    <h6 class="mb0" style="font-size: 20px !important;">This Month : </h6>
+                                    <small style="font-size: 20px !important;">{{ this_month }}</small>
                                 </div>
                             </div>
                         </div>
@@ -138,10 +138,29 @@
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-0" style="font-size: 20px; color: #8c7ae6 !important;">UNITS : </h6>
-                                    <small style="font-size: 20px !important;">60</small>
+                                    <small style="font-size: 20px !important;">{{ usage }}</small>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4" style="background-color: #1A1F35 !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h6 class="mb-0" style="font-size: 25px !important;">Usage</h6>
+                        </div>
+                        <form id="usageForm" method="POST" action="{{ url_for('meterAdmin_form') }}">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="date" name="date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="usage" class="form-label">Enter Daily Usage</label>
+                                <input type="number" class="form-control" id="usage" name="usage" placeholder="Enter amount" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="font-size: 20px !important; margin-top: 20px;">Add</button>
+                        </form>
                     </div>
                 </div>
 
