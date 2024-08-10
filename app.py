@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import re
 import random
+import pandas as pd
 
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
@@ -858,8 +859,7 @@ def delete_student():
         try:
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
-            renumber_student()  # Renumber remaining student
-            flash("Student deleted and IDs renumbered successfully.")
+            flash("Student deleted successfully.")
 
             # Check if the deleted student is the currently logged-in student
             if student_id == str(logged_in_student_id):
@@ -875,12 +875,6 @@ def delete_student():
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
 
-
-def renumber_student():
-    student_members = Student.query.order_by(Student.id).all()
-    for index, student_member in enumerate(student_members, start=1):
-        student_member.id = index
-    db.session.commit()
 
 
 @app.route('/delete_staff', methods=["POST"])
@@ -901,8 +895,7 @@ def delete_staff():
         try:
             db.session.delete(staff)  # Remove the staff from the database
             db.session.commit()  # Save changes
-            renumber_staff()  # Renumber remaining staff
-            flash("Staff deleted and IDs renumbered successfully.")
+            flash("Staff deleted and successfully.")
 
             # Check if the deleted staff is the currently logged-in staff
             if staff_id == str(logged_in_staff_id):
@@ -917,14 +910,6 @@ def delete_staff():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
-
-def renumber_staff():
-    staff_members = Staff.query.order_by(Staff.id).all()
-    for index, staff_member in enumerate(staff_members, start=1):
-        staff_member.id = index
-    db.session.commit()
-
-# Ensure you have the rest of your routes and logic here
 
 @app.route('/delete_admin', methods=["POST"])
 def delete_admin():
@@ -944,7 +929,6 @@ def delete_admin():
         try:
             db.session.delete(admin)  # Remove the admin from the database
             db.session.commit()  # Save changes
-            renumber_admin()  # Renumber remaining admins
             flash("Admin deleted successfully.")
 
             # Check if the deleted admin is the currently logged-in admin
@@ -960,14 +944,6 @@ def delete_admin():
 
     # Redirect back to the table after deletion if the deleted admin is not the currently logged-in admin
     return redirect(url_for("accessAdmin_form"))
-
-
-
-def renumber_admin():
-    admin_members = Admin.query.order_by(Admin.id).all()
-    for index, admin_member in enumerate(admin_members, start=1):
-        admin_member.id = index
-    db.session.commit()
 
 @app.route('/forgotPasswordStudent', methods=["GET","POST"])
 def forgotPasswordStudent():
