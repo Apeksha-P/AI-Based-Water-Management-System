@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import re
 import random
+import pandas as pd
 
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
