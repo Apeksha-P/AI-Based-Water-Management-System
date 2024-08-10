@@ -10,6 +10,7 @@ import os
 import re
 import random
 import pandas as pd
+from datetime import datetime
 
 
 import logging
@@ -775,16 +776,152 @@ def accessAdmin_form():
         return redirect(url_for('signinAdmin_form'))
 
 
-@app.route('/meterAdmin')
+# def get_last_month_reading():
+#     df = pd.read_csv('data/dataset.csv')
+#     # Assuming 'Date' is in the format 'YYYY-MM-DD' and 'Reading' is the meter reading
+#     df['Date'] = pd.to_datetime(df['Date'])
+#     last_month = df['Date'].dt.month.max() - 1
+#     last_month_data = df[df['Date'].dt.month == last_month]
+#     last_month_total = last_month_data['MeterReading'].max()
+#     return last_month_total
+
+def get_last_month_reading():
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the 'Date' column to datetime, allowing pandas to infer the format
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Calculate the last month based on the most recent date in the dataset
+    last_date = df['Date'].max()
+    first_day_last_month = (last_date.replace(day=1) - pd.DateOffset(months=1)).replace(day=1)
+    last_day_last_month = last_date.replace(day=1) - pd.DateOffset(days=1)
+
+    # Filter data for the last month
+    last_month_data = df[(df['Date'] >= first_day_last_month) & (df['Date'] <= last_day_last_month)]
+    last_month_total = last_month_data['MeterReading'].max()
+
+    return last_month_total
+
+
+
+
+# def update_daily_usage(date, usage):
+#     df = pd.read_csv('data/dataset.csv')
+#     new_entry = {'Date': date, 'Usage': usage}
+#     df = df.append(new_entry, ignore_index=True)
+#     df.to_csv('dataset.csv', index=False)
+
+# def update_daily_usage(date, usage):
+#     # Load the dataset
+#     df = pd.read_csv('data/dataset.csv')
+#
+#     # Create a new DataFrame for the new entry
+#     new_entry = pd.DataFrame({'Date': [date], 'Usage': [usage]})
+#
+#     # Concatenate the old DataFrame with the new entry
+#     df = pd.concat([df, new_entry], ignore_index=True)
+#
+#     # Save the updated DataFrame back to CSV
+#     df.to_csv('data/dataset.csv', index=False)
+
+def update_daily_usage(date, usage):
+    # Load the dataset
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the input date to the desired format
+    formatted_date = pd.to_datetime(date).strftime("%m/%d/%Y %I:%M:%S %p")
+
+    # Ensure the 'Date' column in the DataFrame is in datetime format for comparison
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Get the last meter reading
+    last_meter_reading = df['MeterReading'].max()
+
+    # Calculate the new meter reading
+    new_meter_reading = last_meter_reading + float(usage)
+
+    # Create a new entry with the formatted date
+    new_entry = pd.DataFrame({'Date': [formatted_date], 'MeterReading': [new_meter_reading], 'Usage': [usage]})
+
+    # Concatenate the old DataFrame with the new entry
+    df = pd.concat([df, new_entry], ignore_index=True)
+
+    # Save the updated DataFrame back to CSV
+    df.to_csv('data/dataset.csv', index=False)
+
+
+
+
+# def get_this_month_data():
+#     df = pd.read_csv('data/dataset.csv')
+#     df['Date'] = pd.to_datetime(df['Date'])
+#     this_month = df['Date'].dt.month.max()
+#     this_month_data = df[df['Date'].dt.month == this_month]
+#     return this_month_data['MeterReading'].max(), this_month_data['Usage'].sum()
+
+def get_this_month_data():
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the 'Date' column to datetime, allowing pandas to infer the format
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Calculate the current month based on the most recent date in the dataset
+    current_month_start = df['Date'].max().replace(day=1)
+    next_month_start = (current_month_start + pd.DateOffset(months=1)).replace(day=1)
+
+    # Filter data for the current month
+    this_month_data = df[(df['Date'] >= current_month_start) & (df['Date'] < next_month_start)]
+    this_month_reading = this_month_data['MeterReading'].max()
+    this_month_usage = this_month_data['Usage'].sum()
+
+    return this_month_reading, this_month_usage
+
+
+#
+# @app.route('/meterAdmin')
+# def meterAdmin_form():
+#     if 'admin_id' in session:
+#         admin_id = session['admin_id']
+#         admin_email = session['admin_email']
+#         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+#         if admin:
+#             return render_template('meterAdmin.html', admin=admin)
+#         else:
+#             return "user not found"
+#     else:
+#         return redirect(url_for('signinAdmin_form'))
+
+@app.route('/meterAdmin', methods=['GET', 'POST'])
 def meterAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         admin_email = session['admin_email']
-        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
-            return render_template('meterAdmin.html', admin=admin)
+            if request.method == 'POST':
+                date = request.form['date']
+                usage = request.form['usage']
+                update_daily_usage(date, usage)
+                return redirect(url_for('meterAdmin_form'))
+
+            last_month_reading = get_last_month_reading()
+            this_month_reading, this_month_usage = get_this_month_data()
+
+            return render_template('meterAdmin.html', admin=admin,
+                                   last_month=last_month_reading,
+                                   this_month=this_month_reading,
+                                   usage=this_month_usage)
         else:
-            return "user not found"
+            return "User not found"
     else:
         return redirect(url_for('signinAdmin_form'))
 
