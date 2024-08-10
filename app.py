@@ -11,6 +11,10 @@ import re
 import random
 import pandas as pd
 from datetime import datetime
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
@@ -27,8 +31,10 @@ app.config['MAIL_DEFAULT_SENDER'] = 'apeksha-cs20070@stu.kln.ac.lk'
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
-# Configure Flask-SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:1234@localhost/AIBWMS'
+# Configure Flask-SQLAlchemy to connect to RDS MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'mysql+mysqlconnector://admin:AIBWMS123db@aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com:3306/AIBWMS_db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -38,12 +44,12 @@ bcrypt = Bcrypt(app)
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-# Database configuration
+# Database configuration (no longer needed if you use SQLAlchemy directly)
 db_config = {
-    'user': 'root',
-    'password': '1234',
-    'host': 'localhost',
-    'database': 'AIBWMS'
+    'user': 'admin',
+    'password': 'AIBWMS123db',
+    'host': 'aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
+    'database': 'AIBWMS_db'
 }
 
 # Path to the CSV file (make sure to create this file with initial data)
@@ -72,6 +78,7 @@ def create_database_if_not_exists():
         print(f"Database '{db_config['database']}' created or already exists.")
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+
 
 UPLOAD_FOLDER = 'static/pictures'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
