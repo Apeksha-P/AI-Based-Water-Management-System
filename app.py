@@ -12,6 +12,10 @@ import random
 import pandas as pd
 from datetime import datetime
 
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
@@ -27,8 +31,10 @@ app.config['MAIL_DEFAULT_SENDER'] = 'apeksha-cs20070@stu.kln.ac.lk'
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
-# Configure Flask-SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:1234@localhost/AIBWMS'
+# Configure Flask-SQLAlchemy to connect to RDS MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'mysql+mysqlconnector://admin:AIBWMS123db@aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com:3306/AIBWMS_db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -38,30 +44,13 @@ bcrypt = Bcrypt(app)
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-# Database configuration
+# Database configuration (no longer needed if you use SQLAlchemy directly)
 db_config = {
-    'user': 'root',
-    'password': '1234',
-    'host': 'localhost',
-    'database': 'AIBWMS'
+    'user': 'admin',
+    'password': 'AIBWMS123db',
+    'host': 'aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
+    'database': 'AIBWMS_db'
 }
-
-# Path to the CSV file (make sure to create this file with initial data)
-csv_file_path = 'dataset.csv'
-
-# Load the dataset
-def load_data():
-    try:
-        df = pd.read_csv(csv_file_path)
-    except FileNotFoundError:
-        df = pd.DataFrame(columns=['Month', 'Meter Reading', 'Water Usage'])
-    return df
-
-# Save the dataset
-def save_data(df):
-    df.to_csv(csv_file_path, index=False)
-
-
 def create_database_if_not_exists():
     try:
         cnx = mysql.connector.connect(user=db_config['user'], password=db_config['password'], host=db_config['host'])
@@ -72,6 +61,7 @@ def create_database_if_not_exists():
         print(f"Database '{db_config['database']}' created or already exists.")
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+
 
 UPLOAD_FOLDER = 'static/pictures'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -351,10 +341,6 @@ def signinStudent_form():
         student = Student.query.filter_by(email=email).first()
 
         if student:
-            # Debugging log
-            print(f"Sign in attempt for student: {student.fname}, Email: {student.email}")
-            print(f"Stored hashed password: {student.password}")
-            print(f"Entered password: {password}")
 
             if bcrypt.check_password_hash(student.password, password):
                 session['student_id'] = student.id
@@ -1204,10 +1190,7 @@ def forgotPasswordAdmin():
         existing_admin = Admin.query.filter_by(email=email).first()
         if existing_admin:
             otp = str(random.randint(100000, 999999))
-            fname = existing_admin.fname  # Get the first name
-
-            send_otp_email(email, otp, fname)
-
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
@@ -1328,4 +1311,4 @@ def get_current_admin():
 
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
