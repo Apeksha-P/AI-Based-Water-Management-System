@@ -3,14 +3,13 @@
 
 <head>
     <meta charset="utf-8">
-    <title>UOK FCT AI Based Water Management System</title>
+    <title>AI-Based Water Management System</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
 
     <!-- Favicon -->
-    <!-- <link href="img/favicon.ico" rel="icon"> -->
-    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png" />
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,38 +20,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Libraries Stylesheet -->
-    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
-
     <!-- Customized Bootstrap Stylesheet -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 
-    <!-- Template Stylesheet -->
+    <!-- Custom Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     <style>
-        .right-align {
-            float: left; /* Align the image to the right */
-        }
-
-        img.right-align {
-            width: 500px;
-            height: 350px;
-            align-items: center;
-            float: left;
-            margin-right: 20px; /* Add right margin */
-        }
-
-        .para p {
-            text-align: justify;
-            color: #fff;
-            word-spacing: 4px; /* Increase space between words */
-            font-size: 18px; /* Increase font size */
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        body {
+            background-color: #2D2F33;
+            font-family: 'Open Sans', sans-serif;
+            color: #FFF;
         }
 
         .container-fluid {
@@ -61,116 +38,176 @@
         }
 
         .content {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
+            margin-top: 3%;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #343A40;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
+
         .content-inner {
-            flex: 1; /* Allow content to grow and take available space */
+            padding: 30px;
         }
 
-        footer.container-fluid {
-            padding-left: 0;
-            padding-right: 0;
+        .content-inner h1 {
+            color: #826AF9;
+            margin-bottom: 20px;
+            font-size: 36px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        html, body {
-            overflow: hidden; /* No scrollbars */
-            height: 100%; /* Full height */
+        .content-inner p {
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .right-align img {
+            width: 100%;
+            height: auto;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .back-to-left {
+            color: #FFF;
+            background-color: #826AF9;
+            border: none;
+            position: fixed; /* Changed from absolute to fixed */
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s ease;
+            z-index: 1000; /* Ensure it stays on top of other content */
+        }
+
+        .back-to-left:hover {
+            background-color: #0056b3;
+        }
+
+
+        .contact-inner {
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-icon {
+            margin-right: 15px;
+        }
+
+        .contact-detail a {
+            color: #FFF;
+            display: block;
+        }
+
+        .footer-separator {
+            border-top: 1px solid #444;
+            margin: 40px 0;
         }
     </style>
 </head>
 
-<body style="background-color: #545557">
-<div class="container-fluid position-relative d-flex p-0">
-    <!-- Spinner Start -->
-    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    <!-- Spinner End -->
+<body>
+<div class="container-fluid">
+    <!--    back button-->
+    <a href="{{ url_for('index_form') }}" class="btn btn-lg btn-primary btn-lg-square back-to-left">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+    </a>
 
 
     <!-- Content Start -->
-    <div class="content" style="margin-top: 1.5%;   width: 100%">
-        <div class="content-inner" style="padding: 20px;">
-            <!-- Add Your items Here -->
-            <div class="imap" style="padding: 20px">
-                <img src="{{url_for('static', filename='img/imgeee.webp')}}" style="width: 500px; height: 360px; align-items: center" class="right-align" alt="photo">
-            </div>
-
-            <!--Start line-->
-            <div class="line" style="text-align: justify; color: #fff;">
-                <b><hr></b>
-            </div>
-            <!--End line-->
-
-            <!--start paragraph-->
-            <div class="para">
-                <br><p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring<br> tools, lacks predictive analytics, leading to pollution and dwindling<br>  water quality.</p>
-            </div>
-            <!--End paragraph-->
-
-            <!--Start line-->
-            <div class="line" style="margin-top: 200px; text-align: justify; color: #fff;">
-                <hr>
-            </div>
-            <!--End line-->
-        </div>
-
-        <!-- Footer Start -->
-        <footer class="container-fluid pt-4 ">
-            <div class="bg-secondary rounded-top p-3">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-md-3 text-left">
-                        <h3 style="color: #826AF9;">AIBWMS</h3>
-                        <p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring tools, lacks predictive analytics, leading to pollution and dwindling water quality. </p>
-                    </div>
-                    <div class="col-12 col-md-3 text-left">
-                        <h5 style="color: #826AF9;">Faculty</h5>
-                        <a href="https://fct.kln.ac.lk/" target="_blank">Home</a><br>
-                        <a href="#" target="_blank">Academic</a><br>
-                        <a href="#" target="_blank">Departments</a><br>
-                        <a href="https://fct.kln.ac.lk/index.php/contact" target="_blank">Contact</a><br>
-                    </div>
-                    <div class="col-12 col-md-3 text-left">
-                        <h5 style="color: #826AF9;">Useful Links</h5>
-                        <a href="{{ url_for('homeAdmin')}}" target="_blank">Home</a><br>
-                        <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
-                        <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
-                        <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
-                        <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
-                        <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
-                    </div>
-                    <div class="col-12 col-md-3 text-left">
-                        <h5 style="color: #826AF9;">Contact</h5>
-                        <div style="display: flex;" class="contact-inner">
-                            <div class="contact-icon">
-                                <i class="fa fa-phone me-2"></i><br>
-                                <i class="fa fa-envelope me-2"></i><br>
-                                <i class="fa fa-map me-2"></i><br>
-                            </div>
-                            <div class="contact-detail">
-                                <a style="color: #fff;">+94 113 442623</a><br>
-                                <a style="color: #fff;">officefct@kln.ac.lk</a><br>
-                                <a style="color:#fff;">Faculty of Computing and Technology,<br>University Drive,<br>Bulugaha Junction, <br>Kelaniya,<br>Colombo,<br>Sri Lanka.<br></a><br>
-                            </div>
-                        </div>
-
-                    </div>
+    <div class="content">
+        <div class="content-inner">
+            <h1>AI-Based Water Management System</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{url_for('static', filename='img/imgeee.webp')}}" alt="Water Management System" class="right-align img-fluid">
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        Our AI-based water management system is a comprehensive solution designed to address the diverse needs of water resource monitoring and management within an academic institution. The system ensures secure access through user authentication, allowing only individuals with a kln.ac.lk email extension to log in, thus maintaining institutional security. With role-based access control, students, staff, and administrators can navigate the system according to their permissions, with administrators having enhanced capabilities for managing user accounts.
+                    </p>
+                    <p>
+                        The Dashboard provides real-time data visualization, enabling users to monitor water usage, temperature, pH levels, and Total Dissolved Solids (TDS) through intuitive graphical representations. This feature allows for immediate insights into water quality and consumption patterns, helping users make informed decisions. Additionally, the Analysis page offers the ability to review and filter historical data over various time frames, facilitating trend analysis and supporting long-term planning.
+                    </p>
                 </div>
             </div>
-        </footer>
-        <!-- Footer End -->
+            <p>
+                Our system also integrates predictive analytics to forecast future water usage and estimate upcoming water bills based on historical data. This AI-driven feature is instrumental in proactive resource planning and budgeting. Administrators have the ability to input daily meter readings, which are automatically updated within the system, ensuring data accuracy and up-to-date metrics.
+            </p>
+            <p>
+                To cater to the individual needs of users, the system includes a profile management feature, allowing students, staff, and administrators to update their personal information easily. Data security and privacy are at the forefront of our system’s design, with robust measures in place to protect user information and maintain confidentiality.
+            </p>
+            <p>
+                The system is accessible across various devices and platforms, ensuring a seamless user experience, whether on campus or remotely. While the current deployment focuses on these core functionalities, we have plans for future enhancements that will continue to evolve based on user feedback and advancements in water management technology.
+            </p>
+            <p>
+                Explore how our AI-based water management system can revolutionize the way water resources are managed within your institution, ensuring efficiency, security, and sustainability.
+            </p>
 
+            <div class="footer-separator"></div>
+        </div>
     </div>
     <!-- Content End -->
 
-    <!-- Back to Top -->
-    <!--    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>-->
+
+
+    <!-- Footer Start -->
+    <footer class="container-fluid pt-4 ">
+        <div class="bg-secondary rounded-top p-3">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-3 text-left">
+                    <h3 style="color: #826AF9;">AIBWMS</h3>
+                    <p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring tools, lacks predictive analytics, leading to pollution and dwindling water quality. </p>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Faculty</h5>
+                    <a href="https://fct.kln.ac.lk/" target="_blank">Home</a><br>
+                    <a href="#" target="_blank">Academic</a><br>
+                    <a href="#" target="_blank">Departments</a><br>
+                    <a href="https://fct.kln.ac.lk/index.php/contact" target="_blank">Contact</a><br>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Useful Links</h5>
+                    <a href="{{ url_for('homeAdmin')}}" target="_blank">Home</a><br>
+                    <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
+                    <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
+                    <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
+                    <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
+                    <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Contact</h5>
+                    <div style="display: flex;" class="contact-inner">
+                        <div class="contact-icon">
+                            <i class="fa fa-phone me-2"></i><br>
+                            <i class="fa fa-envelope me-2"></i><br>
+                            <i class="fa fa-map me-2"></i><br>
+                        </div>
+                        <div class="contact-detail">
+                            <a style="color: #fff;">+94 113 442623</a><br>
+                            <a style="color: #fff;">officefct@kln.ac.lk</a><br>
+                            <a style="color:#fff;">Faculty of Computing and Technology,<br>University Drive,<br>Bulugaha Junction, <br>Kelaniya,<br>Colombo,<br>Sri Lanka.<br></a><br>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer End -->
+
+</div>
+
 </div>
 
 <!-- JavaScript Libraries -->
@@ -190,4 +227,3 @@
 </body>
 
 </html>
-
