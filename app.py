@@ -1311,6 +1311,6 @@ def get_current_admin():
         admin_id = session['admin_id']
         return Admin.query.get(admin_id)
 
-# if __name__ == "__main__":
-#     create_database_if_not_exists()  # Ensure the database exists before running the app
-#     app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    create_database_if_not_exists()  # Ensure the database exists before running the app
+    app.run(host='0.0.0.0', port=5000, debug=True)
