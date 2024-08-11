@@ -773,6 +773,19 @@ def predictionStaff_form():
     else:
         return redirect(url_for('signinStaff_form'))
 
+@app.route('/predictionsStudent')
+def predictionStudent_form():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            return render_template('predictionsStudent.html', student=student)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStudent_form'))
+
 
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
