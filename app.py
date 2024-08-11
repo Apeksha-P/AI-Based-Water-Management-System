@@ -1313,4 +1313,4 @@ def get_current_admin():
 
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
