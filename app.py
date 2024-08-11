@@ -236,6 +236,12 @@ def signupStudent():
         lname = request.form.get('lname')
         password = request.form.get('password')
         cnumber = request.form.get('cnumber')
+
+        # Password validation
+        if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+            flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+            return redirect(url_for('signupStudent'))
+
         otp = str(random.randint(100000, 999999))
 
         send_otp_email_p(email, otp)
@@ -277,6 +283,12 @@ def signupStaff():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
+
+            # Password validation
+            if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+                flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+                return redirect(url_for('signupStaff'))
+
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             # Send OTP via email
@@ -398,21 +410,14 @@ def signinStudent_form():
 
         student = Student.query.filter_by(email=email).first()
 
-        if student:
-
-            if bcrypt.check_password_hash(student.password, password):
-                session['student_id'] = student.id
-                session['student_email'] = student.email
-                session['student_fname'] = student.fname
-                return redirect(url_for('homeStudent'))
-            else:
-                flash("Invalid email or password.", "danger")
-                print("Password mismatch")  # Debugging log
+        if student and bcrypt.check_password_hash(student.password, password):
+            session['student_id'] = student.id
+            session['student_email'] = student.email
+            session['student_fname'] = student.fname
+            return redirect(url_for('homeStudent'))
         else:
             flash("Invalid email or password.", "danger")
-            print("No student found with this email")  # Debugging log
-
-        return render_template('signinStudent.html', error_message="Invalid email or password.")
+            return render_template('signinStudent.html', error_message="Invalid email or password.")
 
     return render_template('signinStudent.html')
 
@@ -424,7 +429,7 @@ def signinStaff_form():
         password = request.form.get('password')
         # Query the database for the staff with the given email
         staff = Staff.query.filter_by(email=email).first()
-        if staff and check_password_hash(staff.password, password):
+        if staff and bcrypt.check_password_hash(staff.password, password):
             # Passwords match, user is authenticated
             # Store staff's information in session
             session['staff_id'] = staff.id
@@ -434,6 +439,7 @@ def signinStaff_form():
             return redirect(url_for('homeStaff'))
         else:
             # Invalid email or password, render the signinStaff.html template with an error message
+            flash("Invalid email or password.", "danger")
             return render_template('signinStaff.html', error_message="Invalid email or password.")
     # Render the signinStaff.html template for GET requests
     return render_template('signinStaff.html')
