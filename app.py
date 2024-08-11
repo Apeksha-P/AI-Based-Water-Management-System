@@ -11,6 +11,7 @@ import re
 import random
 import pandas as pd
 from datetime import datetime
+from sqlalchemy import create_engine
 
 
 import logging
@@ -51,6 +52,61 @@ db_config = {
     'host': 'aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
     'database': 'AIBWMS_db'
 }
+
+# Create SQLAlchemy engine
+engine = create_engine(f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}")
+
+# Load existing CSV data
+csv_file = 'data/dataset.csv'
+if os.path.exists(csv_file):
+    try:
+        df_existing = pd.read_csv(csv_file, parse_dates=['Date'])
+    except Exception as e:
+        print(f"Error reading existing CSV file: {e}")
+        df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+else:
+    df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+
+# Fetch new data from MySQL
+query = "SELECT * FROM water_measurement"
+try:
+    with engine.connect() as connection:
+        df_new = pd.read_sql(query, connection, parse_dates=['Date'])
+except Exception as e:
+    print(f"Error fetching data from MySQL: {e}")
+    df_new = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+
+# Check if dataframes are empty before concatenating
+if df_existing.empty and df_new.empty:
+    df_combined = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+elif df_existing.empty:
+    df_combined = df_new
+elif df_new.empty:
+    df_combined = df_existing
+else:
+    # Combine existing and new data, keeping only the most recent entry for each date
+    df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset='Date', keep='last')
+
+# Ensure 'Date' is of datetime type
+df_combined['Date'] = pd.to_datetime(df_combined['Date'], errors='coerce')
+
+# Remove rows with invalid dates
+df_combined = df_combined.dropna(subset=['Date'])
+
+# Sort by date for proper MeterReading calculation
+df_combined.sort_values(by='Date', inplace=True)
+
+# Calculate MeterReading based on cumulative usage
+df_combined['MeterReading'] = df_combined['Usage'].cumsum()
+
+# Save updated DataFrame to CSV
+try:
+    df_combined.to_csv(csv_file, index=False)
+except PermissionError as e:
+    print(f"Permission error: {e}")
+except Exception as e:
+    print(f"Error saving CSV file: {e}")
+
 
 # Optional: Function to create the database if it doesn't exist
 def create_database_if_not_exists():
