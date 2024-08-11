@@ -25,99 +25,10 @@
 
     <!-- Custom Stylesheet -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <style>
-        body {
-            background-color: #2D2F33;
-            font-family: 'Open Sans', sans-serif;
-            color: #FFF;
-        }
-
-        .container-fluid {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        .content {
-            margin-top: 3%;
-            padding: 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #343A40;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .content-inner {
-            padding: 30px;
-        }
-
-        .content-inner h1 {
-            color: #826AF9;
-            margin-bottom: 20px;
-            font-size: 36px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .content-inner p {
-            font-size: 18px;
-            line-height: 1.7;
-            margin-bottom: 20px;
-            text-align: justify;
-        }
-
-        .right-align img {
-            width: 100%;
-            height: auto;
-            max-width: 500px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-        }
-
-        .back-to-left {
-            color: #FFF;
-            background-color: #826AF9;
-            border: none;
-            position: fixed; /* Changed from absolute to fixed */
-            top: 20px;
-            left: 20px;
-            padding: 10px;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            transition: background-color 0.3s ease;
-            z-index: 1000; /* Ensure it stays on top of other content */
-        }
-
-        .back-to-left:hover {
-            background-color: #0056b3;
-        }
-
-
-        .contact-inner {
-            display: flex;
-            align-items: center;
-        }
-
-        .contact-icon {
-            margin-right: 15px;
-        }
-
-        .contact-detail a {
-            color: #FFF;
-            display: block;
-        }
-
-        .footer-separator {
-            border-top: 1px solid #444;
-            margin: 40px 0;
-        }
-    </style>
 </head>
 
 <body>
-<div class="container-fluid">
+<div class="vm-container-fluid">
     <!--    back button-->
     <a href="{{ url_for('index_form') }}" class="btn btn-lg btn-primary btn-lg-square back-to-left">
         <i class="fa fa-arrow-left" aria-hidden="true"></i>
@@ -125,8 +36,8 @@
 
 
     <!-- Content Start -->
-    <div class="content">
-        <div class="content-inner">
+    <div class="vm-content">
+        <div class="vm-content-inner">
             <h1>AI-Based Water Management System</h1>
             <div class="row">
                 <div class="col-md-6">
@@ -137,10 +48,11 @@
                         Our AI-based water management system is a comprehensive solution designed to address the diverse needs of water resource monitoring and management within an academic institution. The system ensures secure access through user authentication, allowing only individuals with a kln.ac.lk email extension to log in, thus maintaining institutional security. With role-based access control, students, staff, and administrators can navigate the system according to their permissions, with administrators having enhanced capabilities for managing user accounts.
                     </p>
                     <p>
-                        The Dashboard provides real-time data visualization, enabling users to monitor water usage, temperature, pH levels, and Total Dissolved Solids (TDS) through intuitive graphical representations. This feature allows for immediate insights into water quality and consumption patterns, helping users make informed decisions. Additionally, the Analysis page offers the ability to review and filter historical data over various time frames, facilitating trend analysis and supporting long-term planning.
+                        The Dashboard provides real-time data visualization, enabling users to monitor water usage, temperature, pH levels, and Total Dissolved Solids (TDS) through intuitive graphical representations.
                     </p>
                 </div>
             </div>
+            <p>This feature allows for immediate insights into water quality and consumption patterns, helping users make informed decisions. Additionally, the Analysis page offers the ability to review and filter historical data over various time frames, facilitating trend analysis and supporting long-term planning.</p>
             <p>
                 Our system also integrates predictive analytics to forecast future water usage and estimate upcoming water bills based on historical data. This AI-driven feature is instrumental in proactive resource planning and budgeting. Administrators have the ability to input daily meter readings, which are automatically updated within the system, ensuring data accuracy and up-to-date metrics.
             </p>
