@@ -1,0 +1,8 @@
+Flask
+Flask-SQLAlchemy
+Flask-Mail
+Flask-Bcrypt
+mysql-connector-python
+Flask-Migrate
+Werkzeug
+pandas
