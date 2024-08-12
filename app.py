@@ -12,6 +12,7 @@ import random
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine
+from statsmodels.tsa.arima.model import ARIMA
 
 
 import logging
@@ -236,6 +237,12 @@ def signupStudent():
         lname = request.form.get('lname')
         password = request.form.get('password')
         cnumber = request.form.get('cnumber')
+
+        # Password validation
+        if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+            flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+            return redirect(url_for('signupStudent'))
+
         otp = str(random.randint(100000, 999999))
 
         send_otp_email_p(email, otp)
@@ -277,6 +284,12 @@ def signupStaff():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
+
+            # Password validation
+            if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+                flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+                return redirect(url_for('signupStaff'))
+
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             # Send OTP via email
@@ -398,21 +411,14 @@ def signinStudent_form():
 
         student = Student.query.filter_by(email=email).first()
 
-        if student:
-
-            if bcrypt.check_password_hash(student.password, password):
-                session['student_id'] = student.id
-                session['student_email'] = student.email
-                session['student_fname'] = student.fname
-                return redirect(url_for('homeStudent'))
-            else:
-                flash("Invalid email or password.", "danger")
-                print("Password mismatch")  # Debugging log
+        if student and bcrypt.check_password_hash(student.password, password):
+            session['student_id'] = student.id
+            session['student_email'] = student.email
+            session['student_fname'] = student.fname
+            return redirect(url_for('homeStudent'))
         else:
             flash("Invalid email or password.", "danger")
-            print("No student found with this email")  # Debugging log
-
-        return render_template('signinStudent.html', error_message="Invalid email or password.")
+            return render_template('signinStudent.html', error_message="Invalid email or password.")
 
     return render_template('signinStudent.html')
 
@@ -424,7 +430,7 @@ def signinStaff_form():
         password = request.form.get('password')
         # Query the database for the staff with the given email
         staff = Staff.query.filter_by(email=email).first()
-        if staff and check_password_hash(staff.password, password):
+        if staff and bcrypt.check_password_hash(staff.password, password):
             # Passwords match, user is authenticated
             # Store staff's information in session
             session['staff_id'] = staff.id
@@ -434,6 +440,7 @@ def signinStaff_form():
             return redirect(url_for('homeStaff'))
         else:
             # Invalid email or password, render the signinStaff.html template with an error message
+            flash("Invalid email or password.", "danger")
             return render_template('signinStaff.html', error_message="Invalid email or password.")
     # Render the signinStaff.html template for GET requests
     return render_template('signinStaff.html')
@@ -772,6 +779,19 @@ def predictionStaff_form():
             return "user not found"
     else:
         return redirect(url_for('signinStaff_form'))
+
+@app.route('/predictionsStudent')
+def predictionStudent_form():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            return render_template('predictionsStudent.html', student=student)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStudent_form'))
 
 
 @app.route('/predictionsAdmin')
@@ -1366,6 +1386,109 @@ def get_current_admin():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         return Admin.query.get(admin_id)
+
+
+# -----------------------------------------------Predictions---------------------------------------------------------
+@app.route("/test")
+def call_weekly_predictions():
+    # partition_data()
+    data = get_weekly_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+
+
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER = (6, 0, 6)
+#
+# @app.route("/test")
+# def call_weekly_predictions():
+#     data = get_weekly_data()
+#     return jsonify(data)
+#
+def get_weekly_data(prediction_count=4):
+    df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="W")
+    df_train = df.dropna()
+
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+#change prediction count to look more into the future
+# def get_weekly_data(prediction_count=4):
+#     df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
+#     df.index = pd.DatetimeIndex(df.index, freq="W")
+#     df_train = df.dropna()
+#     model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+#     model_fit = model.fit()
+#     forecast_value = model_fit.forecast(steps=prediction_count)
+#
+#     forecast_value.index = forecast_value.index.astype(str)
+#     df.index = df.index.astype(str)
+#
+#     forecast_json = forecast_value.clip(lower=0).to_dict()
+#     current_data_json = df["Usage"].to_dict()
+#     return {"forecast": forecast_json, "current_data": current_data_json}
+
+
+
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER_MONTHLY = (2, 1, 2)  # Adjust the ARIMA order as needed
+
+@app.route("/monthly_predictions")
+def call_monthly_predictions():
+    # partition_data()
+    data = get_monthly_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+# change prediction count to look more into the future
+def get_monthly_data(prediction_count=4):
+    df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="M")
+    df_train = df.dropna()
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+#     forecast_value.index = forecast_value.index.astype(str)
+#     df.index = df.index.astype(str)
+#
+#     forecast_json = forecast_value.clip(lower=0).to_dict()
+#     current_data_json = df["Usage"].to_dict()
+#     return {"forecast": [forecast_json], "current_data": [current_data_json]}
+#
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+
+
+# Run this to partition dataset.csv
+def partition_data():
+    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
+    df = df[["Usage"]]
+
+    weekly_data_train = df.resample("W").sum()
+    weekly_data_train.to_csv("data/weekly_data_train.csv")
+    monthly_data_train = df.resample("M").sum()
+    monthly_data_train.to_csv("data/monthly_data_train.csv")
 
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
