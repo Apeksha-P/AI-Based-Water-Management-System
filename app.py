@@ -852,15 +852,6 @@ def accessAdmin_form():
         return redirect(url_for('signinAdmin_form'))
 
 
-# def get_last_month_reading():
-#     df = pd.read_csv('data/dataset.csv')
-#     # Assuming 'Date' is in the format 'YYYY-MM-DD' and 'Reading' is the meter reading
-#     df['Date'] = pd.to_datetime(df['Date'])
-#     last_month = df['Date'].dt.month.max() - 1
-#     last_month_data = df[df['Date'].dt.month == last_month]
-#     last_month_total = last_month_data['MeterReading'].max()
-#     return last_month_total
-
 def get_last_month_reading():
     df = pd.read_csv('data/dataset.csv')
 
@@ -880,28 +871,6 @@ def get_last_month_reading():
     last_month_total = last_month_data['MeterReading'].max()
 
     return last_month_total
-
-
-
-
-# def update_daily_usage(date, usage):
-#     df = pd.read_csv('data/dataset.csv')
-#     new_entry = {'Date': date, 'Usage': usage}
-#     df = df.append(new_entry, ignore_index=True)
-#     df.to_csv('dataset.csv', index=False)
-
-# def update_daily_usage(date, usage):
-#     # Load the dataset
-#     df = pd.read_csv('data/dataset.csv')
-#
-#     # Create a new DataFrame for the new entry
-#     new_entry = pd.DataFrame({'Date': [date], 'Usage': [usage]})
-#
-#     # Concatenate the old DataFrame with the new entry
-#     df = pd.concat([df, new_entry], ignore_index=True)
-#
-#     # Save the updated DataFrame back to CSV
-#     df.to_csv('data/dataset.csv', index=False)
 
 def update_daily_usage(date, usage):
     # Load the dataset
@@ -932,15 +901,6 @@ def update_daily_usage(date, usage):
     df.to_csv('data/dataset.csv', index=False)
 
 
-
-
-# def get_this_month_data():
-#     df = pd.read_csv('data/dataset.csv')
-#     df['Date'] = pd.to_datetime(df['Date'])
-#     this_month = df['Date'].dt.month.max()
-#     this_month_data = df[df['Date'].dt.month == this_month]
-#     return this_month_data['MeterReading'].max(), this_month_data['Usage'].sum()
-
 def get_this_month_data():
     df = pd.read_csv('data/dataset.csv')
 
@@ -961,20 +921,6 @@ def get_this_month_data():
 
     return this_month_reading, this_month_usage
 
-
-#
-# @app.route('/meterAdmin')
-# def meterAdmin_form():
-#     if 'admin_id' in session:
-#         admin_id = session['admin_id']
-#         admin_email = session['admin_email']
-#         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
-#         if admin:
-#             return render_template('meterAdmin.html', admin=admin)
-#         else:
-#             return "user not found"
-#     else:
-#         return redirect(url_for('signinAdmin_form'))
 
 @app.route('/meterAdmin', methods=['GET', 'POST'])
 def meterAdmin_form():
@@ -1389,6 +1335,36 @@ def get_current_admin():
 
 
 # -----------------------------------------------Predictions---------------------------------------------------------
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER_DAILY = (1, 0, 1)  # Adjust the ARIMA order as needed
+
+@app.route("/daily_predictions")
+def call_daily_predictions():
+    data = get_daily_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+
+def get_daily_data(prediction_count=7):  # Predict for the next week (7 days)
+    df = pd.read_csv("data/daily_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="D")
+    df_train = df.dropna()
+
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER_DAILY)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+
 @app.route("/test")
 def call_weekly_predictions():
     # partition_data()
@@ -1399,15 +1375,9 @@ def call_weekly_predictions():
         {"ContentType": "application/json"},
     )
 
-
 PREDICTION_FEATURE = "Usage"
 ARIMA_ORDER = (6, 0, 6)
-#
-# @app.route("/test")
-# def call_weekly_predictions():
-#     data = get_weekly_data()
-#     return jsonify(data)
-#
+
 def get_weekly_data(prediction_count=4):
     df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
     df.index = pd.DatetimeIndex(df.index, freq="W")
@@ -1442,7 +1412,6 @@ def get_weekly_data(prediction_count=4):
 #     return {"forecast": forecast_json, "current_data": current_data_json}
 
 
-
 PREDICTION_FEATURE = "Usage"
 ARIMA_ORDER_MONTHLY = (2, 1, 2)  # Adjust the ARIMA order as needed
 
@@ -1455,6 +1424,7 @@ def call_monthly_predictions():
         200,
         {"ContentType": "application/json"},
     )
+
 # change prediction count to look more into the future
 def get_monthly_data(prediction_count=4):
     df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
@@ -1463,12 +1433,6 @@ def get_monthly_data(prediction_count=4):
     model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
     model_fit = model.fit()
     forecast_value = model_fit.forecast(steps=prediction_count)
-#     forecast_value.index = forecast_value.index.astype(str)
-#     df.index = df.index.astype(str)
-#
-#     forecast_json = forecast_value.clip(lower=0).to_dict()
-#     current_data_json = df["Usage"].to_dict()
-#     return {"forecast": [forecast_json], "current_data": [current_data_json]}
 #
     forecast_value.index = forecast_value.index.astype(str)
     df.index = df.index.astype(str)
@@ -1485,6 +1449,8 @@ def partition_data():
     df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
     df = df[["Usage"]]
 
+    daily_data_train = df.resample("D").sum()
+    daily_data_train.to_csv("data/daily_data_train.csv")
     weekly_data_train = df.resample("W").sum()
     weekly_data_train.to_csv("data/weekly_data_train.csv")
     monthly_data_train = df.resample("M").sum()
