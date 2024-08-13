@@ -1266,6 +1266,10 @@ def serve_data(filename):
 def view_more():
     return render_template('viewMore.html')
 
+@app.route('/ viewmoreStudent')
+def viewmoreStudent_form():
+    return render_template('viewmoreStudent.html')
+
 @app.route('/remove_pictureStudent', methods=['POST'])
 def remove_pictureStudent():
     student = get_current_student()
