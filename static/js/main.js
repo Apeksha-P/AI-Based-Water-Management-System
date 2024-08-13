@@ -121,7 +121,9 @@
                 label: 'Water Usage',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgba(75, 192, 192, 1)',
-                columnIndex: 1
+                columnIndex: 1,
+                beginAtZero: true,
+                suggestedMin: 0
             },
             {
                 ctx: document.getElementById('line-chart-1').getContext('2d'),
