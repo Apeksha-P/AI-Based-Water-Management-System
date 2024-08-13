@@ -9,6 +9,14 @@ from werkzeug.utils import secure_filename
 import os
 import re
 import random
+import pandas as pd
+from datetime import datetime
+from sqlalchemy import create_engine
+from statsmodels.tsa.arima.model import ARIMA
+
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
@@ -25,8 +33,10 @@ app.config['MAIL_DEFAULT_SENDER'] = 'apeksha-cs20070@stu.kln.ac.lk'
 app.config['MAIL_DEBUG'] = True
 mail = Mail(app)
 
-# Configure Flask-SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:1234@localhost/AIBWMS'
+# Configure Flask-SQLAlchemy to connect to RDS MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'mysql+mysqlconnector://admin:AIBWMS123db@aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com:3306/AIBWMS_db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -36,14 +46,70 @@ bcrypt = Bcrypt(app)
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-# Database configuration
+# Database configuration (no longer needed if you use SQLAlchemy directly)
 db_config = {
-    'user': 'root',
-    'password': '1234',
-    'host': 'localhost',
-    'database': 'AIBWMS'
+    'user': 'admin',
+    'password': 'AIBWMS123db',
+    'host': 'aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
+    'database': 'AIBWMS_db'
 }
 
+# Create SQLAlchemy engine
+engine = create_engine(f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}")
+
+# Load existing CSV data
+csv_file = 'data/dataset.csv'
+if os.path.exists(csv_file):
+    try:
+        df_existing = pd.read_csv(csv_file, parse_dates=['Date'])
+    except Exception as e:
+        print(f"Error reading existing CSV file: {e}")
+        df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+else:
+    df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+
+# Fetch new data from MySQL
+query = "SELECT * FROM water_measurement"
+try:
+    with engine.connect() as connection:
+        df_new = pd.read_sql(query, connection, parse_dates=['Date'])
+except Exception as e:
+    print(f"Error fetching data from MySQL: {e}")
+    df_new = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+
+# Check if dataframes are empty before concatenating
+if df_existing.empty and df_new.empty:
+    df_combined = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
+elif df_existing.empty:
+    df_combined = df_new
+elif df_new.empty:
+    df_combined = df_existing
+else:
+    # Combine existing and new data, keeping only the most recent entry for each date
+    df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset='Date', keep='last')
+
+# Ensure 'Date' is of datetime type
+df_combined['Date'] = pd.to_datetime(df_combined['Date'], errors='coerce')
+
+# Remove rows with invalid dates
+df_combined = df_combined.dropna(subset=['Date'])
+
+# Sort by date for proper MeterReading calculation
+df_combined.sort_values(by='Date', inplace=True)
+
+# Calculate MeterReading based on cumulative usage
+df_combined['MeterReading'] = df_combined['Usage'].cumsum()
+
+# Save updated DataFrame to CSV
+try:
+    df_combined.to_csv(csv_file, index=False)
+except PermissionError as e:
+    print(f"Permission error: {e}")
+except Exception as e:
+    print(f"Error saving CSV file: {e}")
+
+
+# Optional: Function to create the database if it doesn't exist
 def create_database_if_not_exists():
     try:
         cnx = mysql.connector.connect(user=db_config['user'], password=db_config['password'], host=db_config['host'])
@@ -54,6 +120,7 @@ def create_database_if_not_exists():
         print(f"Database '{db_config['database']}' created or already exists.")
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+
 
 UPLOAD_FOLDER = 'static/pictures'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -170,6 +237,12 @@ def signupStudent():
         lname = request.form.get('lname')
         password = request.form.get('password')
         cnumber = request.form.get('cnumber')
+
+        # Password validation
+        if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+            flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+            return redirect(url_for('signupStudent'))
+
         otp = str(random.randint(100000, 999999))
 
         send_otp_email_p(email, otp)
@@ -211,6 +284,12 @@ def signupStaff():
             email = request.form.get('email')
             password = request.form.get('password')
             cnumber = request.form.get('cnumber')
+
+            # Password validation
+            if len(password) < 8 or not re.search(r'[A-Z]', password) or not re.search(r'[a-z]', password) or not re.search(r'[@$!%*?&.#^(),]', password):
+                flash('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a special character.')
+                return redirect(url_for('signupStaff'))
+
             # Generate OTP
             otp = str(random.randint(100000, 999999))
             # Send OTP via email
@@ -332,25 +411,14 @@ def signinStudent_form():
 
         student = Student.query.filter_by(email=email).first()
 
-        if student:
-            # Debugging log
-            print(f"Sign in attempt for student: {student.fname}, Email: {student.email}")
-            print(f"Stored hashed password: {student.password}")
-            print(f"Entered password: {password}")
-
-            if bcrypt.check_password_hash(student.password, password):
-                session['student_id'] = student.id
-                session['student_email'] = student.email
-                session['student_fname'] = student.fname
-                return redirect(url_for('homeStudent'))
-            else:
-                flash("Invalid email or password.", "danger")
-                print("Password mismatch")  # Debugging log
+        if student and bcrypt.check_password_hash(student.password, password):
+            session['student_id'] = student.id
+            session['student_email'] = student.email
+            session['student_fname'] = student.fname
+            return redirect(url_for('homeStudent'))
         else:
             flash("Invalid email or password.", "danger")
-            print("No student found with this email")  # Debugging log
-
-        return render_template('signinStudent.html', error_message="Invalid email or password.")
+            return render_template('signinStudent.html', error_message="Invalid email or password.")
 
     return render_template('signinStudent.html')
 
@@ -362,7 +430,7 @@ def signinStaff_form():
         password = request.form.get('password')
         # Query the database for the staff with the given email
         staff = Staff.query.filter_by(email=email).first()
-        if staff and check_password_hash(staff.password, password):
+        if staff and bcrypt.check_password_hash(staff.password, password):
             # Passwords match, user is authenticated
             # Store staff's information in session
             session['staff_id'] = staff.id
@@ -372,6 +440,7 @@ def signinStaff_form():
             return redirect(url_for('homeStaff'))
         else:
             # Invalid email or password, render the signinStaff.html template with an error message
+            flash("Invalid email or password.", "danger")
             return render_template('signinStaff.html', error_message="Invalid email or password.")
     # Render the signinStaff.html template for GET requests
     return render_template('signinStaff.html')
@@ -711,6 +780,19 @@ def predictionStaff_form():
     else:
         return redirect(url_for('signinStaff_form'))
 
+@app.route('/predictionsStudent')
+def predictionStudent_form():
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            return render_template('predictionsStudent.html', student=student)
+        else:
+            return "user not found"
+    else:
+        return redirect(url_for('signinStudent_form'))
+
 
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
@@ -770,16 +852,98 @@ def accessAdmin_form():
         return redirect(url_for('signinAdmin_form'))
 
 
-@app.route('/meterAdmin')
+def get_last_month_reading():
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the 'Date' column to datetime, allowing pandas to infer the format
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Calculate the last month based on the most recent date in the dataset
+    last_date = df['Date'].max()
+    first_day_last_month = (last_date.replace(day=1) - pd.DateOffset(months=1)).replace(day=1)
+    last_day_last_month = last_date.replace(day=1) - pd.DateOffset(days=1)
+
+    # Filter data for the last month
+    last_month_data = df[(df['Date'] >= first_day_last_month) & (df['Date'] <= last_day_last_month)]
+    last_month_total = last_month_data['MeterReading'].max()
+
+    return last_month_total
+
+def update_daily_usage(date, usage):
+    # Load the dataset
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the input date to the desired format
+    formatted_date = pd.to_datetime(date).strftime("%m/%d/%Y %I:%M:%S %p")
+
+    # Ensure the 'Date' column in the DataFrame is in datetime format for comparison
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Get the last meter reading
+    last_meter_reading = df['MeterReading'].max()
+
+    # Calculate the new meter reading
+    new_meter_reading = last_meter_reading + float(usage)
+
+    # Create a new entry with the formatted date
+    new_entry = pd.DataFrame({'Date': [formatted_date], 'MeterReading': [new_meter_reading], 'Usage': [usage]})
+
+    # Concatenate the old DataFrame with the new entry
+    df = pd.concat([df, new_entry], ignore_index=True)
+
+    # Save the updated DataFrame back to CSV
+    df.to_csv('data/dataset.csv', index=False)
+
+
+def get_this_month_data():
+    df = pd.read_csv('data/dataset.csv')
+
+    # Convert the 'Date' column to datetime, allowing pandas to infer the format
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Calculate the current month based on the most recent date in the dataset
+    current_month_start = df['Date'].max().replace(day=1)
+    next_month_start = (current_month_start + pd.DateOffset(months=1)).replace(day=1)
+
+    # Filter data for the current month
+    this_month_data = df[(df['Date'] >= current_month_start) & (df['Date'] < next_month_start)]
+    this_month_reading = this_month_data['MeterReading'].max()
+    this_month_usage = this_month_data['Usage'].sum()
+
+    return this_month_reading, this_month_usage
+
+
+@app.route('/meterAdmin', methods=['GET', 'POST'])
 def meterAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         admin_email = session['admin_email']
-        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
-            return render_template('meterAdmin.html', admin=admin)
+            if request.method == 'POST':
+                date = request.form['date']
+                usage = request.form['usage']
+                update_daily_usage(date, usage)
+                return redirect(url_for('meterAdmin_form'))
+
+            last_month_reading = get_last_month_reading()
+            this_month_reading, this_month_usage = get_this_month_data()
+
+            return render_template('meterAdmin.html', admin=admin,
+                                   last_month=last_month_reading,
+                                   this_month=this_month_reading,
+                                   usage=this_month_usage)
         else:
-            return "user not found"
+            return "User not found"
     else:
         return redirect(url_for('signinAdmin_form'))
 
@@ -862,8 +1026,7 @@ def delete_student():
         try:
             db.session.delete(student)  # Remove the student from the database
             db.session.commit()  # Save changes
-            renumber_student()  # Renumber remaining student
-            flash("Student deleted and IDs renumbered successfully.")
+            flash("Student deleted successfully.")
 
             # Check if the deleted student is the currently logged-in student
             if student_id == str(logged_in_student_id):
@@ -879,12 +1042,6 @@ def delete_student():
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
 
-
-def renumber_student():
-    student_members = Student.query.order_by(Student.id).all()
-    for index, student_member in enumerate(student_members, start=1):
-        student_member.id = index
-    db.session.commit()
 
 
 @app.route('/delete_staff', methods=["POST"])
@@ -905,8 +1062,7 @@ def delete_staff():
         try:
             db.session.delete(staff)  # Remove the staff from the database
             db.session.commit()  # Save changes
-            renumber_staff()  # Renumber remaining staff
-            flash("Staff deleted and IDs renumbered successfully.")
+            flash("Staff deleted and successfully.")
 
             # Check if the deleted staff is the currently logged-in staff
             if staff_id == str(logged_in_staff_id):
@@ -921,14 +1077,6 @@ def delete_staff():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
-
-def renumber_staff():
-    staff_members = Staff.query.order_by(Staff.id).all()
-    for index, staff_member in enumerate(staff_members, start=1):
-        staff_member.id = index
-    db.session.commit()
-
-# Ensure you have the rest of your routes and logic here
 
 @app.route('/delete_admin', methods=["POST"])
 def delete_admin():
@@ -948,7 +1096,6 @@ def delete_admin():
         try:
             db.session.delete(admin)  # Remove the admin from the database
             db.session.commit()  # Save changes
-            renumber_admin()  # Renumber remaining admins
             flash("Admin deleted successfully.")
 
             # Check if the deleted admin is the currently logged-in admin
@@ -964,14 +1111,6 @@ def delete_admin():
 
     # Redirect back to the table after deletion if the deleted admin is not the currently logged-in admin
     return redirect(url_for("accessAdmin_form"))
-
-
-
-def renumber_admin():
-    admin_members = Admin.query.order_by(Admin.id).all()
-    for index, admin_member in enumerate(admin_members, start=1):
-        admin_member.id = index
-    db.session.commit()
 
 @app.route('/forgotPasswordStudent', methods=["GET","POST"])
 def forgotPasswordStudent():
@@ -1075,10 +1214,7 @@ def forgotPasswordAdmin():
         existing_admin = Admin.query.filter_by(email=email).first()
         if existing_admin:
             otp = str(random.randint(100000, 999999))
-            fname = existing_admin.fname  # Get the first name
-
-            send_otp_email(email, otp, fname)
-
+            send_otp_email_p(email, otp)
             session['forgot_password_data'] = {
                 'email': email,
                 'otp': otp
@@ -1129,6 +1265,10 @@ def serve_data(filename):
 @app.route('/ viewMore')
 def view_more():
     return render_template('viewMore.html')
+
+@app.route('/ viewMore_Student')
+def viewmore_student():
+    return render_template('viewmoreStudent.html')
 
 @app.route('/remove_pictureStudent', methods=['POST'])
 def remove_pictureStudent():
@@ -1197,6 +1337,129 @@ def get_current_admin():
         admin_id = session['admin_id']
         return Admin.query.get(admin_id)
 
+
+# -----------------------------------------------Predictions---------------------------------------------------------
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER_DAILY = (1, 0, 1)  # Adjust the ARIMA order as needed
+
+@app.route("/daily_predictions")
+def call_daily_predictions():
+    data = get_daily_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+
+def get_daily_data(prediction_count=7):  # Predict for the next week (7 days)
+    df = pd.read_csv("data/daily_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="D")
+    df_train = df.dropna()
+
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER_DAILY)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+
+@app.route("/test")
+def call_weekly_predictions():
+    # partition_data()
+    data = get_weekly_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER = (6, 0, 6)
+
+def get_weekly_data(prediction_count=4):
+    df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="W")
+    df_train = df.dropna()
+
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+#change prediction count to look more into the future
+# def get_weekly_data(prediction_count=4):
+#     df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
+#     df.index = pd.DatetimeIndex(df.index, freq="W")
+#     df_train = df.dropna()
+#     model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+#     model_fit = model.fit()
+#     forecast_value = model_fit.forecast(steps=prediction_count)
+#
+#     forecast_value.index = forecast_value.index.astype(str)
+#     df.index = df.index.astype(str)
+#
+#     forecast_json = forecast_value.clip(lower=0).to_dict()
+#     current_data_json = df["Usage"].to_dict()
+#     return {"forecast": forecast_json, "current_data": current_data_json}
+
+
+PREDICTION_FEATURE = "Usage"
+ARIMA_ORDER_MONTHLY = (2, 1, 2)  # Adjust the ARIMA order as needed
+
+@app.route("/monthly_predictions")
+def call_monthly_predictions():
+    # partition_data()
+    data = get_monthly_data()
+    return (
+        data,
+        200,
+        {"ContentType": "application/json"},
+    )
+
+# change prediction count to look more into the future
+def get_monthly_data(prediction_count=4):
+    df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
+    df.index = pd.DatetimeIndex(df.index, freq="M")
+    df_train = df.dropna()
+    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
+    model_fit = model.fit()
+    forecast_value = model_fit.forecast(steps=prediction_count)
+#
+    forecast_value.index = forecast_value.index.astype(str)
+    df.index = df.index.astype(str)
+
+    return {
+        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+
+
+# Run this to partition dataset.csv
+def partition_data():
+    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
+    df = df[["Usage"]]
+
+    daily_data_train = df.resample("D").sum()
+    daily_data_train.to_csv("data/daily_data_train.csv")
+    weekly_data_train = df.resample("W").sum()
+    weekly_data_train.to_csv("data/weekly_data_train.csv")
+    monthly_data_train = df.resample("M").sum()
+    monthly_data_train.to_csv("data/monthly_data_train.csv")
+
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
