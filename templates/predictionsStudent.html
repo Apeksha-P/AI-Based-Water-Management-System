@@ -96,6 +96,21 @@
 
 
         <!-- Add Your items Here -->
+
+        <div class="container-fluid pt-4 px-4">
+            <div class="row g-4">
+                <div class="col-md-12 col-lg-12">
+                    <div class="bg-secondary rounded h-100 p-4">
+                        <h6 class="mb-4">Daily Water Usage</h6>
+                        <div class="chart-container">
+                            <canvas id="dailyPredictionChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="container-fluid pt-4 px-4">
             <div class="row g-4">
                 <div class="col-md-12 col-lg-12">
@@ -176,6 +191,49 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Load the chart with data from the backend -->
 <script>
+
+
+    const dailyCtx = document.getElementById('dailyPredictionChart').getContext('2d');
+
+    fetch('/daily_predictions')
+        .then(response => response.json())
+        .then(data => {
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels, // X-axis labels
+                    datasets: [{
+                        label: 'Water Usage',
+                        data: data.data, // Y-axis data
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Day'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Usage (liters)'
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
+
     const ctx = document.getElementById('weeklyPredictionChart').getContext('2d');
 
     fetch('/test')

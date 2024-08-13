@@ -308,7 +308,7 @@
 }
 
 .home-section {
-    margin-top: -70px;
+    margin-top: 0!important;
     padding: 10px 70px;
     background-color: #242B3E;
     text-align: left;
