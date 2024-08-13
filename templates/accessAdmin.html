@@ -102,6 +102,26 @@
         <div class="container-fluid pt-4 px-4 ">
             <div class="row g-4">
 
+                <form method="GET" action="{{ url_for('accessAdmin_form') }}">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <input type="text" name="search_email" class="form-control" placeholder="Search by Email">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="search_role" class="form-control">
+                                <option value="">Search by Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="student">Student</option>
+                                <option value="staff">Staff</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </div>
+                </form>
+
+
                 <!-- Start Student Table -->
                 <div class="col-12">
                     <div class="bg-secondary rounded h-100 p-4" style="background-color: #1A1F35 !important;">
