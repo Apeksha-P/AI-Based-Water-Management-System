@@ -141,9 +141,9 @@
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 columnIndex: 3,
-                beginAtZero: false,
-                suggestedMin: 14,
-                suggestedMax: 0
+                beginAtZero: true,
+                suggestedMin: 0,
+                suggestedMax: 14
             },
             {
                 ctx: document.getElementById('line-chart-3').getContext('2d'),
