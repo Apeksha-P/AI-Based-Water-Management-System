@@ -835,21 +835,67 @@ def analysingAdmin_form():
         return redirect(url_for('signinAdmin_form'))
 
 
-@app.route('/accessAdmin', methods=["GET","POST"])
+# @app.route('/accessAdmin', methods=["GET","POST"])
+# def accessAdmin_form():
+#     if 'admin_id' in session:
+#         admin_id = session['admin_id']
+#         admin_email = session['admin_email']
+#         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+#         if admin:
+#             admins = Admin.query.all()
+#             students = Student.query.order_by(Student.id.asc()).all()
+#             staff = Staff.query.all()
+#             return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
+#         else:
+#             return "user not found"
+#     else:
+#         return redirect(url_for('signinAdmin_form'))
+
+@app.route('/accessAdmin', methods=["GET", "POST"])
 def accessAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         admin_email = session['admin_email']
-        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+
         if admin:
-            admins = Admin.query.all()
-            students = Student.query.order_by(Student.id.asc()).all()
-            staff = Staff.query.all()
+            # Get search queries
+            search_email = request.args.get('search_email', '').strip()
+            search_role = request.args.get('search_role', '').strip()
+
+            # Filter results based on search
+            query_admins = Admin.query
+            query_students = Student.query
+            query_staff = Staff.query
+
+            if search_email:
+                query_admins = query_admins.filter(Admin.email.ilike(f'%{search_email}%'))
+                query_students = query_students.filter(Student.email.ilike(f'%{search_email}%'))
+                query_staff = query_staff.filter(Staff.email.ilike(f'%{search_email}%'))
+
+            if search_role == 'admin':
+                admins = query_admins.all()
+                students = []
+                staff = []
+            elif search_role == 'student':
+                admins = []
+                students = query_students.all()
+                staff = []
+            elif search_role == 'staff':
+                admins = []
+                students = []
+                staff = query_staff.all()
+            else:
+                admins = query_admins.all()
+                students = query_students.order_by(Student.id.asc()).all()
+                staff = query_staff.all()
+
             return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
         else:
-            return "user not found"
+            return "User not found"
     else:
         return redirect(url_for('signinAdmin_form'))
+
 
 
 def get_last_month_reading():
