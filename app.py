@@ -1270,6 +1270,10 @@ def view_more():
 def viewmore_student():
     return render_template('viewmoreStudent.html')
 
+@app.route('/ viewMore_Staff')
+def viewmore_staff():
+    return render_template('viewmoreStaff.html')
+
 @app.route('/remove_pictureStudent', methods=['POST'])
 def remove_pictureStudent():
     student = get_current_student()
