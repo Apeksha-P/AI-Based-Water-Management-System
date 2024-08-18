@@ -74,28 +74,9 @@
                 <div class="nav-item dropdown" style="position: relative;">
 
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
-                        <i class="fa fa-bell me-lg-2" style="position: relative;">
-                            <!-- Red dot for notification -->
-                            {% if usage_notification %}
-                            <span class="notification-dot"></span>
-                            {% endif %}
-                        </i>
+                        <i class="fa fa-bell me-lg-2" style="position: relative;"></i>
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
-
-                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
-                        {% if usage_notification %}
-                        <a href="{{ url_for('notifications_student')}}">
-                            <div class="alert bg-warning text-dark mb-0" role="alert">
-                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
-                            </div>
-                        </a>
-                        {% else %}
-                        <div class="alert alert-secondary" role="alert">
-                            No new notifications
-                        </div>
-                        {% endif %}
-                    </div>
 
                 </div>
                 <div class="nav-item dropdown">
@@ -116,19 +97,10 @@
         </nav>
         <!-- Navbar End -->
 
-        <section class="home-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h1><span>AI</span> Based<br>Water<br><span>Management</span><br>System</h1>
-                        <a href="{{ url_for('view_more') }}"><div class="view-more-button">View More</div></a>
-                    </div>
-                    <div class="col-md-6">
-                        <img src="{{ url_for('static', filename='img/home-img.png') }}" alt="Image" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="alert alert-danger" role="alert">
+                <b>Alert: High Water Usage Detected!</b><br>
+                Your water use is higher than normal. Using too much water can harm the environment and increase costs. Please save water by taking shorter showers, turning off taps when not in use, and reporting any leaks.
+          </div>
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
