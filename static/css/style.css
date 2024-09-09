@@ -351,3 +351,81 @@
     border-radius: 50%; /* Makes the dot a circle */
 }
 
+/**view more**/
+
+body {
+    background-color: #2D2F33;
+    font-family: 'Open Sans', sans-serif;
+    color: #FFF;
+}
+
+.vm-container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.vm-content {
+    margin-top: 3%;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #343A40;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.vm-content-inner {
+    padding: 30px;
+}
+
+.vm-content-inner h1 {
+    color: #826AF9;
+    margin-bottom: 20px;
+    font-size: 36px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.vm-content-inner p {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.right-align img {
+    width: 100%;
+    height: auto;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.back-to-left {
+    color: #FFF;
+    background-color: #826AF9;
+    border: none;
+    position: fixed; /* Changed from absolute to fixed */
+    top: 20px;
+    left: 20px;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
+    z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+.back-to-left:hover {
+    background-color: #0056b3;
+}
+
+.footer-separator {
+    border-top: 1px solid #444;
+    margin: 40px 0;
+}
+img{
+    margin-top: 25px;
+    border-radius: 50%
+}
