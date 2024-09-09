@@ -17,8 +17,15 @@ from statsmodels.tsa.arima.model import ARIMA
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
 # Initialize Flask application
+app = Flask(__name__, static_url_path='/static/')
+app.secret_key = 'your_secret_key'
+
+# Notification Process
+
+max_water_usage = 2
+
+# Configure Flask-Mail
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 
