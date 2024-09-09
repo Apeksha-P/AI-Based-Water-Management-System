@@ -17,10 +17,13 @@ from statsmodels.tsa.arima.model import ARIMA
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
+
+# Notification Process
+
+max_water_usage = 2
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -481,6 +484,23 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
+@app.route('/notificationsStudent')
+def notifications_student():
+    # Check if student is logged in
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            # Pass the student object to the template
+            return render_template('notificationsStudent.html', student=student)
+        else:
+            return "User not found"
+    else:
+        return redirect(url_for('signinStudent_form'))
+
+
+
 @app.route('/homeStudent')
 def homeStudent():
     # Check if student is logged in
@@ -489,7 +509,18 @@ def homeStudent():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('homeStudent.html', student=student)
+            # CSV Path
+            csv_file_path = 'data/dataset.csv' 
+            
+            # Load CSV data
+            df = pd.read_csv(csv_file_path)
+            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS']
+            water_usage = df['Usage'].iloc[-1]
+            
+            # Determine if Notification is Needed
+            usage_notification = water_usage > max_water_usage
+            
+            return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -531,7 +562,18 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('dashboardStudent.html', student=student)
+             # CSV Path
+            csv_file_path = 'data/dataset.csv' 
+            
+            # Load CSV data
+            df = pd.read_csv(csv_file_path)
+            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS']
+            water_usage = df['Usage'].iloc[-1]
+            
+            # Determine if Notification is Needed
+            usage_notification = water_usage > max_water_usage
+
+            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
