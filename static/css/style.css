@@ -350,15 +350,6 @@
     }
 }
 
-.notification-dot {
-    position: absolute;
-    top: -5px; /* Adjust as needed */
-    right: -5px; /* Adjust as needed */
-    width: 10px;
-    height: 10px;
-    background-color: red; /* Red color for the dot */
-    border-radius: 50%; /* Makes the dot a circle */
-}
 /**view more**/
 
 body {
@@ -790,6 +781,16 @@ img{
     .home-section h1 {
         font-size: 60px;
     }
+}
+
+.notification-dot {
+    position: absolute;
+    top: -5px; /* Adjust as needed */
+    right: -5px; /* Adjust as needed */
+    width: 10px;
+    height: 10px;
+    background-color: red; /* Red color for the dot */
+    border-radius: 50%; /* Makes the dot a circle */
 }
 
 /**view more**/
