@@ -26,10 +26,6 @@ app.secret_key = 'your_secret_key'
 max_water_usage = 2
 
 # Configure Flask-Mail
-app = Flask(__name__, static_url_path='/static/')
-app.secret_key = 'your_secret_key'
-
-# Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USERNAME"] = "abhayas-cs20048@stu.kln.ac.lk"
