@@ -10,17 +10,21 @@ import os
 import re
 import random
 import pandas as pd
-from datetime import datetime
 from sqlalchemy import create_engine
 from statsmodels.tsa.arima.model import ARIMA
+from flask import Flask, jsonify
+from pmdarima import auto_arima
 
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
+
+# Notification Process
+
+max_water_usage = 2
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -481,6 +485,23 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
+@app.route('/notificationsStudent')
+def notifications_student():
+    # Check if student is logged in
+    if 'student_id' in session:
+        student_id = session['student_id']
+        student_email = session['student_email']
+        student = Student.query.filter_by(id=student_id, email=student_email).first()
+        if student:
+            # Pass the student object to the template
+            return render_template('notificationsStudent.html', student=student)
+        else:
+            return "User not found"
+    else:
+        return redirect(url_for('signinStudent_form'))
+
+
+
 @app.route('/homeStudent')
 def homeStudent():
     # Check if student is logged in
@@ -489,7 +510,18 @@ def homeStudent():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('homeStudent.html', student=student)
+            # CSV Path
+            csv_file_path = 'data/dataset.csv' 
+            
+            # Load CSV data
+            df = pd.read_csv(csv_file_path)
+            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
+            water_usage = df['Usage'].iloc[-1]
+            
+            # Determine if Notification is Needed
+            usage_notification = water_usage > max_water_usage
+            
+            return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -531,7 +563,18 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('dashboardStudent.html', student=student)
+             # CSV Path
+            csv_file_path = 'data/dataset.csv' 
+            
+            # Load CSV data
+            df = pd.read_csv(csv_file_path)
+            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
+            water_usage = df['Usage'].iloc[-1]
+            
+            # Determine if Notification is Needed
+            usage_notification = water_usage > max_water_usage
+
+            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -835,21 +878,67 @@ def analysingAdmin_form():
         return redirect(url_for('signinAdmin_form'))
 
 
-@app.route('/accessAdmin', methods=["GET","POST"])
+# @app.route('/accessAdmin', methods=["GET","POST"])
+# def accessAdmin_form():
+#     if 'admin_id' in session:
+#         admin_id = session['admin_id']
+#         admin_email = session['admin_email']
+#         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+#         if admin:
+#             admins = Admin.query.all()
+#             students = Student.query.order_by(Student.id.asc()).all()
+#             staff = Staff.query.all()
+#             return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
+#         else:
+#             return "user not found"
+#     else:
+#         return redirect(url_for('signinAdmin_form'))
+
+@app.route('/accessAdmin', methods=["GET", "POST"])
 def accessAdmin_form():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         admin_email = session['admin_email']
-        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+
         if admin:
-            admins = Admin.query.all()
-            students = Student.query.order_by(Student.id.asc()).all()
-            staff = Staff.query.all()
+            # Get search queries
+            search_email = request.args.get('search_email', '').strip()
+            search_role = request.args.get('search_role', '').strip()
+
+            # Filter results based on search
+            query_admins = Admin.query
+            query_students = Student.query
+            query_staff = Staff.query
+
+            if search_email:
+                query_admins = query_admins.filter(Admin.email.ilike(f'%{search_email}%'))
+                query_students = query_students.filter(Student.email.ilike(f'%{search_email}%'))
+                query_staff = query_staff.filter(Staff.email.ilike(f'%{search_email}%'))
+
+            if search_role == 'admin':
+                admins = query_admins.all()
+                students = []
+                staff = []
+            elif search_role == 'student':
+                admins = []
+                students = query_students.all()
+                staff = []
+            elif search_role == 'staff':
+                admins = []
+                students = []
+                staff = query_staff.all()
+            else:
+                admins = query_admins.all()
+                students = query_students.order_by(Student.id.asc()).all()
+                staff = query_staff.all()
+
             return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
         else:
-            return "user not found"
+            return "User not found"
     else:
         return redirect(url_for('signinAdmin_form'))
+
 
 
 def get_last_month_reading():
@@ -1344,125 +1433,115 @@ def get_current_admin():
 
 # -----------------------------------------------Predictions---------------------------------------------------------
 PREDICTION_FEATURE = "Usage"
-ARIMA_ORDER_DAILY = (1, 0, 1)  # Adjust the ARIMA order as needed
+
+def partition_data():
+    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
+    df = df[[PREDICTION_FEATURE]]
+
+    daily_data_train = df.resample("D").sum()
+    daily_data_train.to_csv("data/daily_data_train.csv")
+
+    weekly_data_train = df.resample("W").sum()
+    weekly_data_train.to_csv("data/weekly_data_train.csv")
+
+    monthly_data_train = df.resample("ME").sum()  # Use 'ME' for month-end frequency
+    monthly_data_train.to_csv("data/monthly_data_train.csv")
 
 @app.route("/daily_predictions")
 def call_daily_predictions():
+    partition_data()  # Ensure training data is up to date
     data = get_daily_data()
-    return (
-        data,
-        200,
-        {"ContentType": "application/json"},
-    )
+    return jsonify(data), 200
 
-def get_daily_data(prediction_count=7):  # Predict for the next week (7 days)
+def get_daily_data(prediction_count=7):
     df = pd.read_csv("data/daily_data_train.csv", index_col="Date", parse_dates=True)
     df.index = pd.DatetimeIndex(df.index, freq="D")
     df_train = df.dropna()
 
-    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER_DAILY)
-    model_fit = model.fit()
-    forecast_value = model_fit.forecast(steps=prediction_count)
+    # Use auto_arima to determine the best parameters dynamically
+    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
 
-    forecast_value.index = forecast_value.index.astype(str)
-    df.index = df.index.astype(str)
+    # Print the selected ARIMA order
+    print(f"Selected ARIMA order for daily data: {model.order}")
+
+    # Fit the model
+    model_fit = model.fit(df_train[PREDICTION_FEATURE])
+
+    # Forecast future values
+    forecast_value = model_fit.predict(n_periods=prediction_count)
+
+    # Generate future dates for the forecast
+    last_date = df.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='D')[1:]
 
     return {
-        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
         "data": list(forecast_value.clip(lower=0))
     }
 
-
-@app.route("/test")
-def call_weekly_predictions():
-    # partition_data()
+@app.route("/weekly_predictions")
+def call_weekly_predictions():  # Define correct route
+    partition_data()  # Ensure training data is up to date
     data = get_weekly_data()
-    return (
-        data,
-        200,
-        {"ContentType": "application/json"},
-    )
-
-PREDICTION_FEATURE = "Usage"
-ARIMA_ORDER = (6, 0, 6)
+    return jsonify(data), 200
 
 def get_weekly_data(prediction_count=4):
     df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
     df.index = pd.DatetimeIndex(df.index, freq="W")
     df_train = df.dropna()
 
-    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
-    model_fit = model.fit()
-    forecast_value = model_fit.forecast(steps=prediction_count)
+    # Use auto_arima to determine the best parameters dynamically
+    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
 
-    forecast_value.index = forecast_value.index.astype(str)
-    df.index = df.index.astype(str)
+    # Print the selected ARIMA order
+    print(f"Selected ARIMA order for weekly data: {model.order}")
+
+    # Fit the model
+    model_fit = model.fit(df_train[PREDICTION_FEATURE])
+
+    # Forecast future values
+    forecast_value = model_fit.predict(n_periods=prediction_count)
+
+    # Generate future dates for the forecast
+    last_date = df.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='W')[1:]
 
     return {
-        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
         "data": list(forecast_value.clip(lower=0))
     }
-
-#change prediction count to look more into the future
-# def get_weekly_data(prediction_count=4):
-#     df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
-#     df.index = pd.DatetimeIndex(df.index, freq="W")
-#     df_train = df.dropna()
-#     model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
-#     model_fit = model.fit()
-#     forecast_value = model_fit.forecast(steps=prediction_count)
-#
-#     forecast_value.index = forecast_value.index.astype(str)
-#     df.index = df.index.astype(str)
-#
-#     forecast_json = forecast_value.clip(lower=0).to_dict()
-#     current_data_json = df["Usage"].to_dict()
-#     return {"forecast": forecast_json, "current_data": current_data_json}
-
-
-PREDICTION_FEATURE = "Usage"
-ARIMA_ORDER_MONTHLY = (2, 1, 2)  # Adjust the ARIMA order as needed
 
 @app.route("/monthly_predictions")
 def call_monthly_predictions():
-    # partition_data()
+    partition_data()  # Ensure training data is up to date
     data = get_monthly_data()
-    return (
-        data,
-        200,
-        {"ContentType": "application/json"},
-    )
+    return jsonify(data), 200
 
-# change prediction count to look more into the future
 def get_monthly_data(prediction_count=4):
     df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="M")
+    df.index = pd.DatetimeIndex(df.index, freq="ME")  # Use 'ME' for month-end frequency
     df_train = df.dropna()
-    model = ARIMA(df_train[PREDICTION_FEATURE], order=ARIMA_ORDER)
-    model_fit = model.fit()
-    forecast_value = model_fit.forecast(steps=prediction_count)
-#
-    forecast_value.index = forecast_value.index.astype(str)
-    df.index = df.index.astype(str)
+
+    # Use auto_arima to determine the best parameters dynamically
+    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
+
+    # Print the selected ARIMA order
+    print(f"Selected ARIMA order for monthly data: {model.order}")
+
+    # Fit the model
+    model_fit = model.fit(df_train[PREDICTION_FEATURE])
+
+    # Forecast future values
+    forecast_value = model_fit.predict(n_periods=prediction_count)
+
+    # Generate future dates for the forecast
+    last_date = df.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='M')[1:]
 
     return {
-        "labels": list(df.index[-prediction_count:]),  # Last 'prediction_count' dates
+        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
         "data": list(forecast_value.clip(lower=0))
     }
-
-
-
-# Run this to partition dataset.csv
-def partition_data():
-    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
-    df = df[["Usage"]]
-
-    daily_data_train = df.resample("D").sum()
-    daily_data_train.to_csv("data/daily_data_train.csv")
-    weekly_data_train = df.resample("W").sum()
-    weekly_data_train.to_csv("data/weekly_data_train.csv")
-    monthly_data_train = df.resample("M").sum()
-    monthly_data_train.to_csv("data/monthly_data_train.csv")
 
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
