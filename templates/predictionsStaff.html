@@ -235,7 +235,7 @@
 
     const ctx = document.getElementById('weeklyPredictionChart').getContext('2d');
 
-    fetch('/test')
+    fetch('/weekly_predictions')
         .then(response => response.json())
         .then(data => {
             new Chart(ctx, {
