@@ -24,7 +24,9 @@ app.secret_key = 'your_secret_key'
 
 # Notification Process
 
-max_water_usage = 2
+max_water_usage = 1
+max_ph_value = 9.5
+low_ph_value = 7.5
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -493,8 +495,13 @@ def notifications_student():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
+
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
             # Pass the student object to the template
-            return render_template('notificationsStudent.html', student=student)
+            return render_template('notificationsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "User not found"
     else:
@@ -517,11 +524,21 @@ def homeStudent():
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
+            ph_value = df['ph'].iloc[-1]
             
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
+            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
+
+            # Convert to standard Python types (if necessary)
+            usage_notification = bool(usage_notification)
+            ph_notification = bool(ph_notification)
+
+            # Store notifications in session
+            session['usage_notification'] = usage_notification
+            session['ph_notification'] = ph_notification
             
-            return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
+            return render_template('homeStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -563,18 +580,11 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-             # CSV Path
-            csv_file_path = 'data/dataset.csv' 
-            
-            # Load CSV data
-            df = pd.read_csv(csv_file_path)
-            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-            water_usage = df['Usage'].iloc[-1]
-            
-            # Determine if Notification is Needed
-            usage_notification = water_usage > max_water_usage
+             # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
 
-            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification)
+            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -830,7 +840,11 @@ def predictionStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('predictionsStudent.html', student=student)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('predictionsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
