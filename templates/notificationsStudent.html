@@ -51,9 +51,9 @@
             </a>
 
             <div class="navbar-nav w-100">
-                <a href="{{ url_for('homeStudent')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
-                <a href="{{ url_for('dashboardStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                <a href="{{ url_for('predictionStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                <a href="{{ url_for('homeStudent')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('dashboardStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+
             </div>
         </nav>
     </div>
@@ -69,33 +69,14 @@
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%"><a href="{{ url_for('dashboardStudent_form')}}">DASHBOARD</a></h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('homeStudent')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown" style="position: relative;">
 
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
-                        <i class="fa fa-bell me-lg-2" style="position: relative;">
-                            <!-- Red dot for notification -->
-                            {% if usage_notification %}
-                            <span class="notification-dot"></span>
-                            {% endif %}
-                        </i>
+                        <i class="fa fa-bell me-lg-2" style="position: relative;"></i>
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
-
-                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
-                        {% if usage_notification %}
-                        <a href="{{ url_for('notifications_student')}}">
-                            <div class="alert bg-warning text-dark mb-0" role="alert">
-                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
-                            </div>
-                        </a>
-                        {% else %}
-                        <div class="alert alert-secondary" role="alert">
-                            No new notifications
-                        </div>
-                        {% endif %}
-                    </div>
 
                 </div>
                 <div class="nav-item dropdown">
@@ -115,43 +96,11 @@
             </div>
         </nav>
         <!-- Navbar End -->
-        <!-- Add Your items Here -->
-        <div class="container-fluid pt-4 px-4">
-            <div class="row g-4">
-                <div class="col-md-12 col-lg-12">
-                    <div class="bg-secondary rounded h-100 p-4">
-                        <h6 class="mb-4">Water Usage</h6>
-                        <div class="chart-container">
-                            <canvas id="bar-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 col-lg-12">
-                    <div class="bg-secondary rounded h-100 p-4">
-                        <h6 class="mb-4">Tempereture</h6>
-                        <div class="chart-container">
-                            <canvas id="line-chart-1"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 col-lg-12">
-                    <div class="bg-secondary rounded h-100 p-4">
-                        <h6 class="mb-4">pH Value</h6>
-                        <div class="chart-container">
-                            <canvas id="line-chart-2"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 col-lg-12">
-                    <div class="bg-secondary rounded h-100 p-4">
-                        <h6 class="mb-4">TDS</h6>
-                        <div class="chart-container">
-                            <canvas id="line-chart-3"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+        <div class="alert alert-danger" role="alert">
+                <b>Alert: High Water Usage Detected!</b><br>
+                Your water use is higher than normal. Using too much water can harm the environment and increase costs. Please save water by taking shorter showers, turning off taps when not in use, and reporting any leaks.
+          </div>
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
@@ -172,7 +121,7 @@
                         <h5 style="color: #826AF9;">Useful Links</h5>
                         <a href="{{ url_for('homeStudent')}}" target="_blank">Home</a><br>
                         <a href="{{ url_for('dashboardStudent_form')}}" target="_blank">Dashboard</a><br>
-                        <a href="{{ url_for('predictionStudent_form')}}" target="_blank">Predictions</a>
+
                     </div>
                     <div class="col-12 col-md-3 text-left">
                         <h5 style="color: #826AF9;">Contact</h5>
@@ -199,13 +148,12 @@
     <!-- Content End -->
 
     <!-- Back to Top -->
-    <a href="#bar-chart" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-scrollbar"></script>
 <script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
