@@ -11,7 +11,6 @@ import re
 import random
 import pandas as pd
 from sqlalchemy import create_engine
-from statsmodels.tsa.arima.model import ARIMA
 from flask import Flask, jsonify
 from pmdarima import auto_arima
 
@@ -1434,19 +1433,67 @@ def get_current_admin():
 # -----------------------------------------------Predictions---------------------------------------------------------
 PREDICTION_FEATURE = "Usage"
 
+def truncate_table(engine, table_name):
+    with engine.connect() as conn:
+        conn.execute(f"TRUNCATE TABLE {table_name}")
+def read_data_from_db(table_name):
+    query = f"SELECT * FROM {table_name}"
+    df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
+    return df[[PREDICTION_FEATURE]]
+
+# Helper function to write data to a database table
+def write_data_to_db(df, table_name):
+    df.to_sql(table_name, engine, if_exists='replace', index=True, index_label='Date')
+
+# Partition data and update train data tables in the database
 def partition_data():
-    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
-    df = df[[PREDICTION_FEATURE]]
+    df = read_data_from_db("dataset")  # Read from 'dataset' table in the database
 
-    daily_data_train = df.resample("D").sum()
-    daily_data_train.to_csv("data/daily_data_train.csv")
+    try:
+        # Truncate table before inserting new data
+        truncate_table(engine, 'daily_train_data')
+        daily_data_train = df.resample("D").sum()
+        write_data_to_db(daily_data_train, "daily_train_data")
 
-    weekly_data_train = df.resample("W").sum()
-    weekly_data_train.to_csv("data/weekly_data_train.csv")
+        truncate_table(engine, 'weekly_train_data')
+        weekly_data_train = df.resample("W").sum()
+        write_data_to_db(weekly_data_train, "weekly_train_data")
 
-    monthly_data_train = df.resample("ME").sum()  # Use 'ME' for month-end frequency
-    monthly_data_train.to_csv("data/monthly_data_train.csv")
+        truncate_table(engine, 'monthly_train_data')
+        monthly_data_train = df.resample("M").sum()
+        write_data_to_db(monthly_data_train, "monthly_train_data")
 
+    except Exception as e:
+        print(f"An error occurred while partitioning data: {e}")
+
+
+# Prediction function for ARIMA
+def predict_data(df, prediction_count, freq):
+    df.index = pd.DatetimeIndex(df.index, freq=freq)
+    df_train = df.dropna()
+
+    # Use auto_arima to determine the best parameters dynamically
+    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
+
+    # Print the selected ARIMA order
+    print(f"Selected ARIMA order: {model.order}")
+
+    # Fit the model
+    model_fit = model.fit(df_train[PREDICTION_FEATURE])
+
+    # Forecast future values
+    forecast_value = model_fit.predict(n_periods=prediction_count)
+
+    # Generate future dates for the forecast
+    last_date = df.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq=freq)[1:]
+
+    return {
+        "labels": list(forecast_dates.astype(str)),
+        "data": list(forecast_value.clip(lower=0))
+    }
+
+# Route for daily predictions
 @app.route("/daily_predictions")
 def call_daily_predictions():
     partition_data()  # Ensure training data is up to date
@@ -1454,63 +1501,21 @@ def call_daily_predictions():
     return jsonify(data), 200
 
 def get_daily_data(prediction_count=7):
-    df = pd.read_csv("data/daily_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="D")
-    df_train = df.dropna()
+    df = read_data_from_db("daily_train_data")
+    return predict_data(df, prediction_count, 'D')
 
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
-
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for daily data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='D')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
-
+# Route for weekly predictions
 @app.route("/weekly_predictions")
-def call_weekly_predictions():  # Define correct route
+def call_weekly_predictions():
     partition_data()  # Ensure training data is up to date
     data = get_weekly_data()
     return jsonify(data), 200
 
 def get_weekly_data(prediction_count=4):
-    df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="W")
-    df_train = df.dropna()
+    df = read_data_from_db("weekly_train_data")
+    return predict_data(df, prediction_count, 'W')
 
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
-
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for weekly data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='W')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
-
+# Route for monthly predictions
 @app.route("/monthly_predictions")
 def call_monthly_predictions():
     partition_data()  # Ensure training data is up to date
@@ -1518,31 +1523,9 @@ def call_monthly_predictions():
     return jsonify(data), 200
 
 def get_monthly_data(prediction_count=4):
-    df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="ME")  # Use 'ME' for month-end frequency
-    df_train = df.dropna()
+    df = read_data_from_db("monthly_train_data")
+    return predict_data(df, prediction_count, 'ME')
 
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
-
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for monthly data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='M')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
 
 if __name__ == "__main__":
-    create_database_if_not_exists()  # Ensure the database exists before running the app
     app.run(host='0.0.0.0', port=5000, debug=True)
