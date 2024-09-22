@@ -959,7 +959,7 @@ def get_last_month_reading():
     last_month_data = df[(df['Date'] >= first_day_last_month) & (df['Date'] <= last_day_last_month)]
     last_month_total = last_month_data['MeterReading'].max()
 
-    return last_month_total
+    return f"{last_month_total:.2f}"
 
 def update_daily_usage(date, usage):
     # Load the dataset
@@ -1008,7 +1008,62 @@ def get_this_month_data():
     this_month_reading = this_month_data['MeterReading'].max()
     this_month_usage = this_month_data['Usage'].sum()
 
-    return this_month_reading, this_month_usage
+    return f"{this_month_reading:.2f}", f"{this_month_usage:.2f}"
+
+
+# def get_water_usage_by_date(date_str):
+#     df = pd.read_csv('data/dataset.csv')
+#     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+#     df = df.dropna(subset=['Date'])
+#
+#     # Convert input date string to datetime object
+#     try:
+#         selected_date = datetime.strptime(date_str, "%Y-%m-%d")
+#     except ValueError:
+#         return {'error': 'Invalid date format. Please use YYYY-MM-DD.'}
+#
+#     # Filter data for the selected date
+#     daily_data = df[df['Date'].dt.date == selected_date.date()]
+#
+#     if not daily_data.empty:
+#         usage = daily_data['Usage'].sum()
+#         meter_reading = daily_data['MeterReading'].max()
+#     else:
+#         usage = 0
+#         meter_reading = 0
+#
+#     return {
+#         'date': selected_date.strftime("%Y-%m-%d"),
+#         'usage': round(usage, 2),
+#         'meterReading': round(meter_reading, 2)
+#     }
+#
+# @app.route('/getWaterUsage/<date>', methods=['GET'])
+# def get_water_usage(date):
+#     data = get_water_usage_by_date(date)
+#     return jsonify(data)
+
+@app.route('/get_water_usage', methods=['GET'])
+def get_water_usage():
+    selected_date = request.args.get('date')
+
+    # Convert the selected date to match the format in the CSV file
+    formatted_date = pd.to_datetime(selected_date, format='%m/%d/%Y')
+
+    # Read the dataset.csv file
+    df = pd.read_csv('data/dataset.csv')
+
+    # Ensure the 'Date' column is in datetime format
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+    # Filter the data for the selected date
+    filtered_data = df[df['Date'] == formatted_date]
+
+    if not filtered_data.empty:
+        water_usage = filtered_data['Usage'].sum()  # Assuming 'Usage' column exists
+        return jsonify({"usage": water_usage})
+    else:
+        return jsonify({"usage": "No data found"}), 404
 
 
 @app.route('/meterAdmin', methods=['GET', 'POST'])
