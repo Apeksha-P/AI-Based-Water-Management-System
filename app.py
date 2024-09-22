@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from statsmodels.tsa.arima.model import ARIMA
 from flask import Flask, jsonify
 from pmdarima import auto_arima
-
+from datetime import datetime
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -1597,6 +1597,57 @@ def get_monthly_data(prediction_count=4):
         "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
         "data": list(forecast_value.clip(lower=0))
     }
+
+# Load dataset (assuming it's in the same folder)
+df = pd.read_csv('data/dataset.csv')
+
+@app.route('/analyze', methods=['GET'])
+def analyze():
+    # Get start and end date from the request
+    start_date = request.args.get('start')
+    end_date = request.args.get('end')
+
+    # Convert string to datetime
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+    # Filter data by date range
+    df['Date'] = pd.to_datetime(df['Date'])  # Make sure 'Date' column is in datetime format
+    filtered_df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+
+    # Prepare data for charts
+    data = {
+        'usage': {
+            'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
+            'values': filtered_df['Usage'].tolist()
+        },
+        'temp': {
+            'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
+            'values': filtered_df['Temp'].tolist()
+        },
+        'ph': {
+            'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
+            'values': filtered_df['pH'].tolist()
+        },
+        'tds': {
+            'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
+            'values': filtered_df['TDS'].tolist()
+        },
+        'stats': generate_statistics(filtered_df)
+    }
+
+    print(data)  # Log the data to verify it's correct
+    return jsonify(data)
+
+def generate_statistics(df):
+    # Basic statistical summary
+    stats = f"""
+    Mean Usage: {df['Usage'].mean():.2f}, 
+    Mean Temp: {df['Temp'].mean():.2f}, 
+    Mean pH: {df['pH'].mean():.2f}, 
+    Mean TDS: {df['TDS'].mean():.2f}
+    """
+    return stats
 
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
