@@ -487,6 +487,36 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
+# Path to your CSV file
+csv_file_path = 'data/dataset.csv'
+
+@app.route('/report', methods=['GET', 'POST'])
+def report():
+    if request.method == 'POST':
+        # Get the start and end dates from the form
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path)
+        
+        # Ensure 'Date' is a datetime object for proper comparison
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+        # Filter the DataFrame for the given date range
+        mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
+        filtered_df = df.loc[mask]
+
+        # Convert the filtered data to a string format
+        result = filtered_df.to_string(index=False)
+        
+        # Return the data back to the frontend
+        return jsonify({"data": result})
+    
+    # Render the initial page with GET request
+    return render_template('report.html')
+
+
 @app.route('/notificationsStudent')
 def notifications_student():
     # Check if student is logged in
