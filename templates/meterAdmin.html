@@ -157,19 +157,19 @@
                             </div>
                             <div class="mb-3">
                                 <label for="usage" class="form-label">Enter Daily Usage</label>
-                                <input type="number" class="form-control" id="usage" name="usage" placeholder="Enter usage" required>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="usage" name="usage" placeholder="Enter usage" required>
                             </div>
                             <div class="mb-3">
                                 <label for="temp" class="form-label">Enter Temperature value</label>
-                                <input type="number" class="form-control" id="temp" name="temp" placeholder="Enter temperature" required>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="temp" name="temp" placeholder="Enter temperature" required>
                             </div>
                             <div class="mb-3">
                                 <label for="ph" class="form-label">Enter ph value</label>
-                                <input type="number" class="form-control" id="ph" name="ph" placeholder="Enter ph" required>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="ph" name="ph" placeholder="Enter ph" required>
                             </div>
                             <div class="mb-3">
                                 <label for="tds" class="form-label">Enter TDS value</label>
-                                <input type="number" class="form-control" id="tds" name="tds" placeholder="Enter TDS" required>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="tds" name="tds" placeholder="Enter TDS" required>
                             </div>
                             <button type="submit" class="btn btn-primary" style="font-size: 20px !important; margin-top: 20px;">Add</button>
                         </form>
@@ -200,7 +200,6 @@
                             <h6 class="mb-0" style="font-size: 25px !important;">Select a Date to View Water Usage</h6>
                         </div>
                         <div class="d-flex align-items-center border-bottom py-3" style="padding-top: 15% !important;">
-<!--                            <i class="fa-solid fa-gauge" style="font-size: 20px !important;"></i>-->
                             <div class="w-100 ms-3">
                                 <div class="row">
                                     <div class="col-md-6">
