@@ -13,8 +13,6 @@ import pandas as pd
 from sqlalchemy import create_engine
 from flask import Flask, jsonify
 from pmdarima import auto_arima
-from sqlalchemy import text
-import statsmodels.api as sm
 
 
 import logging
