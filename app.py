@@ -15,6 +15,8 @@ from statsmodels.tsa.arima.model import ARIMA
 from flask import Flask, jsonify
 from pmdarima import auto_arima
 from datetime import datetime
+from sqlalchemy import text
+import statsmodels.api as sm
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
