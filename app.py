@@ -1543,7 +1543,7 @@ def get_monthly_data(prediction_count=4):
         "data": list(forecast_value.clip(lower=0))
     }
 
-# Load dataset (assuming it's in the same folder)
+# Load dataset
 df = pd.read_csv('data/dataset.csv')
 
 @app.route('/analyze', methods=['GET'])
@@ -1572,7 +1572,7 @@ def analyze():
         },
         'ph': {
             'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
-            'values': filtered_df['pH'].tolist()
+            'values': filtered_df['ph'].tolist()
         },
         'tds': {
             'dates': filtered_df['Date'].dt.strftime('%Y-%m-%d').tolist(),
@@ -1589,7 +1589,7 @@ def generate_statistics(df):
     stats = f"""
     Mean Usage: {df['Usage'].mean():.2f}, 
     Mean Temp: {df['Temp'].mean():.2f}, 
-    Mean pH: {df['pH'].mean():.2f}, 
+    Mean pH: {df['ph'].mean():.2f}, 
     Mean TDS: {df['TDS'].mean():.2f}
     """
     return stats
