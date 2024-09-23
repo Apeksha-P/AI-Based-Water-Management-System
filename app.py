@@ -1569,7 +1569,10 @@ def get_monthly_data(prediction_count=4):
 
 
 # Load dataset
-df = pd.read_csv('data/dataset.csv')
+def read_data_from_db(table_name):
+    query = f"SELECT * FROM {table_name}"
+    df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
+    return df
 
 @app.route('/analyze', methods=['GET'])
 def analyze():
@@ -1581,8 +1584,11 @@ def analyze():
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
+    # Read data from 'dataset' table in the database
+    df = read_data_from_db('dataset')
+
     # Filter data by date range
-    df['Date'] = pd.to_datetime(df['Date'])  # Make sure 'Date' column is in datetime format
+    df['Date'] = pd.to_datetime(df.index)  # Ensure 'Date' column is in datetime format
     filtered_df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
     # Prepare data for charts
@@ -1605,8 +1611,6 @@ def analyze():
         },
         'stats': generate_statistics(filtered_df)
     }
-
-    print(data)  # Log the data to verify it's correct
     return jsonify(data)
 
 def generate_statistics(df):
