@@ -10,8 +10,8 @@
         }, 1);
     };
     spinner();
-    
-    
+
+
     // Back to top button
     $(window).scroll(function () {
         if ($(this).scrollTop() > 300) {
@@ -63,7 +63,7 @@
     Chart.defaults.color = "#6C7293";
     Chart.defaults.borderColor = "#000000";
 
-    //charts    
+    //charts
     $(document).ready(function() {
         // Function to fetch and process data from CSV
         function fetchDataAndProcess(url, columnIndex, chartOptions) {
@@ -83,7 +83,7 @@
                 createChart(last30Dates, last30Values, chartOptions);
             });
         }
-    
+
         // Function to create Chart.js chart
         function createChart(labels, data, options) {
             var ctx = options.ctx;
@@ -113,18 +113,18 @@
                 options: chartOptions
             });
         }
-    
+
         // Define chart options
         var chartOptions = [{
-                ctx: document.getElementById('bar-chart').getContext('2d'),
-                chartType: 'bar',
-                label: 'Water Usage',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                columnIndex: 1,
-                beginAtZero: true,
-                suggestedMin: 0
-            },
+            ctx: document.getElementById('bar-chart').getContext('2d'),
+            chartType: 'bar',
+            label: 'Water Usage',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            columnIndex: 1,
+            beginAtZero: true,
+            suggestedMin: 0
+        },
             {
                 ctx: document.getElementById('line-chart-1').getContext('2d'),
                 chartType: 'line',
@@ -156,13 +156,12 @@
                 columnIndex: 4
             }
         ];
-    
+
         // Fetch and process data for each chart
         chartOptions.forEach(function(options) {
             fetchDataAndProcess("data/dataset.csv", options.columnIndex, options);
         });
     });
 
-    
-})(jQuery);
 
+})(jQuery);

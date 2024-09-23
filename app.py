@@ -13,6 +13,8 @@ import pandas as pd
 from sqlalchemy import create_engine
 from flask import Flask, jsonify
 from pmdarima import auto_arima
+from sqlalchemy import text
+import statsmodels.api as sm
 
 
 import logging
@@ -510,16 +512,16 @@ def homeStudent():
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
             # CSV Path
-            csv_file_path = 'data/dataset.csv' 
-            
+            csv_file_path = 'data/dataset.csv'
+
             # Load CSV data
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
-            
+
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
-            
+
             return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
         else:
             # Handle the case where the student does not exist
@@ -562,14 +564,14 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-             # CSV Path
-            csv_file_path = 'data/dataset.csv' 
-            
+            # CSV Path
+            csv_file_path = 'data/dataset.csv'
+
             # Load CSV data
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
-            
+
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
 
@@ -1434,23 +1436,36 @@ def get_current_admin():
 PREDICTION_FEATURE = "Usage"
 
 def truncate_table(engine, table_name):
-    with engine.connect() as conn:
-        conn.execute(f"TRUNCATE TABLE {table_name}")
-def read_data_from_db(table_name):
-    query = f"SELECT * FROM {table_name}"
-    df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
-    return df[[PREDICTION_FEATURE]]
+    try:
+        with engine.connect() as conn:
+            # Check if the table exists
+            result = conn.execute(text(f"SHOW TABLES LIKE '{table_name}'"))
+            if result.fetchone() is not None:
+                conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+            else:
+                print(f"Table {table_name} does not exist, skipping truncation.")
+    except Exception as e:
+        print(f"Failed to truncate table {table_name}: {e}")
 
-# Helper function to write data to a database table
+
+def read_data_from_db(table_name):
+    try:
+        query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
+        return df[[PREDICTION_FEATURE]]
+    except Exception as e:
+        print(f"Failed to read data from {table_name}: {e}")
+        return pd.DataFrame()
+
+
 def write_data_to_db(df, table_name):
     df.to_sql(table_name, engine, if_exists='replace', index=True, index_label='Date')
 
-# Partition data and update train data tables in the database
 def partition_data():
-    df = read_data_from_db("dataset")  # Read from 'dataset' table in the database
+    df = read_data_from_db("dataset")
 
     try:
-        # Truncate table before inserting new data
+        # Truncate tables before inserting new data
         truncate_table(engine, 'daily_train_data')
         daily_data_train = df.resample("D").sum()
         write_data_to_db(daily_data_train, "daily_train_data")
@@ -1460,28 +1475,57 @@ def partition_data():
         write_data_to_db(weekly_data_train, "weekly_train_data")
 
         truncate_table(engine, 'monthly_train_data')
-        monthly_data_train = df.resample("M").sum()
+        monthly_data_train = df.resample("ME").sum()  # Changed from 'ME' to 'M'
         write_data_to_db(monthly_data_train, "monthly_train_data")
 
     except Exception as e:
         print(f"An error occurred while partitioning data: {e}")
 
+def check_stationarity(df):
+    result = sm.tsa.stattools.adfuller(df[PREDICTION_FEATURE])
+    return result[1] <= 0.05
+def make_stationary(df):
+    return df[PREDICTION_FEATURE].diff().dropna()
 
-# Prediction function for ARIMA
+def seasonal_difference(df, period=12):
+    return df[PREDICTION_FEATURE].diff(periods=period).dropna()
+
+def transform_data(df):
+    transformations = 0
+    while not check_stationarity(df) and transformations < 3:
+        if transformations == 0:
+            df = make_stationary(df)
+        else:
+            df = seasonal_difference(df)
+        transformations += 1
+
+    if transformations >= 3:
+        print("Data could not be made stationary after 3 transformations.")
+        return None
+
+    return df
+
 def predict_data(df, prediction_count, freq):
-    df.index = pd.DatetimeIndex(df.index, freq=freq)
-    df_train = df.dropna()
+    if df.empty:
+        return {"error": "DataFrame is empty. Cannot perform predictions."}
 
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
+    df.index = pd.DatetimeIndex(df.index)
+    df = df.resample(freq).sum()
 
-    # Print the selected ARIMA order
+    df_stationary = transform_data(df)
+
+    if df_stationary is None:
+        return {"error": "Data is still not stationary."}
+
+    model = auto_arima(df_stationary, seasonal=False, stepwise=True, suppress_warnings=True)
+
     print(f"Selected ARIMA order: {model.order}")
 
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
+    model_fit = model.fit(df_stationary)
 
-    # Forecast future values
+    # Get model summary to check p-values
+    print(model_fit.summary())
+
     forecast_value = model_fit.predict(n_periods=prediction_count)
 
     # Generate future dates for the forecast
@@ -1493,7 +1537,6 @@ def predict_data(df, prediction_count, freq):
         "data": list(forecast_value.clip(lower=0))
     }
 
-# Route for daily predictions
 @app.route("/daily_predictions")
 def call_daily_predictions():
     partition_data()  # Ensure training data is up to date
@@ -1504,10 +1547,9 @@ def get_daily_data(prediction_count=7):
     df = read_data_from_db("daily_train_data")
     return predict_data(df, prediction_count, 'D')
 
-# Route for weekly predictions
 @app.route("/weekly_predictions")
 def call_weekly_predictions():
-    partition_data()  # Ensure training data is up to date
+    partition_data()
     data = get_weekly_data()
     return jsonify(data), 200
 
@@ -1515,10 +1557,9 @@ def get_weekly_data(prediction_count=4):
     df = read_data_from_db("weekly_train_data")
     return predict_data(df, prediction_count, 'W')
 
-# Route for monthly predictions
 @app.route("/monthly_predictions")
 def call_monthly_predictions():
-    partition_data()  # Ensure training data is up to date
+    partition_data()
     data = get_monthly_data()
     return jsonify(data), 200
 
@@ -1528,4 +1569,4 @@ def get_monthly_data(prediction_count=4):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
