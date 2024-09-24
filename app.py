@@ -543,8 +543,6 @@ def notifications_admin():
         admin_id = session['admin_id']
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
-<<<<<<< HEAD
-
         if admin:
             # Get notifications from session
             usage_notification = session.get('usage_notification', False)
@@ -557,10 +555,6 @@ def notifications_admin():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
-
-
-=======
->>>>>>> e9448a1f0a1355e86e6fbc8a8b7a0c04963002ef
 
         if admin:
             # Get notifications from session
