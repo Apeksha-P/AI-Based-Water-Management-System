@@ -156,11 +156,6 @@
                 columnIndex: 4
             }
         ];
-
-        // Fetch and process data for each chart
-        chartOptions.forEach(function(options) {
-            fetchDataAndProcess("data/dataset.csv", options.columnIndex, options);
-        });
     });
 
 

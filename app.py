@@ -17,6 +17,7 @@ from sqlalchemy import text
 import statsmodels.api as sm
 import logging
 import mysql.connector
+import pymysql
 
 logging.basicConfig(level=logging.DEBUG)
 # Initialize Flask application
@@ -668,8 +669,7 @@ def homeStaff():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
-
-
+        
 @app.route('/homeAdmin')
 def homeAdmin():
     # Check if Admin is logged in
@@ -1677,7 +1677,6 @@ def truncate_table(engine, table_name):
     except Exception as e:
         print(f"Failed to truncate table {table_name}: {e}")
 
-
 def read_data_from_db(table_name):
     try:
         query = f"SELECT * FROM {table_name}"
@@ -1686,7 +1685,6 @@ def read_data_from_db(table_name):
     except Exception as e:
         print(f"Failed to read data from {table_name}: {e}")
         return pd.DataFrame()
-
 
 def write_data_to_db(df, table_name):
     df.to_sql(table_name, engine, if_exists='replace', index=True, index_label='Date')
@@ -1705,7 +1703,7 @@ def partition_data():
         write_data_to_db(weekly_data_train, "weekly_train_data")
 
         truncate_table(engine, 'monthly_train_data')
-        monthly_data_train = df.resample("ME").sum()  # Changed from 'ME' to 'M'
+        monthly_data_train = df.resample("ME").sum()  # Use 'M' for monthly data
         write_data_to_db(monthly_data_train, "monthly_train_data")
 
     except Exception as e:
@@ -1714,6 +1712,7 @@ def partition_data():
 def check_stationarity(df):
     result = sm.tsa.stattools.adfuller(df[PREDICTION_FEATURE])
     return result[1] <= 0.05
+
 def make_stationary(df):
     return df[PREDICTION_FEATURE].diff().dropna()
 
@@ -1739,7 +1738,7 @@ def predict_data(df, prediction_count, freq):
     if df.empty:
         return {"error": "DataFrame is empty. Cannot perform predictions."}
 
-    df.index = pd.DatetimeIndex(df.index)
+    # Resample to the desired frequency and sum
     df = df.resample(freq).sum()
 
     df_stationary = transform_data(df)
@@ -1747,11 +1746,12 @@ def predict_data(df, prediction_count, freq):
     if df_stationary is None:
         return {"error": "Data is still not stationary."}
 
-    model = auto_arima(df_stationary, seasonal=False, stepwise=True, suppress_warnings=True)
+    # Fit the ARIMA model
+    model = auto_arima(df_stationary[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
 
     print(f"Selected ARIMA order: {model.order}")
 
-    model_fit = model.fit(df_stationary)
+    model_fit = model.fit(df_stationary[PREDICTION_FEATURE])
 
     # Get model summary to check p-values
     print(model_fit.summary())
@@ -1795,8 +1795,7 @@ def call_monthly_predictions():
 
 def get_monthly_data(prediction_count=4):
     df = read_data_from_db("monthly_train_data")
-    return predict_data(df, prediction_count, 'ME')
-
+    return predict_data(df, prediction_count, 'ME')  # Change 'ME' to 'M'
 
 # Load dataset
 def read_data_from_db(table_name):
