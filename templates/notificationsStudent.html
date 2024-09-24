@@ -53,7 +53,7 @@
             <div class="navbar-nav w-100">
                 <a href="{{ url_for('homeStudent')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-home me-2"></i>Home</a>
                 <a href="{{ url_for('dashboardStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-
+                <a href="{{ url_for('predictionStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
             </div>
         </nav>
     </div>
@@ -97,10 +97,19 @@
         </nav>
         <!-- Navbar End -->
 
-        <div class="alert alert-danger" role="alert">
-                <b>Alert: High Water Usage Detected!</b><br>
-                Your water use is higher than normal. Using too much water can harm the environment and increase costs. Please save water by taking shorter showers, turning off taps when not in use, and reporting any leaks.
-          </div>
+        {% if usage_notification %}
+        <div class="alert alert-danger alert-margin" role="alert">
+            <b>Alert: High Water Usage Detected!</b><br>
+            Your water use is higher than normal. Using too much water can harm the environment and increase costs. Please save water by taking shorter showers, turning off taps when not in use, and reporting any leaks.
+        </div>
+        {% endif %}
+
+        {% if ph_notification %}
+        <div class="alert alert-warning alert-margin" role="alert">
+            <b>Alert: Water pH Out of Range!</b><br>
+            The pH level of your water is outside the safe range. This can affect water quality and potentially damage plumbing. Please avoid using the water until the issue is resolved.
+        </div>
+        {% endif %}
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">

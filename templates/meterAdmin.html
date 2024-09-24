@@ -121,7 +121,7 @@
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-0" style="font-size: 20px !important;">Last Month : </h6>
-                                    <small style="font-size: 20px !important;">{{ last_month }}</small>
+                                    <small style="font-size: 20px !important;">{{last_month_meter_reading}}</small>
                                 </div>
                             </div>
                         </div>
@@ -130,7 +130,7 @@
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb0" style="font-size: 20px !important;">This Month : </h6>
-                                    <small style="font-size: 20px !important;">{{ this_month }}</small>
+                                    <small style="font-size: 20px !important;">{{this_month_meter_reading}}</small>
                                 </div>
                             </div>
                         </div>
@@ -138,7 +138,7 @@
                             <div class="w-100 ms-3">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-0" style="font-size: 20px; color: #8c7ae6 !important;">UNITS : </h6>
-                                    <small style="font-size: 20px !important;">{{ usage }}</small>
+                                    <small style="font-size: 20px !important;">{{ usage_difference }}</small>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
                 <div class="col-sm-12 col-md-6 col-xl-4">
                     <div class="h-100 bg-secondary rounded p-4" style="background-color: #242B3E !important;">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <h6 class="mb-0" style="font-size: 25px !important;">Usage</h6>
+                            <h6 class="mb-0" style="font-size: 25px !important;">Measurements</h6>
                         </div>
                         <form id="usageForm" method="POST" action="{{ url_for('meterAdmin_form') }}">
                             <div class="mb-3">
@@ -157,7 +157,19 @@
                             </div>
                             <div class="mb-3">
                                 <label for="usage" class="form-label">Enter Daily Usage</label>
-                                <input type="number" class="form-control" id="usage" name="usage" placeholder="Enter amount" required>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="usage" name="usage" placeholder="Enter usage" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="temp" class="form-label">Enter Temperature value</label>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="temp" name="temp" placeholder="Enter temperature" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ph" class="form-label">Enter ph value</label>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="ph" name="ph" placeholder="Enter ph" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tds" class="form-label">Enter TDS value</label>
+                                <input type="number" min="0" max="100000" step="any" class="form-control" id="tds" name="tds" placeholder="Enter TDS" required>
                             </div>
                             <button type="submit" class="btn btn-primary" style="font-size: 20px !important; margin-top: 20px;">Add</button>
                         </form>
@@ -178,20 +190,59 @@
                                 </div>
                             </div>
                         </div>
-                        <!--                        <div class="d-flex align-items-center border-bottom py-3" style="padding-top: 15% !important;">-->
-                        <!--                            <i class="fa-solid fa-money-bills" style="font-size: 20px !important;"></i>-->
-                        <!--                            <div class="w-100 ms-3">-->
-                        <!--                                <div class="d-flex w-100 justify-content-between">-->
-                        <!--                                    <h6 class="mb-0" style="font-size: 20px !important;">This Month : </h6>-->
-                        <!--                                    <small style="font-size: 20px !important;">Rs: 3206</small>-->
-                        <!--                                </div>-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
-                        <!--                    </div>-->
                     </div>
 
-
                 </div>
+
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4" style="background-color: #242B3E !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h6 class="mb-0" style="font-size: 25px !important;">Select a Date to View Water Usage</h6>
+                        </div>
+                        <div class="d-flex align-items-center border-bottom py-3" style="padding-top: 15% !important;">
+                            <div class="w-100 ms-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+                                            <input style="width: 30%; margin-bottom: 10px" type="text"placeholder="Select the Date"  class="form-control datetimepicker-input" data-target="#datetimepicker1" id="selected-date"/>
+                                            <br>
+                                            <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker" style="margin-left: 110% ; margin-top: -50px">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <br>
+
+                                <div>
+                                    <h6>Date : <span id="display-date"></span> <br><br>Units : <span id="water-usage"></span> </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-md-6 col-xl-4">
+                    <div class="h-100 bg-secondary rounded p-4" style="background-color: #242B3E !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h6 class="mb-0" style="font-size: 25px !important;">Water Level</h6>
+                        </div>
+                        <form id="levelForm" method="POST" action="{{ url_for('meterAdmin_form') }}">
+                            <div class="mb-3">
+                                <label for="date1" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="date1" name="date1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="level" class="form-label">Enter Water Level</label>
+                                <input type="number" class="form-control" id="level" name="level" placeholder="Enter Water Level" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="font-size: 20px !important; margin-top: 20px;">Add</button>
+                        </form>
+                    </div>
+                </div>
+
+
             </div>
 
             <!-- Footer Start -->
@@ -245,6 +296,35 @@
         <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
+</div>
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="https://kit.fontawesome.com/92c64e3f46.js" crossorigin="anonymous"></script>
+
+<!-- Template Javascript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<!-- Tempus Dominus Datepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+</script>
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -260,6 +340,43 @@
 
     <!-- Template Javascript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!-- Tempus Dominus Datepicker JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#datetimepicker1').datetimepicker({
+                format: 'L'
+            });
+
+            $('#datetimepicker1').on("change.datetimepicker", function(e) {
+                var selectedDate = $('#selected-date').val();
+                $('#display-date').text(selectedDate);
+
+                // AJAX request to fetch water usage data for the selected date
+                $.ajax({
+                    url: "/get_water_usage",  // Flask route
+                    type: "GET",
+                    data: { date: selectedDate },
+                    success: function(response) {
+                        $('#water-usage').text(response.usage);
+                    },
+                    error: function(xhr) {
+                        $('#water-usage').text("Error fetching data.");
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>
