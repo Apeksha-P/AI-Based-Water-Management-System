@@ -591,7 +591,6 @@ def notifications_admin():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
 
-
 @app.route('/notificationsStaff')
 def notifications_staff():
     # Check if staff is logged in
