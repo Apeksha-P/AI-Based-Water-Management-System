@@ -25,9 +25,9 @@ app.secret_key = 'your_secret_key'
 
 # Notification Process
 
-max_water_usage = 75
+max_water_usage = 1
 max_ph_value = 9.5
-low_ph_value = 6.5
+low_ph_value = 7.5
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
