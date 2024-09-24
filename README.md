@@ -35,7 +35,10 @@ Users can view and update their profiles, including personal information and con
   Update the MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, and MAIL_PASSWORD variables in app.py with your email server details.<br><br>
 5. Run the application:<br>
   flask run<br><br>
-6. Access the application in your web browser at http://localhost:5000.<br><br>
+6. Access the application in your web browser at http://3.106.228.248:5000 or scan below QR code <br>
+   
+![Untitled](https://github.com/user-attachments/assets/7251806d-15a2-4e29-89ed-eb45ffa26a4f)
+
 
 ## Usage
 <ol>

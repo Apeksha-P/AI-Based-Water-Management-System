@@ -53,7 +53,7 @@
             <div class="navbar-nav w-100">
                 <a href="{{ url_for('homeStudent')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-home me-2"></i>Home</a>
                 <a href="{{ url_for('dashboardStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-
+                <a href="{{ url_for('predictionStudent_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
             </div>
         </nav>
     </div>
@@ -71,11 +71,32 @@
             </a>
             <h3 style="margin: 2%"><a href="{{ url_for('homeStudent')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fa fa-bell me-lg-2"></i>
+                <div class="nav-item dropdown" style="position: relative;">
+
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
+                        <i class="fa fa-bell me-lg-2" style="position: relative;">
+                            <!-- Red dot for notification -->
+                            {% if usage_notification %}
+                            <span class="notification-dot"></span>
+                            {% endif %}
+                        </i>
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
+
+                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
+                        {% if usage_notification %}
+                        <a href="{{ url_for('notifications_student')}}">
+                            <div class="alert bg-warning text-dark mb-0" role="alert">
+                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="alert alert-secondary" role="alert">
+                            No new notifications
+                        </div>
+                        {% endif %}
+                    </div>
+
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -100,7 +121,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <h1><span>AI</span> Based<br>Water<br><span>Management</span><br>System</h1>
-                        <a href="{{ url_for('view_more') }}"><div class="view-more-button">View More</div></a>
+                        <a href="{{ url_for('viewmore_student') }}"><div class="view-more-button">View More</div></a>
                     </div>
                     <div class="col-md-6">
                         <img src="{{ url_for('static', filename='img/home-img.png') }}" alt="Image" class="img-fluid">
@@ -128,6 +149,7 @@
                         <h5 style="color: #826AF9;">Useful Links</h5>
                         <a href="{{ url_for('homeStudent')}}" target="_blank">Home</a><br>
                         <a href="{{ url_for('dashboardStudent_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('predictionStudent_form')}}" target="_blank">Predictions</a>
 
                     </div>
                     <div class="col-12 col-md-3 text-left">

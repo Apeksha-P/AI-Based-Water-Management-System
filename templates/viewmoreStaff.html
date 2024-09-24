@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>UOK FCT AI Based Water Management System</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png" />
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Custom Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+<div class="vm-container-fluid">
+    <!--    back button-->
+    <a href="{{ url_for('homeStaff') }}" class="btn btn-lg btn-primary btn-lg-square back-to-left">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+    </a>
+
+
+    <!-- Content Start -->
+    <div class="vm-content">
+        <div class="vm-content-inner">
+            <h1>AI-Based Water Management System</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{url_for('static', filename='img/imgeee.webp')}}" alt="Water Management System" class="right-align img-fluid">
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        Our AI-based water management system is a comprehensive solution designed to address the diverse needs of water resource monitoring and management within an academic institution. The system ensures secure access through user authentication, allowing only individuals with a kln.ac.lk email extension to log in, thus maintaining institutional security. With role-based access control, students, staff, and administrators can navigate the system according to their permissions, with administrators having enhanced capabilities for managing user accounts.
+                    </p>
+                    <p>
+                        The Dashboard provides real-time data visualization, enabling users to monitor water usage, temperature, pH levels, and Total Dissolved Solids (TDS) through intuitive graphical representations.
+                    </p>
+                </div>
+            </div>
+            <p>This feature allows for immediate insights into water quality and consumption patterns, helping users make informed decisions. Additionally, the Analysis page offers the ability to review and filter historical data over various time frames, facilitating trend analysis and supporting long-term planning.</p>
+            <p>
+                Our system also integrates predictive analytics to forecast future water usage and estimate upcoming water bills based on historical data. This AI-driven feature is instrumental in proactive resource planning and budgeting. Administrators have the ability to input daily meter readings, which are automatically updated within the system, ensuring data accuracy and up-to-date metrics.
+            </p>
+            <p>
+                To cater to the individual needs of users, the system includes a profile management feature, allowing students, staff, and administrators to update their personal information easily. Data security and privacy are at the forefront of our system’s design, with robust measures in place to protect user information and maintain confidentiality.
+            </p>
+            <p>
+                The system is accessible across various devices and platforms, ensuring a seamless user experience, whether on campus or remotely. While the current deployment focuses on these core functionalities, we have plans for future enhancements that will continue to evolve based on user feedback and advancements in water management technology.
+            </p>
+            <p>
+                Explore how our AI-based water management system can revolutionize the way water resources are managed within your institution, ensuring efficiency, security, and sustainability.
+            </p>
+
+            <div class="footer-separator"></div>
+        </div>
+    </div>
+    <!-- Content End -->
+
+
+
+    <!-- Footer Start -->
+    <footer class="container-fluid pt-4 ">
+        <div class="bg-secondary rounded-top p-3">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-3 text-left">
+                    <h3 style="color: #826AF9;">AIBWMS</h3>
+                    <p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring tools, lacks predictive analytics, leading to pollution and dwindling water quality. </p>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Faculty</h5>
+                    <a href="https://fct.kln.ac.lk/" target="_blank">Home</a><br>
+                    <a href="#" target="_blank">Academic</a><br>
+                    <a href="#" target="_blank">Departments</a><br>
+                    <a href="https://fct.kln.ac.lk/index.php/contact" target="_blank">Contact</a><br>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Useful Links</h5>
+                    <a href="{{ url_for('homeAdmin')}}" target="_blank">Home</a><br>
+                    <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
+                    <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
+                    <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
+                    <a href="{{ url_for('accessAdmin_form')}}" target="_blank">Access</a><br>
+                    <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
+                </div>
+                <div class="col-12 col-md-3 text-left">
+                    <h5 style="color: #826AF9;">Contact</h5>
+                    <div style="display: flex;" class="contact-inner">
+                        <div class="contact-icon">
+                            <i class="fa fa-phone me-2"></i><br>
+                            <i class="fa fa-envelope me-2"></i><br>
+                            <i class="fa fa-map me-2"></i><br>
+                        </div>
+                        <div class="contact-detail">
+                            <a style="color: #fff;">+94 113 442623</a><br>
+                            <a style="color: #fff;">officefct@kln.ac.lk</a><br>
+                            <a style="color:#fff;">Faculty of Computing and Technology,<br>University Drive,<br>Bulugaha Junction, <br>Kelaniya,<br>Colombo,<br>Sri Lanka.<br></a><br>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer End -->
+
+</div>
+
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="https://kit.fontawesome.com/92c64e3f46.js" crossorigin="anonymous"></script>
+
+<!-- Template Javascript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+
+</html>

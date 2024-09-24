@@ -17,7 +17,6 @@ from datetime import datetime, timedelta
 import logging
 import mysql.connector
 
-
 logging.basicConfig(level=logging.DEBUG)
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
@@ -567,11 +566,11 @@ def dashboardStudent_form():
             # CSV Path
             csv_file_path = 'data/dataset.csv'
 
+
             # Load CSV data
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
-
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
 
@@ -877,8 +876,6 @@ def analysingAdmin_form():
             return "user not found"
     else:
         return redirect(url_for('signinAdmin_form'))
-
-
 @app.route('/accessAdmin', methods=["GET", "POST"])
 def accessAdmin_form():
     if 'admin_id' in session:
@@ -976,7 +973,35 @@ def get_this_month_meter_reading():
 
     return this_month_meter_reading
 
+    # Ensure the 'Date' column in the DataFrame is in datetime format for comparison
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
+    # Drop rows with invalid dates if any
+    df = df.dropna(subset=['Date'])
+
+    # Get the last meter reading
+    last_meter_reading = df['MeterReading'].max() if not df.empty else 0
+
+    # Calculate the new meter reading
+    new_meter_reading = last_meter_reading + float(usage)
+
+    # Create a new entry with the form data
+    new_entry = pd.DataFrame({
+        'Date': [formatted_date],
+        'MeterReading': [new_meter_reading],
+        'Usage': [usage],
+        'Temp': [temp],
+        'ph': [ph],
+        'TDS': [tds]
+    })
+
+    # Concatenate the new entry to the existing DataFrame
+    df = pd.concat([df, new_entry], ignore_index=True)
+
+    # Save the updated DataFrame back to the CSV
+    df.to_csv('data/dataset.csv', index=False)
+
+# Route for meter admin form, allowing data submission and displaying last/current month readings
 @app.route('/meterAdmin', methods=['GET', 'POST'])
 def meterAdmin_form():
     if 'admin_id' in session:
@@ -1066,6 +1091,7 @@ def meterAdmin_form():
             return "User not found", 404
     else:
         return redirect(url_for('signinAdmin_form'))
+
 
 @app.route('/addAdmin', methods=["GET", "POST"])
 def addAdmin_form():
@@ -1628,3 +1654,4 @@ def generate_statistics(df):
 if __name__ == "__main__":
     create_database_if_not_exists()  # Ensure the database exists before running the app
     app.run(host='0.0.0.0', port=5000, debug=True)
+

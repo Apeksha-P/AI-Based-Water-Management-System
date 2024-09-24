@@ -11,6 +11,7 @@
     <!-- Favicon -->
     <!-- <link href="img/favicon.ico" rel="icon"> -->
     <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.css" rel="stylesheet">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,6 +98,91 @@
         <!-- Navbar End -->
         <!-- Add Your items Here -->
 
+        <div class="container-body" style="margin: 25px 30px">
+            <h3>Select Date Range for Analysis</h3>
+            <form id="dateForm">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label for="startDate">Start Date:</label>
+                        <input style="border-radius: 5px;" type="date" id="startDate" name="startDate" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate">End Date:</label>
+                        <input style="border-radius: 5px;" type="date" id="endDate" name="endDate" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button id="analyze-btn" class="btn btn-primary" type="submit">Analyze</button>
+                </div>
+            </form>
+
+            <br>
+            <div>
+                <h4>Graphs</h4>
+
+                <div class="container-fluid pt-4 px-4">
+                    <div class="row g-4">
+                        <div class="col-md-12 col-lg-12">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <h6 class="mb-4">Water Usage</h6>
+                                <div class="chart-container">
+                                    <canvas id="usageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-lg-12">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <h6 class="mb-4">Temperature</h6>
+                                <div class="chart-container">
+                                    <canvas id="tempChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-lg-12">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <h6 class="mb-4">pH Value</h6>
+                                <div class="chart-container">
+                                    <canvas id="phChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-lg-12">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <h6 class="mb-4">TDS</h6>
+                                <div class="chart-container">
+                                    <canvas id="tdsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <!--                    <canvas id="usageChart" width="400" height="200"></canvas>-->
+                    <!--                    <canvas id="tempChart" width="400" height="200"></canvas>-->
+                    <!--                    <canvas id="phChart" width="400" height="200"></canvas>-->
+                    <!--                    <canvas id="tdsChart" width="400" height="200"></canvas>-->
+                </div>
+            </div>
+
+            <br>
+            <div>
+                <h4>Statistical Analysis</h4>
+                <div class="container-fluid pt-4 px-4">
+                    <div class="row g-4">
+                        <div class="col-md-12 col-lg-12">
+                            <div class="bg-secondary rounded h-100 p-4">
+                                <p id="stats"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
             <div class="bg-secondary rounded-top p-3">
@@ -146,6 +232,59 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    document.getElementById('dateForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        fetch(`/analyze?start=${startDate}&end=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Data received from server:", data);  // Log the data for debugging
+                updateChart('usageChart', 'Usage Over Time', 'Usage', data.usage);
+                updateChart('tempChart', 'Temperature Over Time', 'Temp', data.temp);
+                updateChart('phChart', 'pH Over Time', 'pH', data.ph);
+                updateChart('tdsChart', 'TDS Over Time', 'TDS', data.tds);
+
+                // Show statistical analysis
+                document.getElementById('stats').innerText = data.stats;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+    });
+
+    function updateChart(chartId, label, dataLabel, data) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        console.log(`Rendering chart for ${label}`, data);  // Log the data to verify it's correct
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.dates,  // Ensure 'dates' and 'values' are correctly passed
+                datasets: [{
+                    label: dataLabel,
+                    data: data.values,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: { type: 'category', title: { display: true, text: 'Date' } },
+                    y: { beginAtZero: true, title: { display: true, text: dataLabel } }
+                }
+            }
+        });
+    }
+
+</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
