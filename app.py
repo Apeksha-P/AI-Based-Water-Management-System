@@ -535,7 +535,6 @@ def notifications_student():
             return "User not found"
     else:
         return redirect(url_for('signinStudent_form'))
-
 @app.route('/api/get_last_data', methods=['GET'])
 def get_last_data():
     connection = pymysql.connect(
@@ -556,7 +555,6 @@ def get_last_data():
     finally:
         cursor.close()
         connection.close()
-
     # Convert rows to a list of dictionaries
     data = []
     for row in rows:
@@ -566,8 +564,7 @@ def get_last_data():
             'ph_value': row[2],
             'tds': row[3]
         })
-    return jsonify(data)
-    
+    return jsonify(data)    
 @app.route('/notificationsAdmin')
 def notifications_admin():
 # Check if Admin is logged in
@@ -601,7 +598,6 @@ def notifications_staff():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
-
 @app.route('/homeStudent')
 def homeStudent():
     # Check if student is logged in
