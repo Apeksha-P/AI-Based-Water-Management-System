@@ -568,7 +568,6 @@ def get_last_data():
             'ph_value': row[2],
             'tds': row[3]
         })
-
     return jsonify(data)
     
 @app.route('/notificationsAdmin')
