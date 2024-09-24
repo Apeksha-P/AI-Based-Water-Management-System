@@ -26,7 +26,7 @@ app.secret_key = 'your_secret_key'
 
 max_water_usage = 1
 max_ph_value = 9.5
-low_ph_value = 7.5
+low_ph_value = 6.5
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -537,6 +537,23 @@ def notifications_student():
     else:
         return redirect(url_for('signinStudent_form'))
 
+@app.route('/notificationsStaff')
+def notifications_staff():
+    # Check if staff is logged in
+    if 'staff_id' in session:
+        staff_id = session['staff_id']
+        staff_email = session['staff_email']
+        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        if staff:
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('notificationStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinStaff_form'))
+
 
 
 @app.route('/homeStudent')
@@ -584,7 +601,28 @@ def homeStaff():
         staff_email = session['staff_email']
         staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
         if staff:
-            return render_template('homeStaff.html', staff=staff)
+            # CSV Path
+            csv_file_path = 'data/dataset.csv' 
+            
+            # Load CSV data
+            df = pd.read_csv(csv_file_path)
+            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
+            water_usage = df['Usage'].iloc[-1]
+            ph_value = df['ph'].iloc[-1]
+            
+            # Determine if Notification is Needed
+            usage_notification = water_usage > max_water_usage
+            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
+
+            # Convert to standard Python types (if necessary)
+            usage_notification = bool(usage_notification)
+            ph_notification = bool(ph_notification)
+
+            # Store notifications in session
+            session['usage_notification'] = usage_notification
+            session['ph_notification'] = ph_notification
+
+            return render_template('homeStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
@@ -629,7 +667,11 @@ def dashboardStaff_form():
         staff_email = session['staff_email']
         staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
         if staff:
-            return render_template('dashboardStaff.html', staff=staff)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('dashboardStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
@@ -857,7 +899,11 @@ def predictionStaff_form():
         staff_email = session['staff_email']
         staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
         if staff:
-            return render_template('predictionsStaff.html', staff=staff)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('predictionsStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
@@ -901,7 +947,11 @@ def analysingStaff_form():
         staff_email = session['staff_email']
         staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
         if staff:
-            return render_template('analysingStaff.html', staff=staff)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('analysingStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:

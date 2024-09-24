@@ -72,55 +72,13 @@
             </a>
             <h3 style="margin: 2%"><a href="{{ url_for('homeStaff')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
-                <div class="nav-item dropdown" style="position: relative;">
+                <div class="nav-item dropdown">
 
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
-                        <i class="fa fa-bell me-lg-2" style="position: relative;">
-                            <!-- Red dot for notification -->
-                            {% if usage_notification or ph_notification %}
-                                <span class="notification-dot"></span>
-                            {% endif %}
-                        </i>
+                
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa fa-bell me-lg-2"></i>
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
-                    
-
-                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
-                        {% if usage_notification %}
-                        <a href="{{ url_for('notifications_staff')}}">
-                            <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
-                            </div>
-                            <br>
-                        </a>
-                        
-
-                            {% if ph_notification %}
-                            <a href="{{ url_for('notifications_staff')}}">
-                                <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                    <strong>pH Level Warning!</strong> pH out of safe range!
-                                </div>
-                            </a>
-                            {% endif %}
-                
-
-                        {% else %}
-                            {% if ph_notification %}
-                            <a href="{{ url_for('notifications_staff')}}">
-                                <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                    <strong>pH Level Warning!</strong> pH out of safe range!
-                                </div>
-                            </a>
-                            {% else %}
-                            <div class="alert alert-secondary" role="alert">
-                                No new notifications
-                            </div>
-                            {% endif %}
-                        
-                        {% endif %}
-                        
-                    </div>
-
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -140,19 +98,19 @@
         </nav>
         <!-- Navbar End -->
 
-        <section class="home-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h1><span>AI</span> Based<br>Water<br><span>Management</span><br>System</h1>
-                        <a href="{{ url_for('viewmore_staff') }}"><div class="view-more-button">View More</div></a>
-                    </div>
-                    <div class="col-md-6">
-                        <img src="{{ url_for('static', filename='img/home-img.png') }}" alt="Image" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-        </section>
+        {% if usage_notification %}
+        <div class="alert alert-danger alert-margin" role="alert">
+            <b>Alert: High Water Usage Detected!</b><br>
+            Water usage has exceeded typical levels. Excessive water consumption can strain resources and increase operational costs. Please ensure efficient water usage by addressing leaks promptly, monitoring water systems closely, and promoting best practices among your team.
+        </div>
+        {% endif %}
+
+        {% if ph_notification %}
+        <div class="alert alert-warning alert-margin" role="alert">
+            <b>Alert: Water pH Out of Range!</b><br>
+            The pH level of the water is outside the acceptable range, which may affect water quality and cause potential damage to plumbing systems. Please suspend water usage in affected areas until the issue is resolved and safety is restored.
+        </div>
+        {% endif %}
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
