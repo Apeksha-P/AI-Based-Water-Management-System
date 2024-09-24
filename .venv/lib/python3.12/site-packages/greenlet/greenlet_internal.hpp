@@ -4,8 +4,6 @@
 #ifdef __clang__
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Wunused-function"
-#    pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#    pragma clang diagnostic ignored "-Wunused-variable"
 #endif
 
 /**
@@ -17,7 +15,7 @@
 #include "greenlet_compiler_compat.hpp"
 #include "greenlet_cpython_compat.hpp"
 #include "greenlet_exceptions.hpp"
-#include "greenlet_greenlet.hpp"
+#include "TGreenlet.hpp"
 #include "greenlet_allocator.hpp"
 
 #include <vector>
@@ -29,6 +27,10 @@ typedef struct _greenlet PyGreenlet;
 namespace greenlet {
 
     class ThreadState;
+    // We can't use the PythonAllocator for this, because we push to it
+    // from the thread state destructor, which doesn't have the GIL,
+    // and Python's allocators can only be called with the GIL.
+    typedef std::vector<ThreadState*> cleanup_queue_t;
 
 };
 
@@ -38,7 +40,7 @@ namespace greenlet {
 
 #include "greenlet.h"
 
-G_FP_TMPL_STATIC inline void
+void
 greenlet::refs::MainGreenletExactChecker(void *p)
 {
     if (!p) {
@@ -54,7 +56,7 @@ greenlet::refs::MainGreenletExactChecker(void *p)
     // Greenlets from dead threads no longer respond to main() with a
     // true value; so in that case we need to perform an additional
     // check.
-    Greenlet* g = ((PyGreenlet*)p)->pimpl;
+    Greenlet* g = static_cast<PyGreenlet*>(p)->pimpl;
     if (g->main()) {
         return;
     }
@@ -90,9 +92,8 @@ extern PyTypeObject PyGreenlet_Type;
 /**
   * Forward declarations needed in multiple files.
   */
-static PyGreenlet* green_create_main(greenlet::ThreadState*);
 static PyObject* green_switch(PyGreenlet* self, PyObject* args, PyObject* kwargs);
-static int green_is_gc(BorrowedGreenlet self);
+
 
 #ifdef __clang__
 #    pragma clang diagnostic pop

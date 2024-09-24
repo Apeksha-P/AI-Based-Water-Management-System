@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>UOK FCT AI Based Water Management System</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <!-- <link href="img/favicon.ico" rel="icon"> -->
+    <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css') }}" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+<div class="container-fluid position-relative d-flex p-0">
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Sidebar Start -->
+    <div class="sidebar pe-4 pb-3">
+        <nav class="navbar bg-secondary navbar-dark">
+            <a href="{{ url_for('homeStaff')}}" class="navbar-brand mx-4 mb-3">
+                <h3 class="text-primary">AIBWMS</h3>
+            </a>
+
+            <div class="navbar-nav w-100">
+                <a href="{{ url_for('homeStaff')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('dashboardStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                <a href="{{ url_for('analysingStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                <a href="{{ url_for('predictionStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+            </div>
+        </nav>
+    </div>
+    <!-- Sidebar End -->
+
+    <!-- Content Start -->
+    <div class="content">
+        <!-- Navbar Start -->
+        <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
+            <a href="{{ url_for('homeStaff')}}" class="navbar-brand d-flex d-lg-none me-4">
+                <h3 class="text-primary">AIBWMS</h3>
+            </a>
+            <a href="#" class="sidebar-toggler flex-shrink-0">
+                <i class="fa fa-bars"></i>
+            </a>
+            <h3 style="margin: 2%"><a href="{{ url_for('homeStaff')}}">HOME</a></h3>
+            <div class="navbar-nav align-items-center ms-auto">
+                <div class="nav-item dropdown">
+
+                
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa fa-bell me-lg-2"></i>
+                        <span class="d-none d-lg-inline-flex">Notification</span>
+                    </a>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        {% if staff.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=staff.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% endif %}
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
+                        <a href="{{ url_for('profileStaff_form')}}" class="dropdown-item">My Profile</a>
+                        <a href="#" class="dropdown-item">Reports</a>
+                        <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- Navbar End -->
+
+        {% if usage_notification %}
+        <div class="alert alert-danger alert-margin" role="alert">
+            <b>Alert: High Water Usage Detected!</b><br>
+            Water usage has exceeded typical levels. Excessive water consumption can strain resources and increase operational costs. Please ensure efficient water usage by addressing leaks promptly, monitoring water systems closely, and promoting best practices among your team.
+        </div>
+        {% endif %}
+
+        {% if ph_notification %}
+        <div class="alert alert-warning alert-margin" role="alert">
+            <b>Alert: Water pH Out of Range!</b><br>
+            The pH level of the water is outside the acceptable range, which may affect water quality and cause potential damage to plumbing systems. Please suspend water usage in affected areas until the issue is resolved and safety is restored.
+        </div>
+        {% endif %}
+
+        <!-- Footer Start -->
+        <footer class="container-fluid pt-4 px-4">
+            <div class="bg-secondary rounded-top p-3">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-3 text-left">
+                        <h3 style="color: #826AF9;">AIBWMS</h3>
+                        <p style="text-align: justify; color: #fff;">Our current water management system, while equipped with monitoring tools, lacks predictive analytics, leading to pollution and dwindling water quality. </p>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Faculty</h5>
+                        <a href="https://fct.kln.ac.lk/" target="_blank">Home</a><br>
+                        <a href="#" target="_blank">Academic</a><br>
+                        <a href="#" target="_blank">Departments</a><br>
+                        <a href="https://fct.kln.ac.lk/index.php/contact" target="_blank">Contact</a><br>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Useful Links</h5>
+                        <a href="{{ url_for('homeStaff')}}" target="_blank">Home</a><br>
+                        <a href="{{ url_for('dashboardStaff_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('analysingStaff_form')}}" target="_blank">Analysis</a><br>
+                        <a href="{{ url_for('predictionStaff_form')}}" target="_blank">Predictions</a><br>
+                    </div>
+                    <div class="col-12 col-md-3 text-left">
+                        <h5 style="color: #826AF9;">Contact</h5>
+                        <div style="display: flex;" class="contact-inner">
+                            <div class="contact-icon">
+                                <i class="fa fa-phone me-2"></i><br>
+                                <i class="fa fa-envelope me-2"></i><br>
+                                <i class="fa fa-map me-2"></i><br>
+                            </div>
+                            <div class="contact-detail">
+                                <a style="color: #fff;">+94 113 442623</a><br>
+                                <a style="color: #fff;">officefct@kln.ac.lk</a><br>
+                                <a style="color:#fff;">Faculty of Computing and Technology,<br>University Drive,<br>Bulugaha Junction, <br>Kelaniya,<br>Colombo,<br>Sri Lanka.<br></a><br>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Footer End -->
+
+    </div>
+    <!-- Content End -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='lib/chart/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+
+<!-- Template Javascript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
+
