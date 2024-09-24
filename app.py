@@ -25,7 +25,7 @@ app.secret_key = 'your_secret_key'
 
 # Notification Process
 
-max_water_usage = 1
+max_water_usage = 75
 max_ph_value = 9.5
 low_ph_value = 6.5
 
@@ -556,18 +556,6 @@ def notifications_admin():
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
 
-        if admin:
-            # Get notifications from session
-            usage_notification = session.get('usage_notification', False)
-            ph_notification = session.get('ph_notification', False)
-            
-            # Render the notificationsAdmin.html template
-            return render_template('notificationsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
-        else:
-            return "User not found"
-    else:
-        # Redirect to sign-in page if not logged in
-        return redirect(url_for('signinAdmin_form'))
 
 @app.route('/notificationsStaff')
 def notifications_staff():
