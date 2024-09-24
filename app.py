@@ -581,7 +581,6 @@ def notifications_admin():
             # Get notifications from session
             usage_notification = session.get('usage_notification', False)
             ph_notification = session.get('ph_notification', False)
-
             # Render the notificationsAdmin.html template
             return render_template('notificationsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
