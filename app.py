@@ -602,7 +602,6 @@ def notifications_staff():
             # Get notifications from session
             usage_notification = session.get('usage_notification', False)
             ph_notification = session.get('ph_notification', False)
-
             return render_template('notificationStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
     else:
         # Redirect to sign-in page if not logged in
