@@ -512,17 +512,27 @@ def homeStudent():
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
             # CSV Path
-            csv_file_path = 'data/dataset.csv'
-
+            csv_file_path = 'data/dataset.csv' 
+            
             # Load CSV data
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
-
+            ph_value = df['ph'].iloc[-1]
+            
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
+            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
 
-            return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
+            # Convert to standard Python types (if necessary)
+            usage_notification = bool(usage_notification)
+            ph_notification = bool(ph_notification)
+
+            # Store notifications in session
+            session['usage_notification'] = usage_notification
+            session['ph_notification'] = ph_notification
+            
+            return render_template('homeStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
