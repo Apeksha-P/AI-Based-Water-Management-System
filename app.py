@@ -536,6 +536,41 @@ def notifications_student():
     else:
         return redirect(url_for('signinStudent_form'))
 
+@app.route('/api/get_last_data', methods=['GET'])
+def get_last_data():
+    connection = pymysql.connect(
+        host='aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
+        user='admin',
+        password='AIBWMS123db',
+        database='AIBWMS_db'
+    )
+    cursor = connection.cursor()
+
+    # Make sure 'date' is the correct column for ordering
+    query = "SELECT `Usage`, Temp, ph, TDS FROM dataset ORDER BY date DESC LIMIT 15"
+
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+    # Convert rows to a list of dictionaries
+    data = []
+    for row in rows:
+        data.append({
+            'water_usage': row[0],
+            'temperature': row[1],
+            'ph_value': row[2],
+            'tds': row[3]
+        })
+
+    return jsonify(data)
+    
 @app.route('/notificationsAdmin')
 def notifications_admin():
 # Check if Admin is logged in
