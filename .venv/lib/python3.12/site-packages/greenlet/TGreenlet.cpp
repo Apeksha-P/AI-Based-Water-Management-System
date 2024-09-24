@@ -9,10 +9,11 @@
  * Fix missing braces with:
  *   clang-tidy src/greenlet/greenlet.c -fix -checks="readability-braces-around-statements"
 */
-
+#ifndef TGREENLET_CPP
+#define TGREENLET_CPP
 #include "greenlet_internal.hpp"
-#include "greenlet_greenlet.hpp"
-#include "greenlet_thread_state.hpp"
+#include "TGreenlet.hpp"
+
 
 #include "TGreenletGlobals.cpp"
 #include "TThreadStateDestroy.cpp"
@@ -20,8 +21,15 @@
 namespace greenlet {
 
 Greenlet::Greenlet(PyGreenlet* p)
+    :  Greenlet(p, StackState())
 {
-    p ->pimpl = this;
+}
+
+Greenlet::Greenlet(PyGreenlet* p, const StackState& initial_stack)
+    :  _self(p), stack_state(initial_stack)
+{
+    assert(p->pimpl == nullptr);
+    p->pimpl = this;
 }
 
 Greenlet::~Greenlet()
@@ -29,14 +37,7 @@ Greenlet::~Greenlet()
     // XXX: Can't do this. tp_clear is a virtual function, and by the
     // time we're here, we've sliced off our child classes.
     //this->tp_clear();
-}
-
-Greenlet::Greenlet(PyGreenlet* p, const StackState& initial_stack)
-    : stack_state(initial_stack)
-{
-    // can't use a delegating constructor because of
-    // MSVC for Python 2.7
-    p->pimpl = this;
+    this->_self->pimpl = nullptr;
 }
 
 bool
@@ -270,8 +271,10 @@ Greenlet::check_switch_allowed() const
         || (!current_main_greenlet->thread_state())) {
         // CAUTION: This may trigger memory allocations, gc, and
         // arbitrary Python code.
-        throw PyErrOccurred(mod_globs->PyExc_GreenletError,
-                            "cannot switch to a different thread");
+        throw PyErrOccurred(
+            mod_globs->PyExc_GreenletError,
+            "Cannot switch to a different thread\n\tCurrent:  %R\n\tExpected: %R",
+            current_main_greenlet, main_greenlet);
     }
 }
 
@@ -712,3 +715,4 @@ void Greenlet::expose_frames()
 #endif
 
 }; // namespace greenlet
+#endif

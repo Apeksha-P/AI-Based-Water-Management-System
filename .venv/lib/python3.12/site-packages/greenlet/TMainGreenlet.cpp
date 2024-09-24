@@ -9,9 +9,11 @@
  * Fix missing braces with:
  *   clang-tidy src/greenlet/greenlet.c -fix -checks="readability-braces-around-statements"
 */
+#ifndef T_MAIN_GREENLET_CPP
+#define T_MAIN_GREENLET_CPP
 
-#include "greenlet_greenlet.hpp"
-#include "greenlet_thread_state.hpp"
+#include "TGreenlet.hpp"
+
 
 
 // Protected by the GIL. Incremented when we create a main greenlet,
@@ -59,12 +61,6 @@ MainGreenlet::thread_state(ThreadState* t) noexcept
 {
     assert(!t);
     this->_thread_state = t;
-}
-
-BorrowedGreenlet
-MainGreenlet::self() const noexcept
-{
-    return BorrowedGreenlet(this->_self.borrow());
 }
 
 
@@ -153,3 +149,5 @@ MainGreenlet::parent() const
 }
 
 }; // namespace greenlet
+
+#endif
