@@ -1,0 +1,10 @@
+#!/bin/sh
+'''exec' "/media/abhayasundara/6f2c8e19-35fb-433c-ab46-a879fe1cc2c1/FCT Project/AIBWMS-1.0/AI-Based-Water-Management-System/.venv/bin/python3" "$0" "$@"
+' '''
+# -*- coding: utf-8 -*-
+import re
+import sys
+from Cython.Compiler.Main import setuptools_main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(setuptools_main())

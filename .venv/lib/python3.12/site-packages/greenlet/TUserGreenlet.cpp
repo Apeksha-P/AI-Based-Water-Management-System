@@ -9,10 +9,12 @@
  * Fix missing braces with:
  *   clang-tidy src/greenlet/greenlet.c -fix -checks="readability-braces-around-statements"
 */
+#ifndef T_USER_GREENLET_CPP
+#define T_USER_GREENLET_CPP
 
 #include "greenlet_internal.hpp"
-#include "greenlet_greenlet.hpp"
-#include "greenlet_thread_state.hpp"
+#include "TGreenlet.hpp"
+
 #include "TThreadStateDestroy.cpp"
 
 
@@ -36,7 +38,6 @@ void UserGreenlet::operator delete(void* ptr)
 UserGreenlet::UserGreenlet(PyGreenlet* p, BorrowedGreenlet the_parent)
     : Greenlet(p), _parent(the_parent)
 {
-    this->_self = p;
 }
 
 UserGreenlet::~UserGreenlet()
@@ -47,13 +48,6 @@ UserGreenlet::~UserGreenlet()
     this->python_state.did_finish(nullptr);
     this->tp_clear();
 }
-
-BorrowedGreenlet
-UserGreenlet::self() const noexcept
-{
-    return this->_self;
-}
-
 
 
 const BorrowedMainGreenlet
@@ -238,7 +232,7 @@ UserGreenlet::g_initialstub(void* mark)
           self.run is the object to call in the new greenlet.
           This could run arbitrary python code and switch greenlets!
         */
-        run = this->_self.PyRequireAttr(mod_globs->str_run);
+        run = this->self().PyRequireAttr(mod_globs->str_run);
         /* restore saved exception */
         saved.PyErrRestore();
 
@@ -394,7 +388,7 @@ UserGreenlet::inner_bootstrap(PyGreenlet* origin_greenlet, PyObject* run)
     //PyObject* run = _run.relinquish_ownership();
 
     /* in the new greenlet */
-    assert(this->thread_state()->borrow_current() == this->_self);
+    assert(this->thread_state()->borrow_current() == BorrowedGreenlet(this->_self));
     // C++ exceptions cannot propagate to the parent greenlet from
     // here. (TODO: Do we need a catch(...) clause, perhaps on the
     // function itself? ALl we could do is terminate the program.)
@@ -598,7 +592,7 @@ UserGreenlet::parent(const BorrowedObject raw_new_parent)
                                                           // throw
                                                           // TypeError!
     for (BorrowedGreenlet p = new_parent; p; p = p->parent()) {
-        if (p == this->_self) {
+        if (p == this->self()) {
             throw ValueError("cyclic parent chain");
         }
         main_greenlet_of_new_parent = p->main_greenlet();
@@ -665,3 +659,4 @@ UserGreenlet::ParentIsCurrentGuard::~ParentIsCurrentGuard()
 }
 
 }; //namespace greenlet
+#endif
