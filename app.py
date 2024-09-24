@@ -545,7 +545,6 @@ def get_last_data():
         database='AIBWMS_db'
     )
     cursor = connection.cursor()
-
     # Make sure 'date' is the correct column for ordering
     query = "SELECT `Usage`, Temp, ph, TDS FROM dataset ORDER BY date DESC LIMIT 15"
 
