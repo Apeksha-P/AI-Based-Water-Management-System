@@ -538,6 +538,28 @@ def notifications_student():
     else:
         return redirect(url_for('signinStudent_form'))
 
+@app.route('/notificationsAdmin')
+def notifications_admin():
+# Check if Admin is logged in
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+
+        if admin:
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+            
+            # Render the notificationsAdmin.html template
+            return render_template('notificationsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
+        else:
+            return "User not found"
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
+
+
 @app.route('/notificationsStaff')
 def notifications_staff():
     # Check if staff is logged in
