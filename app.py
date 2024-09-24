@@ -538,8 +538,6 @@ def notifications_student():
             return "User not found"
     else:
         return redirect(url_for('signinStudent_form'))
-
-
 @app.route('/homeStudent')
 def homeStudent():
     # Check if student is logged in
