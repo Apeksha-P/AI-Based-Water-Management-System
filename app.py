@@ -537,6 +537,28 @@ def notifications_student():
     else:
         return redirect(url_for('signinStudent_form'))
 
+@app.route('/notificationsAdmin')
+def notifications_admin():
+# Check if Admin is logged in
+    if 'admin_id' in session:
+        admin_id = session['admin_id']
+        admin_email = session['admin_email']
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
+
+        if admin:
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            # Render the notificationsAdmin.html template
+            return render_template('notificationsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
+        else:
+            return "User not found"
+    else:
+        # Redirect to sign-in page if not logged in
+        return redirect(url_for('signinAdmin_form'))
+
+
 
 
 @app.route('/homeStudent')
@@ -598,7 +620,28 @@ def homeAdmin():
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
         if admin:
-            return render_template('homeAdmin.html', admin=admin)
+            # CSV Path
+                csv_file_path = 'data/dataset.csv'
+
+                # Load CSV data
+                df = pd.read_csv(csv_file_path)
+                df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
+                water_usage = df['Usage'].iloc[-1]
+                ph_value = df['ph'].iloc[-1]
+
+                # Determine if Notification is Needed
+                usage_notification = water_usage > max_water_usage
+                ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
+
+                # Convert to standard Python types (if necessary)
+                usage_notification = bool(usage_notification)
+                ph_notification = bool(ph_notification)
+
+                # Store notifications in session
+                session['usage_notification'] = usage_notification
+                session['ph_notification'] = ph_notification
+
+                return render_template('homeAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
@@ -642,7 +685,11 @@ def dashboardAdmin_form():
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
         if admin:
-            return render_template('dashboardAdmin.html', admin=admin)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+            return render_template('dashboardAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
+
         else:
             return "user not found"
     else:
@@ -888,7 +935,10 @@ def predictionAdmin_form():
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
         if admin:
-            return render_template('predictionsAdmin.html', admin=admin)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+            return render_template('predictionsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
@@ -915,7 +965,10 @@ def analysingAdmin_form():
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
         if admin:
-            return render_template('analysingAdmin.html', admin=admin)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+            return render_template('analysingAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
@@ -946,6 +999,9 @@ def accessAdmin_form():
         admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
 
         if admin:
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
             # Get search queries
             search_email = request.args.get('search_email', '').strip()
             search_role = request.args.get('search_role', '').strip()
@@ -977,7 +1033,7 @@ def accessAdmin_form():
                 students = query_students.order_by(Student.id.asc()).all()
                 staff = query_staff.all()
 
-            return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff)
+            return render_template('accessAdmin.html', admin=admin, admins=admins, students=students, staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "User not found"
     else:
@@ -1062,6 +1118,9 @@ def meterAdmin_form():
         admin_email = session['admin_email']
         admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
             if request.method == 'POST':
                 date = request.form['date']
                 usage = request.form['usage']
@@ -1074,7 +1133,9 @@ def meterAdmin_form():
             return render_template('meterAdmin.html', admin=admin,
                                    last_month=last_month_reading,
                                    this_month=this_month_reading,
-                                   usage=this_month_usage)
+                                   usage=this_month_usage,
+                                   usage_notification=usage_notification,
+                                   ph_notification=ph_notification)
         else:
             return "User not found"
     else:
