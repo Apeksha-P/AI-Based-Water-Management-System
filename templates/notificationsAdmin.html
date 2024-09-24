@@ -11,7 +11,6 @@
     <!-- Favicon -->
     <!-- <link href="img/favicon.ico" rel="icon"> -->
     <link rel="icon" type="png" href="https://static.vecteezy.com/system/resources/previews/011/029/799/original/blue-water-drop-for-symbol-design-png.png"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.css" rel="stylesheet">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,17 +46,18 @@
     <!-- Sidebar Start -->
     <div class="sidebar pe-4 pb-3">
         <nav class="navbar bg-secondary navbar-dark">
-            <a href="{{ url_for('index_form')}}" class="navbar-brand mx-4 mb-3">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand mx-4 mb-3">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
 
             <div class="navbar-nav w-100">
-                <a href="{{ url_for('homeAdmin')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('homeAdmin')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9  !important;"><i class="fa fa-home me-2"></i>Home</a>
                 <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
                 <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
                 <a href="{{ url_for('signinAccessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-solid fa-universal-access"></i>   Access</a>
                 <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
+
             </div>
         </nav>
     </div>
@@ -67,62 +67,20 @@
     <div class="content">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeAdmin')}}"     class="navbar-brand d-flex d-lg-none me-4">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand d-flex d-lg-none me-4">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%"><a href="{{ url_for('analysingAdmin_form')}}">ANALYSING</a></h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('homeAdmin')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown" style="position: relative;">
 
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
-                        <i class="fa fa-bell me-lg-2" style="position: relative;">
-                            <!-- Red dot for notification -->
-                            {% if usage_notification or ph_notification %}
-                            <span class="notification-dot"></span>
-                            {% endif %}
-                        </i>
+
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
-
-
-                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
-                        {% if usage_notification %}
-                        <a href="{{ url_for('notifications_admin')}}">
-                            <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
-                            </div>
-                            <br>
-                        </a>
-
-
-                        {% if ph_notification %}
-                        <a href="{{ url_for('notifications_admin')}}">
-                            <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                <strong>pH Level Warning!</strong> pH out of safe range!
-                            </div>
-                        </a>
-                        {% endif %}
-
-
-                        {% else %}
-                        {% if ph_notification %}
-                        <a href="{{ url_for('notifications_admin')}}">
-                            <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                <strong>pH Level Warning!</strong> pH out of safe range!
-                            </div>
-                        </a>
-                        {% else %}
-                        <div class="alert alert-secondary" role="alert">
-                            No new notifications
-                        </div>
-                        {% endif %}
-
-                        {% endif %}
-
-                    </div>
 
                 </div>
                 <div class="nav-item dropdown">
@@ -142,91 +100,20 @@
             </div>
         </nav>
         <!-- Navbar End -->
-        <!-- Add Your items Here -->
-        <div class="container-body" style="margin: 25px 30px">
-            <h3>Select Date Range for Analysis</h3>
-            <form id="dateForm">
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <label for="startDate">Start Date:</label>
-                        <input style="border-radius: 5px;" type="date" id="startDate" name="startDate" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="endDate">End Date:</label>
-                        <input style="border-radius: 5px;" type="date" id="endDate" name="endDate" required>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <button id="analyze-btn" class="btn btn-primary" type="submit">Analyze</button>
-                </div>
-            </form>
 
-            <br>
-            <div>
-                <h4>Graphs</h4>
-
-                <div class="container-fluid pt-4 px-4">
-                    <div class="row g-4">
-                        <div class="col-md-12 col-lg-12">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">Water Usage</h6>
-                                <div class="chart-container">
-                                    <canvas id="usageChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 col-lg-12">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">Temperature</h6>
-                                <div class="chart-container">
-                                    <canvas id="tempChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 col-lg-12">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">pH Value</h6>
-                                <div class="chart-container">
-                                    <canvas id="phChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 col-lg-12">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <h6 class="mb-4">TDS</h6>
-                                <div class="chart-container">
-                                    <canvas id="tdsChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-<!--                    <canvas id="usageChart" width="400" height="200"></canvas>-->
-<!--                    <canvas id="tempChart" width="400" height="200"></canvas>-->
-<!--                    <canvas id="phChart" width="400" height="200"></canvas>-->
-<!--                    <canvas id="tdsChart" width="400" height="200"></canvas>-->
-                </div>
-            </div>
-
-            <br>
-            <div>
-                <h4>Statistical Analysis</h4>
-                <div class="container-fluid pt-4 px-4">
-                    <div class="row g-4">
-                        <div class="col-md-12 col-lg-12">
-                            <div class="bg-secondary rounded h-100 p-4">
-                                <p id="stats"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        {% if usage_notification %}
+        <div class="alert alert-danger alert-margin" role="alert">
+            <b>Alert: High Water Usage Detected!</b><br>
+            Your water use is higher than normal. Using too much water can harm the environment and increase costs. Please save water by taking shorter showers, turning off taps when not in use, and reporting any leaks.
         </div>
+        {% endif %}
+
+        {% if ph_notification %}
+        <div class="alert alert-warning alert-margin" role="alert">
+            <b>Alert: Water pH Out of Range!</b><br>
+            The pH level of your water is outside the safe range. This can affect water quality and potentially damage plumbing. Please avoid using the water until the issue is resolved.
+        </div>
+        {% endif %}
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
@@ -279,59 +166,6 @@
     <!-- Back to Top -->
     <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-<script>
-    document.getElementById('dateForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-
-        fetch(`/analyze?start=${startDate}&end=${endDate}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log("Data received from server:", data);  // Log the data for debugging
-                updateChart('usageChart', 'Usage Over Time', 'Usage', data.usage);
-                updateChart('tempChart', 'Temperature Over Time', 'Temp', data.temp);
-                updateChart('phChart', 'pH Over Time', 'pH', data.ph);
-                updateChart('tdsChart', 'TDS Over Time', 'TDS', data.tds);
-
-                // Show statistical analysis
-                document.getElementById('stats').innerText = data.stats;
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-
-    });
-
-    function updateChart(chartId, label, dataLabel, data) {
-        const ctx = document.getElementById(chartId).getContext('2d');
-        console.log(`Rendering chart for ${label}`, data);  // Log the data to verify it's correct
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.dates,  // Ensure 'dates' and 'values' are correctly passed
-                datasets: [{
-                    label: dataLabel,
-                    data: data.values,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    fill: false,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    x: { type: 'category', title: { display: true, text: 'Date' } },
-                    y: { beginAtZero: true, title: { display: true, text: dataLabel } }
-                }
-            }
-        });
-    }
-
-</script>
 
 <!-- JavaScript Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
