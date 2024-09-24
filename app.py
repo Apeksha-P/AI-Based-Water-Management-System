@@ -574,18 +574,11 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            # CSV Path
-            csv_file_path = 'data/dataset.csv'
+             # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
 
-            # Load CSV data
-            df = pd.read_csv(csv_file_path)
-            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-            water_usage = df['Usage'].iloc[-1]
-
-            # Determine if Notification is Needed
-            usage_notification = water_usage > max_water_usage
-
-            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification)
+            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
