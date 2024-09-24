@@ -516,8 +516,6 @@ def report():
     
     # Render the initial page with GET request
     return render_template('report.html')
-    
-
 @app.route('/notificationsStudent')
 def notifications_student():
     # Check if student is logged in
