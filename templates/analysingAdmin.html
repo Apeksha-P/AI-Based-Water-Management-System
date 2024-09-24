@@ -75,11 +75,55 @@
             </a>
             <h3 style="margin: 2%"><a href="{{ url_for('analysingAdmin_form')}}">ANALYSING</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fa fa-bell me-lg-2"></i>
+                <div class="nav-item dropdown" style="position: relative;">
+
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
+                        <i class="fa fa-bell me-lg-2" style="position: relative;">
+                            <!-- Red dot for notification -->
+                            {% if usage_notification or ph_notification %}
+                            <span class="notification-dot"></span>
+                            {% endif %}
+                        </i>
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
+
+
+                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
+                        {% if usage_notification %}
+                        <a href="{{ url_for('notifications_admin')}}">
+                            <div class="alert bg-warning text-dark mb-0 " role="alert">
+                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
+                            </div>
+                            <br>
+                        </a>
+
+
+                        {% if ph_notification %}
+                        <a href="{{ url_for('notifications_admin')}}">
+                            <div class="alert bg-warning text-dark mb-0 " role="alert">
+                                <strong>pH Level Warning!</strong> pH out of safe range!
+                            </div>
+                        </a>
+                        {% endif %}
+
+
+                        {% else %}
+                        {% if ph_notification %}
+                        <a href="{{ url_for('notifications_admin')}}">
+                            <div class="alert bg-warning text-dark mb-0 " role="alert">
+                                <strong>pH Level Warning!</strong> pH out of safe range!
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="alert alert-secondary" role="alert">
+                            No new notifications
+                        </div>
+                        {% endif %}
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -91,7 +135,7 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
                         <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
-                        <a href="#" class="dropdown-item">Reports</a>
+                        <a href="{{ url_for('report')}}" class="dropdown-item">Reports</a>
                         <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
                     </div>
                 </div>

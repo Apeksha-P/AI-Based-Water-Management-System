@@ -46,15 +46,18 @@
     <!-- Sidebar Start -->
     <div class="sidebar pe-4 pb-3">
         <nav class="navbar bg-secondary navbar-dark">
-            <a href="{{ url_for('homeStaff')}}" class="navbar-brand mx-4 mb-3">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand mx-4 mb-3">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
 
             <div class="navbar-nav w-100">
-                <a href="{{ url_for('homeStaff')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9 !important;"><i class="fa fa-home me-2"></i>Home</a>
-                <a href="{{ url_for('dashboardStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                <a href="{{ url_for('analysingStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
-                <a href="{{ url_for('predictionStaff_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                <a href="{{ url_for('homeAdmin')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600; color: #826AF9  !important;"><i class="fa fa-home me-2"></i>Home</a>
+                <a href="{{ url_for('dashboardAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+                <a href="{{ url_for('analysingAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-keyboard me-2"></i>Analysing</a>
+                <a href="{{ url_for('predictionAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa fa-table me-2"></i>Predictions</a>
+                <a href="{{ url_for('signinAccessAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-solid fa-universal-access"></i>   Access</a>
+                <a href="{{ url_for('meterAdmin_form')}}" class="nav-item nav-link" style="font-size:20px; font-weight:600;"><i class="fa-brands fa-readme"></i>   Meter</a>
+
             </div>
         </nav>
     </div>
@@ -64,75 +67,33 @@
     <div class="content">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-            <a href="{{ url_for('homeStaff')}}" class="navbar-brand d-flex d-lg-none me-4">
+            <a href="{{ url_for('homeAdmin')}}" class="navbar-brand d-flex d-lg-none me-4">
                 <h3 class="text-primary">AIBWMS</h3>
             </a>
             <a href="#" class="sidebar-toggler flex-shrink-0">
                 <i class="fa fa-bars"></i>
             </a>
-            <h3 style="margin: 2%"><a href="{{ url_for('homeStaff')}}">HOME</a></h3>
+            <h3 style="margin: 2%"><a href="{{ url_for('homeAdmin')}}">HOME</a></h3>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown" style="position: relative;">
 
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" style="position: relative;">
-                        <i class="fa fa-bell me-lg-2" style="position: relative;">
-                            <!-- Red dot for notification -->
-                            {% if usage_notification or ph_notification %}
-                                <span class="notification-dot"></span>
-                            {% endif %}
-                        </i>
+
                         <span class="d-none d-lg-inline-flex">Notification</span>
                     </a>
-                    
-
-                    <div class="dropdown-menu dropdown-menu-end bg-transparent border-0 rounded-0 rounded-bottom m-0" style="width: 400px;">
-                        {% if usage_notification %}
-                        <a href="{{ url_for('notifications_staff')}}">
-                            <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                <strong>Water Usage Alert!</strong> Your consumption is above the recommended level!
-                            </div>
-                            <br>
-                        </a>
-                        
-
-                            {% if ph_notification %}
-                            <a href="{{ url_for('notifications_staff')}}">
-                                <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                    <strong>pH Level Warning!</strong> pH out of safe range!
-                                </div>
-                            </a>
-                            {% endif %}
-                
-
-                        {% else %}
-                            {% if ph_notification %}
-                            <a href="{{ url_for('notifications_staff')}}">
-                                <div class="alert bg-warning text-dark mb-0 " role="alert">
-                                    <strong>pH Level Warning!</strong> pH out of safe range!
-                                </div>
-                            </a>
-                            {% else %}
-                            <div class="alert alert-secondary" role="alert">
-                                No new notifications
-                            </div>
-                            {% endif %}
-                        
-                        {% endif %}
-                        
-                    </div>
 
                 </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        {% if staff.picture %}
-                        <img src="{{ url_for('serve_uploaded_picture', filename=staff.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
+                        {% if admin.picture %}
+                        <img src="{{ url_for('serve_uploaded_picture', filename=admin.picture) }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
                         {% else %}
                         <img src="{{ url_for('static', filename='img/profile.png') }}" alt="Profile Picture" class="rounded-circle pt-2 pb-2" width="50px" height="50px">
                         {% endif %}
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-secondary border-0 rounded-0 rounded-bottom m-0">
-                        <a href="{{ url_for('profileStaff_form')}}" class="dropdown-item">My Profile</a>
-                        <a href="{{ url_for('report')}}" class="dropdown-item">Reports</a>
+                        <a href="{{ url_for('profileAdmin_form')}}" class="dropdown-item">My Profile</a>
+                        <a href="#" class="dropdown-item">Reports</a>
                         <a href="{{ url_for('index_form')}}" class="dropdown-item">Log Out</a>
                     </div>
                 </div>
@@ -140,19 +101,19 @@
         </nav>
         <!-- Navbar End -->
 
-        <section class="home-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h1><span>AI</span> Based<br>Water<br><span>Management</span><br>System</h1>
-                        <a href="{{ url_for('viewmore_staff') }}"><div class="view-more-button">View More</div></a>
-                    </div>
-                    <div class="col-md-6">
-                        <img src="{{ url_for('static', filename='img/home-img.png') }}" alt="Image" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-        </section>
+        {% if usage_notification %}
+        <div class="alert alert-danger alert-margin" role="alert">
+            <b>Alert: High Water Usage Detected!</b><br>
+            Water usage has exceeded typical levels. Excessive water consumption can strain resources and increase operational costs. Please ensure efficient water usage by addressing leaks promptly, monitoring water systems closely, and promoting best practices among your team.
+        </div>
+        {% endif %}
+
+        {% if ph_notification %}
+        <div class="alert alert-warning alert-margin" role="alert">
+            <b>Alert: Water pH Out of Range!</b><br>
+            The pH level of the water is outside the acceptable range, which may affect water quality and cause potential damage to plumbing systems. Please suspend water usage in affected areas until the issue is resolved and safety is restored.
+        </div>
+        {% endif %}
 
         <!-- Footer Start -->
         <footer class="container-fluid pt-4 px-4">
@@ -171,10 +132,12 @@
                     </div>
                     <div class="col-12 col-md-3 text-left">
                         <h5 style="color: #826AF9;">Useful Links</h5>
-                        <a href="{{ url_for('homeStaff')}}" target="_blank">Home</a><br>
-                        <a href="{{ url_for('dashboardStaff_form')}}" target="_blank">Dashboard</a><br>
-                        <a href="{{ url_for('analysingStaff_form')}}" target="_blank">Analysis</a><br>
-                        <a href="{{ url_for('predictionStaff_form')}}" target="_blank">Predictions</a><br>
+                        <a href="{{ url_for('homeAdmin')}}" target="_blank">Home</a><br>
+                        <a href="{{ url_for('dashboardAdmin_form')}}" target="_blank">Dashboard</a><br>
+                        <a href="{{ url_for('analysingAdmin_form')}}" target="_blank">Analysis</a><br>
+                        <a href="{{ url_for('predictionAdmin_form')}}" target="_blank">Predictions</a><br>
+                        <a href="{{ url_for('signinAccessAdmin_form')}}" target="_blank">Access</a><br>
+                        <a href="{{ url_for('meterAdmin_form')}}" target="_blank">Meter</a><br>
                     </div>
                     <div class="col-12 col-md-3 text-left">
                         <h5 style="color: #826AF9;">Contact</h5>
@@ -214,6 +177,7 @@
 <script src="{{ url_for('static', filename='lib/tempusdominus/js/moment.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/tempusdominus/js/moment-timezone.min.js') }}"></script>
 <script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="https://kit.fontawesome.com/92c64e3f46.js" crossorigin="anonymous"></script>
 
 <!-- Template Javascript -->
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
