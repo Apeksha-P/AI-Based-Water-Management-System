@@ -25,7 +25,9 @@ app.secret_key = 'your_secret_key'
 
 # Notification Process
 
-max_water_usage = 2
+max_water_usage = 1
+max_ph_value = 9.5
+low_ph_value = 7.5
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -486,6 +488,36 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
+# Path to your CSV file
+csv_file_path = 'data/dataset.csv'
+
+@app.route('/report', methods=['GET', 'POST'])
+def report():
+    if request.method == 'POST':
+        # Get the start and end dates from the form
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path)
+        
+        # Ensure 'Date' is a datetime object for proper comparison
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+        # Filter the DataFrame for the given date range
+        mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
+        filtered_df = df.loc[mask]
+
+        # Convert the filtered data to a string format
+        result = filtered_df.to_string(index=False)
+        
+        # Return the data back to the frontend
+        return jsonify({"data": result})
+    
+    # Render the initial page with GET request
+    return render_template('report.html')
+
+
 @app.route('/notificationsStudent')
 def notifications_student():
     # Check if student is logged in
@@ -494,8 +526,13 @@ def notifications_student():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
+
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
             # Pass the student object to the template
-            return render_template('notificationsStudent.html', student=student)
+            return render_template('notificationsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "User not found"
     else:
@@ -834,7 +871,11 @@ def predictionStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('predictionsStudent.html', student=student)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('predictionsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
