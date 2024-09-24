@@ -9,11 +9,12 @@ import os
 import re
 import random
 import pandas as pd
-from sqlalchemy import create_engine,text
-from statsmodels.tsa.arima.model import ARIMA
-from flask import jsonify
+from sqlalchemy import create_engine
+from flask import Flask, jsonify
 from pmdarima import auto_arima
-from datetime import datetime, timedelta
+from datetime import datetime
+from sqlalchemy import text
+import statsmodels.api as sm
 import logging
 import mysql.connector
 
@@ -24,7 +25,9 @@ app.secret_key = 'your_secret_key'
 
 # Notification Process
 
-max_water_usage = 2
+max_water_usage = 1
+max_ph_value = 9.5
+low_ph_value = 7.5
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = 'smtp.office365.com'
@@ -485,6 +488,36 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
+# Path to your CSV file
+csv_file_path = 'data/dataset.csv'
+
+@app.route('/report', methods=['GET', 'POST'])
+def report():
+    if request.method == 'POST':
+        # Get the start and end dates from the form
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        # Load the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path)
+        
+        # Ensure 'Date' is a datetime object for proper comparison
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+        # Filter the DataFrame for the given date range
+        mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
+        filtered_df = df.loc[mask]
+
+        # Convert the filtered data to a string format
+        result = filtered_df.to_string(index=False)
+        
+        # Return the data back to the frontend
+        return jsonify({"data": result})
+    
+    # Render the initial page with GET request
+    return render_template('report.html')
+
+
 @app.route('/notificationsStudent')
 def notifications_student():
     # Check if student is logged in
@@ -493,8 +526,13 @@ def notifications_student():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
+
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
             # Pass the student object to the template
-            return render_template('notificationsStudent.html', student=student)
+            return render_template('notificationsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "User not found"
     else:
@@ -517,11 +555,21 @@ def homeStudent():
             df = pd.read_csv(csv_file_path)
             df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
             water_usage = df['Usage'].iloc[-1]
-
+            ph_value = df['ph'].iloc[-1]
+            
             # Determine if Notification is Needed
             usage_notification = water_usage > max_water_usage
+            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
 
-            return render_template('homeStudent.html', student=student, usage_notification=usage_notification)
+            # Convert to standard Python types (if necessary)
+            usage_notification = bool(usage_notification)
+            ph_notification = bool(ph_notification)
+
+            # Store notifications in session
+            session['usage_notification'] = usage_notification
+            session['ph_notification'] = ph_notification
+            
+            return render_template('homeStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -563,18 +611,12 @@ def dashboardStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            # CSV Path
-            csv_file_path = 'data/dataset.csv'
 
+             # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
 
-            # Load CSV data
-            df = pd.read_csv(csv_file_path)
-            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-            water_usage = df['Usage'].iloc[-1]
-            # Determine if Notification is Needed
-            usage_notification = water_usage > max_water_usage
-
-            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification)
+            return render_template('dashboardStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -830,7 +872,11 @@ def predictionStudent_form():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            return render_template('predictionsStudent.html', student=student)
+            # Get notifications from session
+            usage_notification = session.get('usage_notification', False)
+            ph_notification = session.get('ph_notification', False)
+
+            return render_template('predictionsStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
             return "user not found"
     else:
@@ -1491,18 +1537,107 @@ def get_current_admin():
 # -----------------------------------------------Predictions---------------------------------------------------------
 PREDICTION_FEATURE = "Usage"
 
+def truncate_table(engine, table_name):
+    try:
+        with engine.connect() as conn:
+            # Check if the table exists
+            result = conn.execute(text(f"SHOW TABLES LIKE '{table_name}'"))
+            if result.fetchone() is not None:
+                conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+            else:
+                print(f"Table {table_name} does not exist, skipping truncation.")
+    except Exception as e:
+        print(f"Failed to truncate table {table_name}: {e}")
+
+
+def read_data_from_db(table_name):
+    try:
+        query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
+        return df[[PREDICTION_FEATURE]]
+    except Exception as e:
+        print(f"Failed to read data from {table_name}: {e}")
+        return pd.DataFrame()
+
+
+def write_data_to_db(df, table_name):
+    df.to_sql(table_name, engine, if_exists='replace', index=True, index_label='Date')
+
 def partition_data():
-    df = pd.read_csv("data/dataset.csv", index_col="Date", parse_dates=True)
-    df = df[[PREDICTION_FEATURE]]
+    df = read_data_from_db("dataset")
 
-    daily_data_train = df.resample("D").sum()
-    daily_data_train.to_csv("data/daily_data_train.csv")
+    try:
+        # Truncate tables before inserting new data
+        truncate_table(engine, 'daily_train_data')
+        daily_data_train = df.resample("D").sum()
+        write_data_to_db(daily_data_train, "daily_train_data")
 
-    weekly_data_train = df.resample("W").sum()
-    weekly_data_train.to_csv("data/weekly_data_train.csv")
+        truncate_table(engine, 'weekly_train_data')
+        weekly_data_train = df.resample("W").sum()
+        write_data_to_db(weekly_data_train, "weekly_train_data")
 
-    monthly_data_train = df.resample("ME").sum()  # Use 'ME' for month-end frequency
-    monthly_data_train.to_csv("data/monthly_data_train.csv")
+        truncate_table(engine, 'monthly_train_data')
+        monthly_data_train = df.resample("ME").sum()  # Changed from 'ME' to 'M'
+        write_data_to_db(monthly_data_train, "monthly_train_data")
+
+    except Exception as e:
+        print(f"An error occurred while partitioning data: {e}")
+
+def check_stationarity(df):
+    result = sm.tsa.stattools.adfuller(df[PREDICTION_FEATURE])
+    return result[1] <= 0.05
+def make_stationary(df):
+    return df[PREDICTION_FEATURE].diff().dropna()
+
+def seasonal_difference(df, period=12):
+    return df[PREDICTION_FEATURE].diff(periods=period).dropna()
+
+def transform_data(df):
+    transformations = 0
+    while not check_stationarity(df) and transformations < 3:
+        if transformations == 0:
+            df = make_stationary(df)
+        else:
+            df = seasonal_difference(df)
+        transformations += 1
+
+    if transformations >= 3:
+        print("Data could not be made stationary after 3 transformations.")
+        return None
+
+    return df
+
+def predict_data(df, prediction_count, freq):
+    if df.empty:
+        return {"error": "DataFrame is empty. Cannot perform predictions."}
+
+    df.index = pd.DatetimeIndex(df.index)
+    df = df.resample(freq).sum()
+
+    df_stationary = transform_data(df)
+
+    if df_stationary is None:
+        return {"error": "Data is still not stationary."}
+
+    model = auto_arima(df_stationary, seasonal=False, stepwise=True, suppress_warnings=True)
+
+    print(f"Selected ARIMA order: {model.order}")
+
+    model_fit = model.fit(df_stationary)
+
+    # Get model summary to check p-values
+    print(model_fit.summary())
+
+    forecast_value = model_fit.predict(n_periods=prediction_count)
+
+    # Generate future dates for the forecast
+    last_date = df.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq=freq)[1:]
+
+    return {
+        "labels": list(forecast_dates.astype(str)),
+        "data": list(forecast_value.clip(lower=0))
+    }
 
 @app.route("/daily_predictions")
 def call_daily_predictions():
@@ -1511,97 +1646,35 @@ def call_daily_predictions():
     return jsonify(data), 200
 
 def get_daily_data(prediction_count=7):
-    df = pd.read_csv("data/daily_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="D")
-    df_train = df.dropna()
-
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
-
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for daily data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='D')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
+    df = read_data_from_db("daily_train_data")
+    return predict_data(df, prediction_count, 'D')
 
 @app.route("/weekly_predictions")
-def call_weekly_predictions():  # Define correct route
-    partition_data()  # Ensure training data is up to date
+def call_weekly_predictions():
+    partition_data()
     data = get_weekly_data()
     return jsonify(data), 200
 
 def get_weekly_data(prediction_count=4):
-    df = pd.read_csv("data/weekly_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="W")
-    df_train = df.dropna()
-
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
-
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for weekly data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='W')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
+    df = read_data_from_db("weekly_train_data")
+    return predict_data(df, prediction_count, 'W')
 
 @app.route("/monthly_predictions")
 def call_monthly_predictions():
-    partition_data()  # Ensure training data is up to date
+    partition_data()
     data = get_monthly_data()
     return jsonify(data), 200
 
 def get_monthly_data(prediction_count=4):
-    df = pd.read_csv("data/monthly_data_train.csv", index_col="Date", parse_dates=True)
-    df.index = pd.DatetimeIndex(df.index, freq="ME")  # Use 'ME' for month-end frequency
-    df_train = df.dropna()
+    df = read_data_from_db("monthly_train_data")
+    return predict_data(df, prediction_count, 'ME')
 
-    # Use auto_arima to determine the best parameters dynamically
-    model = auto_arima(df_train[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
 
-    # Print the selected ARIMA order
-    print(f"Selected ARIMA order for monthly data: {model.order}")
-
-    # Fit the model
-    model_fit = model.fit(df_train[PREDICTION_FEATURE])
-
-    # Forecast future values
-    forecast_value = model_fit.predict(n_periods=prediction_count)
-
-    # Generate future dates for the forecast
-    last_date = df.index[-1]
-    forecast_dates = pd.date_range(start=last_date, periods=prediction_count + 1, freq='M')[1:]
-
-    return {
-        "labels": list(forecast_dates.astype(str)),  # Future dates for predictions
-        "data": list(forecast_value.clip(lower=0))
-    }
-
-# Load dataset (assuming it's in the same folder)
-df = pd.read_csv('data/dataset.csv')
+# Load dataset
+def read_data_from_db(table_name):
+    query = f"SELECT * FROM {table_name}"
+    df = pd.read_sql(query, engine, index_col="Date", parse_dates=["Date"])
+    return df
 
 @app.route('/analyze', methods=['GET'])
 def analyze():
@@ -1613,8 +1686,11 @@ def analyze():
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
+    # Read data from 'dataset' table in the database
+    df = read_data_from_db('dataset')
+
     # Filter data by date range
-    df['Date'] = pd.to_datetime(df['Date'])  # Make sure 'Date' column is in datetime format
+    df['Date'] = pd.to_datetime(df.index)  # Ensure 'Date' column is in datetime format
     filtered_df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
 
     # Prepare data for charts
@@ -1637,8 +1713,6 @@ def analyze():
         },
         'stats': generate_statistics(filtered_df)
     }
-
-    print(data)  # Log the data to verify it's correct
     return jsonify(data)
 
 def generate_statistics(df):
