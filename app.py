@@ -669,8 +669,7 @@ def homeStaff():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
-
-
+        
 @app.route('/homeAdmin')
 def homeAdmin():
     # Check if Admin is logged in
