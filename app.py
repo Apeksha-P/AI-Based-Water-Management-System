@@ -17,15 +17,16 @@ from sqlalchemy import text
 import statsmodels.api as sm
 import logging
 import mysql.connector
+import pymysql
 
 logging.basicConfig(level=logging.DEBUG)
+
 # Initialize Flask application
 app = Flask(__name__, static_url_path='/static/')
 app.secret_key = 'your_secret_key'
 
 # Notification Process
-
-max_water_usage = 1
+max_water_usage = 60
 max_ph_value = 9.5
 low_ph_value = 7.5
 
@@ -64,17 +65,6 @@ db_config = {
 # Create SQLAlchemy engine
 engine = create_engine(f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}")
 
-# #Load existing CSV data
-# csv_file = 'data/dataset.csv'
-# if os.path.exists(csv_file):
-#     try:
-#         df_existing = pd.read_csv(csv_file, parse_dates=['Date'])
-#     except Exception as e:
-#         print(f"Error reading existing CSV file: {e}")
-#         df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
-# else:
-#     df_existing = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
-
 # Fetch new data from MySQL
 query = "SELECT * FROM dataset"
 try:
@@ -84,38 +74,6 @@ except Exception as e:
     print(f"Error fetching data from MySQL: {e}")
     df_new = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
 
-# # Check if dataframes are empty before concatenating
-# if df_existing.empty and df_new.empty:
-#     df_combined = pd.DataFrame(columns=['Date', 'Usage', 'Temp', 'ph', 'TDS', 'MeterReading'])
-# elif df_existing.empty:
-#     df_combined = df_new
-# elif df_new.empty:
-#     df_combined = df_existing
-# else:
-#     # Combine existing and new data, keeping only the most recent entry for each date
-#     df_combined = pd.concat([df_existing, df_new]).drop_duplicates(subset='Date', keep='last')
-
-# # Ensure 'Date' is of datetime type
-# df_combined['Date'] = pd.to_datetime(df_combined['Date'], errors='coerce')
-#
-# # Remove rows with invalid dates
-# df_combined = df_combined.dropna(subset=['Date'])
-#
-# # Sort by date for proper MeterReading calculation
-# df_combined.sort_values(by='Date', inplace=True)
-#
-# # Calculate MeterReading based on cumulative usage
-# df_combined['MeterReading'] = df_combined['Usage'].cumsum()
-#
-# # Save updated DataFrame to CSV
-# try:
-#     df_combined.to_csv(csv_file, index=False)
-# except PermissionError as e:
-#     print(f"Permission error: {e}")
-# except Exception as e:
-#     print(f"Error saving CSV file: {e}")
-#
-#
 # Optional: Function to create the database if it doesn't exist
 def create_database_if_not_exists():
     try:
@@ -205,7 +163,6 @@ def signupStudent_form():
 def signupStaff_form():
     return render_template('signupStaff.html')
 
-
 def send_otp_email(email, otp, fname):
     try:
         msg = Message('Email verification', sender=app.config["MAIL_DEFAULT_SENDER"], recipients=[email])
@@ -224,7 +181,6 @@ def send_otp_email_p(email, otp):
     except Exception as e:
         print("An error occurred while sending the email:", e)
         flash("An error occurred while sending the email. Please try again later.", "danger")
-
 
 @app.route('/signupStudent', methods=["POST"])
 def signupStudent():
@@ -262,9 +218,7 @@ def signupStudent():
             'cnumber': cnumber,
             'otp': otp
         }
-
         return redirect(url_for('verifyStudent'))
-
     return render_template('signupStudent.html')
 
 @app.route('/alreadySignupStudent')
@@ -379,7 +333,6 @@ def verifyStaff():
     # If GET request, render the verifyStudent.html template
     return render_template('verifyStaff.html')
 
-
 @app.route('/verifyAdmin', methods=["GET", "POST"])
 def verifyAdmin():
     if request.method == "POST":
@@ -409,7 +362,6 @@ def verifyAdmin():
     # If GET request, render the verifyAdmin.html template
     return render_template('verifyAdmin.html')
 
-
 @app.route('/signinStudent', methods=["GET", "POST"])
 def signinStudent_form():
     if request.method == "POST":
@@ -426,9 +378,7 @@ def signinStudent_form():
         else:
             flash("Invalid email or password.", "danger")
             return render_template('signinStudent.html', error_message="Invalid email or password.")
-
     return render_template('signinStudent.html')
-
 
 @app.route('/signinStaff', methods=["GET", "POST"])
 def signinStaff_form():
@@ -468,7 +418,6 @@ def signinAdmin_form():
             return render_template('signinAdmin.html')
     return render_template('signinAdmin.html')
 
-
 @app.route('/signinAccessAdmin', methods=["GET", "POST"])
 def signinAccessAdmin_form():
     if request.method == "POST":
@@ -488,9 +437,6 @@ def signinAccessAdmin_form():
             return render_template('signinAccessAdmin.html', error_message="Invalid email or password.")
     return render_template('signinAccessAdmin.html')
 
-# Path to your CSV file
-csv_file_path = 'data/dataset.csv'
-
 @app.route('/report', methods=['GET', 'POST'])
 def report():
     if request.method == 'POST':
@@ -498,24 +444,24 @@ def report():
         start_date = request.form['start_date']
         end_date = request.form['end_date']
 
-        # Load the CSV file into a DataFrame
-        df = pd.read_csv(csv_file_path)
-        
-        # Ensure 'Date' is a datetime object for proper comparison
-        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+        # Query the database to get the data within the date range
+        query = f"""
+        SELECT * FROM dataset
+        WHERE Date >= '{start_date}' AND Date <= '{end_date}'
+        """
 
-        # Filter the DataFrame for the given date range
-        mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
-        filtered_df = df.loc[mask]
+        # Load the data into a DataFrame
+        filtered_df = pd.read_sql(query, engine)
 
         # Convert the filtered data to a string format
         result = filtered_df.to_string(index=False)
-        
+
         # Return the data back to the frontend
         return jsonify({"data": result})
-    
+
     # Render the initial page with GET request
     return render_template('report.html')
+
 @app.route('/notificationsStudent')
 def notifications_student():
     # Check if student is logged in
@@ -535,7 +481,36 @@ def notifications_student():
             return "User not found"
     else:
         return redirect(url_for('signinStudent_form'))
-
+@app.route('/api/get_last_data', methods=['GET'])
+def get_last_data():
+    connection = pymysql.connect(
+        host='aibwms-db.cbk24q4qotkj.ap-southeast-2.rds.amazonaws.com',
+        user='admin',
+        password='AIBWMS123db',
+        database='AIBWMS_db'
+    )
+    cursor = connection.cursor()
+    # Make sure 'date' is the correct column for ordering
+    query = "SELECT `Usage`, Temp, ph, TDS FROM dataset ORDER BY date DESC LIMIT 15"
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+    # Convert rows to a list of dictionaries
+    data = []
+    for row in rows:
+        data.append({
+            'water_usage': row[0],
+            'temperature': row[1],
+            'ph_value': row[2],
+            'tds': row[3]
+        })
+    return jsonify(data)    
 @app.route('/notificationsAdmin')
 def notifications_admin():
 # Check if Admin is logged in
@@ -547,7 +522,6 @@ def notifications_admin():
             # Get notifications from session
             usage_notification = session.get('usage_notification', False)
             ph_notification = session.get('ph_notification', False)
-
             # Render the notificationsAdmin.html template
             return render_template('notificationsAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
         else:
@@ -555,8 +529,6 @@ def notifications_admin():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
-
-
 @app.route('/notificationsStaff')
 def notifications_staff():
     # Check if staff is logged in
@@ -568,7 +540,6 @@ def notifications_staff():
             # Get notifications from session
             usage_notification = session.get('usage_notification', False)
             ph_notification = session.get('ph_notification', False)
-
             return render_template('notificationStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
     else:
         # Redirect to sign-in page if not logged in
@@ -582,28 +553,28 @@ def homeStudent():
         student_email = session['student_email']
         student = Student.query.filter_by(id=student_id, email=student_email).first()
         if student:
-            # CSV Path
-            csv_file_path = 'data/dataset.csv'
+            # Query to get the last reading from the dataset table
+            query = "SELECT * FROM dataset ORDER BY Date DESC LIMIT 1"
+            last_reading_df = pd.read_sql(query, engine)
 
-            # Load CSV data
-            df = pd.read_csv(csv_file_path)
-            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-            water_usage = df['Usage'].iloc[-1]
-            ph_value = df['ph'].iloc[-1]
-            
-            # Determine if Notification is Needed
-            usage_notification = water_usage > max_water_usage
-            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
+            if not last_reading_df.empty:
+                # Extract the last row of data
+                last_reading = last_reading_df.iloc[0]
+                water_usage = last_reading['Usage']
+                ph_value = last_reading['ph']
 
-            # Convert to standard Python types (if necessary)
-            usage_notification = bool(usage_notification)
-            ph_notification = bool(ph_notification)
+                # Determine if Notification is Needed
+                usage_notification = water_usage > max_water_usage
+                ph_notification = max_ph_value < ph_value or low_ph_value > ph_value
 
-            # Store notifications in session
-            session['usage_notification'] = usage_notification
-            session['ph_notification'] = ph_notification
-            
-            return render_template('homeStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
+                # Store notifications in session
+                session['usage_notification'] = bool(usage_notification)
+                session['ph_notification'] = bool(ph_notification)
+
+                return render_template('homeStudent.html', student=student, usage_notification=usage_notification, ph_notification=ph_notification)
+            else:
+                # Handle the case where there are no readings in the database
+                return "No readings available"
         else:
             # Handle the case where the student does not exist
             return "User not found"
@@ -617,34 +588,36 @@ def homeStaff():
     if 'staff_id' in session:
         staff_id = session['staff_id']
         staff_email = session['staff_email']
-        staff = Staff.query.filter_by(id=staff_id,email=staff_email).first()
+        staff = Staff.query.filter_by(id=staff_id, email=staff_email).first()
         if staff:
-            # CSV Path
-            csv_file_path = 'data/dataset.csv' 
-            
-            # Load CSV data
-            df = pd.read_csv(csv_file_path)
-            df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-            water_usage = df['Usage'].iloc[-1]
-            ph_value = df['ph'].iloc[-1]
-            
-            # Determine if Notification is Needed
-            usage_notification = water_usage > max_water_usage
-            ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
+            # Query to get the last reading from the dataset table
+            query = "SELECT * FROM dataset ORDER BY Date DESC LIMIT 1"
+            last_reading_df = pd.read_sql(query, engine)
 
-            # Convert to standard Python types (if necessary)
-            usage_notification = bool(usage_notification)
-            ph_notification = bool(ph_notification)
+            if not last_reading_df.empty:
+                # Extract the last row of data
+                last_reading = last_reading_df.iloc[0]
+                water_usage = last_reading['Usage']
+                ph_value = last_reading['ph']
 
-            # Store notifications in session
-            session['usage_notification'] = usage_notification
-            session['ph_notification'] = ph_notification
+                # Determine if Notification is Needed
+                usage_notification = water_usage > max_water_usage
+                ph_notification = max_ph_value < ph_value or low_ph_value > ph_value
 
-            return render_template('homeStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
+                # Store notifications in session
+                session['usage_notification'] = bool(usage_notification)
+                session['ph_notification'] = bool(ph_notification)
+
+                return render_template('homeStaff.html', staff=staff, usage_notification=usage_notification, ph_notification=ph_notification)
+            else:
+                # Handle the case where there are no readings in the database
+                return "No readings available"
+        else:
+            # Handle the case where the staff does not exist
+            return "User not found"
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStaff_form'))
-
 
 @app.route('/homeAdmin')
 def homeAdmin():
@@ -652,30 +625,33 @@ def homeAdmin():
     if 'admin_id' in session:
         admin_id = session['admin_id']
         admin_email = session['admin_email']
-        admin = Admin.query.filter_by(id=admin_id,email=admin_email).first()
+        admin = Admin.query.filter_by(id=admin_id, email=admin_email).first()
         if admin:
-            # CSV Path
-                csv_file_path = 'data/dataset.csv'
+            # Query to get the last reading from the dataset table
+            query = "SELECT * FROM dataset ORDER BY Date DESC LIMIT 1"
+            last_reading_df = pd.read_sql(query, engine)
 
-                # Load CSV data
-                df = pd.read_csv(csv_file_path)
-                df.columns = ['Date', 'Usage', 'Temp', 'ph', 'TDS','MeterReading']
-                water_usage = df['Usage'].iloc[-1]
-                ph_value = df['ph'].iloc[-1]
+            if not last_reading_df.empty:
+                # Extract the last row of data
+                last_reading = last_reading_df.iloc[0]
+                water_usage = last_reading['Usage']
+                ph_value = last_reading['ph']
 
                 # Determine if Notification is Needed
                 usage_notification = water_usage > max_water_usage
-                ph_notification  = max_ph_value < ph_value or low_ph_value > ph_value
-
-                # Convert to standard Python types (if necessary)
-                usage_notification = bool(usage_notification)
-                ph_notification = bool(ph_notification)
+                ph_notification = max_ph_value < ph_value or low_ph_value > ph_value
 
                 # Store notifications in session
-                session['usage_notification'] = usage_notification
-                session['ph_notification'] = ph_notification
+                session['usage_notification'] = bool(usage_notification)
+                session['ph_notification'] = bool(ph_notification)
 
                 return render_template('homeAdmin.html', admin=admin, usage_notification=usage_notification, ph_notification=ph_notification)
+            else:
+                # Handle the case where there are no readings in the database
+                return "No readings available"
+        else:
+            # Handle the case where the admin does not exist
+            return "User not found"
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinAdmin_form'))
@@ -748,7 +724,6 @@ def profileStudent_form():
     else:
         # Redirect to sign-in page if not logged in
         return redirect(url_for('signinStudent_form'))
-
 
 @app.route('/upload_pictureStudent', methods=['POST'])
 def upload_pictureStudent():
@@ -875,8 +850,6 @@ def update_profileStaff():
         flash('You need to be logged in!')
     return redirect(url_for('profileStaff_form'))
 
-
-
 @app.route('/profileAdmin')
 def profileAdmin_form():
     if 'admin_id' in session:
@@ -934,8 +907,6 @@ def update_profileStudent():
         flash('You need to be logged in!')
     return redirect(url_for('profileStudent_form'))
 
-
-
 @app.route('/predictionsStaff')
 def predictionStaff_form():
     if 'staff_id' in session:
@@ -970,7 +941,6 @@ def predictionStudent_form():
     else:
         return redirect(url_for('signinStudent_form'))
 
-
 @app.route('/predictionsAdmin')
 def predictionAdmin_form():
     if 'admin_id' in session:
@@ -1003,7 +973,6 @@ def analysingStaff_form():
             return "user not found"
     else:
         return redirect(url_for('signinStaff_form'))
-
 
 @app.route('/analysingAdmin')
 def analysingAdmin_form():
@@ -1068,8 +1037,6 @@ def accessAdmin_form():
     else:
         return redirect(url_for('signinAdmin_form'))
 
-# Helper function to get the last month's usage
-# Helper function to get the last meter reading of the previous month
 def get_last_month_meter_reading():
     df = pd.read_sql('SELECT * FROM dataset', engine)
 
@@ -1095,8 +1062,6 @@ def get_last_month_meter_reading():
 
     return last_meter_reading
 
-
-# Helper function to get this month's meter reading
 def get_this_month_meter_reading():
     df = pd.read_sql('SELECT * FROM dataset', engine)
 
@@ -1142,13 +1107,12 @@ def get_this_month_meter_reading():
         'TDS': [tds]
     })
 
-    # Concatenate the new entry to the existing DataFrame
-    df = pd.concat([df, new_entry], ignore_index=True)
+    # # Concatenate the new entry to the existing DataFrame
+    # df = pd.concat([df, new_entry], ignore_index=True)
+    #
+    # # Save the updated DataFrame back to the CSV
+    # df.to_csv('data/dataset.csv', index=False)
 
-    # Save the updated DataFrame back to the CSV
-    df.to_csv('data/dataset.csv', index=False)
-
-# Route for meter admin form, allowing data submission and displaying last/current month readings
 @app.route('/meterAdmin', methods=['GET', 'POST'])
 def meterAdmin_form():
     if 'admin_id' in session:
@@ -1236,7 +1200,9 @@ def meterAdmin_form():
             return render_template('meterAdmin.html', admin=admin,
                                    last_month_meter_reading=last_month_meter_reading,
                                    this_month_meter_reading=this_month_meter_reading,
-                                   usage_difference=usage_difference)
+                                   usage_difference=usage_difference,
+                                   usage_notification=usage_notification,
+                                   ph_notification=ph_notification)
         else:
             return "User not found", 404
     else:
@@ -1337,8 +1303,6 @@ def delete_student():
 
     # Redirect back to the table after deletion
     return redirect(url_for("accessAdmin_form"))
-
-
 
 @app.route('/delete_staff', methods=["POST"])
 def delete_staff():
@@ -1502,7 +1466,6 @@ def resetPasswordStaff():
             return redirect(url_for('resetPasswordStaff'))
     return render_template('resetPasswordStaff.html')
 
-
 @app.route('/forgotPasswordAdmin', methods=["GET","POST"])
 def forgotPasswordAdmin():
     if request.method == "POST":
@@ -1521,7 +1484,6 @@ def forgotPasswordAdmin():
     else:
         return render_template('forgotPasswordAdmin.html')
 
-
 @app.route('/verifyOTPAdmin', methods=["GET", "POST"])
 def verifyOTPAdmin():
     if request.method == "POST":
@@ -1533,7 +1495,6 @@ def verifyOTPAdmin():
             flash('Invalid OTP. Please try again.')
             return redirect(url_for('verifyOTPAdmin'))
     return render_template('verifyOTPAdmin.html')
-
 
 @app.route('/resetPasswordAdmin',methods=["GET","POST"])
 def resetPasswordAdmin():
@@ -1551,8 +1512,6 @@ def resetPasswordAdmin():
             flash('Passwords do not match. Please re-enter.')
             return redirect(url_for('resetPasswordAdmin'))
     return render_template('resetPasswordAdmin.html')
-
-
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
@@ -1637,7 +1596,6 @@ def get_current_admin():
         admin_id = session['admin_id']
         return Admin.query.get(admin_id)
 
-
 # -----------------------------------------------Predictions---------------------------------------------------------
 PREDICTION_FEATURE = "Usage"
 
@@ -1653,7 +1611,6 @@ def truncate_table(engine, table_name):
     except Exception as e:
         print(f"Failed to truncate table {table_name}: {e}")
 
-
 def read_data_from_db(table_name):
     try:
         query = f"SELECT * FROM {table_name}"
@@ -1662,7 +1619,6 @@ def read_data_from_db(table_name):
     except Exception as e:
         print(f"Failed to read data from {table_name}: {e}")
         return pd.DataFrame()
-
 
 def write_data_to_db(df, table_name):
     df.to_sql(table_name, engine, if_exists='replace', index=True, index_label='Date')
@@ -1681,7 +1637,7 @@ def partition_data():
         write_data_to_db(weekly_data_train, "weekly_train_data")
 
         truncate_table(engine, 'monthly_train_data')
-        monthly_data_train = df.resample("ME").sum()  # Changed from 'ME' to 'M'
+        monthly_data_train = df.resample("ME").sum()  # Use 'M' for monthly data
         write_data_to_db(monthly_data_train, "monthly_train_data")
 
     except Exception as e:
@@ -1690,6 +1646,7 @@ def partition_data():
 def check_stationarity(df):
     result = sm.tsa.stattools.adfuller(df[PREDICTION_FEATURE])
     return result[1] <= 0.05
+
 def make_stationary(df):
     return df[PREDICTION_FEATURE].diff().dropna()
 
@@ -1704,18 +1661,16 @@ def transform_data(df):
         else:
             df = seasonal_difference(df)
         transformations += 1
-
     if transformations >= 3:
         print("Data could not be made stationary after 3 transformations.")
         return None
-
     return df
 
 def predict_data(df, prediction_count, freq):
     if df.empty:
         return {"error": "DataFrame is empty. Cannot perform predictions."}
 
-    df.index = pd.DatetimeIndex(df.index)
+    # Resample to the desired frequency and sum
     df = df.resample(freq).sum()
 
     df_stationary = transform_data(df)
@@ -1723,11 +1678,12 @@ def predict_data(df, prediction_count, freq):
     if df_stationary is None:
         return {"error": "Data is still not stationary."}
 
-    model = auto_arima(df_stationary, seasonal=False, stepwise=True, suppress_warnings=True)
+    # Fit the ARIMA model
+    model = auto_arima(df_stationary[PREDICTION_FEATURE], seasonal=False, stepwise=True, suppress_warnings=True)
 
     print(f"Selected ARIMA order: {model.order}")
 
-    model_fit = model.fit(df_stationary)
+    model_fit = model.fit(df_stationary[PREDICTION_FEATURE])
 
     # Get model summary to check p-values
     print(model_fit.summary())
@@ -1771,8 +1727,7 @@ def call_monthly_predictions():
 
 def get_monthly_data(prediction_count=4):
     df = read_data_from_db("monthly_train_data")
-    return predict_data(df, prediction_count, 'ME')
-
+    return predict_data(df, prediction_count, 'ME')  # Change 'ME' to 'M'
 
 # Load dataset
 def read_data_from_db(table_name):

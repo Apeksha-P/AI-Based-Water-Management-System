@@ -238,7 +238,119 @@
 <script src="{{ url_for('static', filename='lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js') }}"></script>
 
 <!-- Template Javascript -->
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+  (function ($) {
+    "use strict";
+
+    // Spinner
+    var spinner = function () {
+      setTimeout(function () {
+        if ($('#spinner').length > 0) {
+          $('#spinner').removeClass('show');
+        }
+      }, 1);
+    };
+    spinner();
+
+    // Back to top button
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 300) {
+        $('.back-to-top').fadeIn('slow');
+      } else {
+        $('.back-to-top').fadeOut('slow');
+      }
+    });
+    $('.back-to-top').click(function () {
+      $('html, body').animate({scrollTop: 0}, 1500, 'easeInOutExpo');
+      return false;
+    });
+
+    // Sidebar Toggler
+    $('.sidebar-toggler').click(function () {
+      $('.sidebar, .content').toggleClass("open");
+      return false;
+    });
+
+    // Progress Bar
+    $('.pg-bar').waypoint(function () {
+      $('.progress .progress-bar').each(function () {
+        $(this).css("width", $(this).attr("aria-valuenow") + '%');
+      });
+    }, {offset: '80%'});
+
+    // Calender
+    $('#calender').datetimepicker({
+      inline: true,
+      format: 'L'
+    });
+
+    // Testimonials carousel
+    $(".testimonial-carousel").owlCarousel({
+      autoplay: true,
+      smartSpeed: 1000,
+      items: 1,
+      dots: true,
+      loop: true,
+      nav : false
+    });
+
+    // Chart Global Color
+    Chart.defaults.color = "#6C7293";
+    Chart.defaults.borderColor = "#000000";
+
+    // Fetch last 15 rows from the database
+    $(document).ready(function() {
+      $.ajax({
+        url: '/api/get_last_data',
+        method: 'GET',
+        success: function(data) {
+          // Process the data for charts or any other purpose
+          var labels = data.map(row => row.id); // Adjust based on your data structure
+          var waterUsageData = data.map(row => row.water_usage);
+          var temperatureData = data.map(row => row.temperature);
+          var phValueData = data.map(row => row.ph_value);
+          var tdsData = data.map(row => row.tds);
+
+          // Create charts using the fetched data
+          createChart(document.getElementById('bar-chart').getContext('2d'), 'bar', 'Water Usage', waterUsageData);
+          createChart(document.getElementById('line-chart-1').getContext('2d'), 'line', 'Temperature', temperatureData);
+          createChart(document.getElementById('line-chart-2').getContext('2d'), 'line', 'pH Value', phValueData);
+          createChart(document.getElementById('line-chart-3').getContext('2d'), 'line', 'TDS', tdsData);
+        },
+        error: function(err) {
+          console.error("Error fetching data: ", err);
+        }
+      });
+    });
+
+    // Function to create Chart.js chart
+    function createChart(ctx, chartType, label, data) {
+      var chartData = {
+        labels: [...Array(data.length).keys()].map(i => `Data ${i + 1}`), // Just a placeholder for labels
+        datasets: [{
+          label: label,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+          data: data
+        }]
+      };
+      var myChart = new Chart(ctx, {
+        type: chartType,
+        data: chartData,
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+  })(jQuery);
+
+</script>
 </body>
 
 </html>
